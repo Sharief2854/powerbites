@@ -13,8 +13,8 @@ let ResetSchema= new mongoose.Schema({
         required:true
     },
     user:{
-        user:mongoose.Schema.Types.ObjectId,
-        ref:"Users"
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"users"
     
     }
     

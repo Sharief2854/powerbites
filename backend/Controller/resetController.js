@@ -1,5 +1,8 @@
 const express = require("express");
 const ResetModel = require("../Model/ResetModel");
+const userModel = require("../Model/userModel");
+const otpModel = require("../Model/otpModel");
+const transporter  = require("../Config/MailConfig");
 
 async function forgotPassword(req,res) {
      try {
@@ -16,7 +19,7 @@ async function forgotPassword(req,res) {
 
 
         const info = await transporter.sendMail({
-            from: "Powerbites",
+            from: process.env.EMAIL,
             to: user.email,
             subject: "Reset Password Request",
             text: `Hello ${user.name}, ${otp}`,
@@ -39,7 +42,7 @@ async function forgotPassword(req,res) {
      
 
         res.status(200).json({
-            message: "Please check your email",
+            message: "OTP sent Please check your email",
 
         });
     } catch (error) {
@@ -55,8 +58,11 @@ async function forgotPassword(req,res) {
 async function VerifyOtp(req,res) {
     try {
         let id = req.params.id;
+        console.log( req.params.id);
         let body = req.body;
+        console.log( req.body.otp);
         let result = await otpModel.findOne({ otp: body.otp, user: id })
+        console.log( result);
         if (!result) {
             return res.status(400).json({
                 message: "Invalid OTP",
