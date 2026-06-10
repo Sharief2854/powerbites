@@ -15,5 +15,3 @@ export const SecondaryButton = styled(PrimaryButton)(({sx ,theme })=>({
     color:theme.colorScheme.palette.light.secondary.contrastText,
     ...sx
 }))
-
-
