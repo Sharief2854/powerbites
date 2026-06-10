@@ -1,5 +1,5 @@
 const express = require("express");
-const userModel = require("../Model/userModel");
+const userModel = require("../../Model/userModel");
 
 
 async function getCustomers(req, res) {
@@ -7,11 +7,11 @@ async function getCustomers(req, res) {
 
         let body = req.body;
 
-        if(!body){
+        if (!body) {
             return res.status(400).json({
                 message: "Invalid Request",
             });
-            
+
         }
 
         let customers = await userModel.find({}).select("-password");
@@ -34,16 +34,16 @@ async function getCustomers(req, res) {
     }
 }
 
-async function deletecustomer(req,res) {
-     try {
+async function deletecustomer(req, res) {
+    try {
 
         let id = req.params.id;
 
-        if(!id){
+        if (!id) {
             return res.status(400).json({
                 message: "Invalid Request",
             });
-            
+
         }
         let customer = await userModel.findByIdAndDelete({ _id: id });
         if (!customer) {
@@ -54,49 +54,50 @@ async function deletecustomer(req,res) {
         res.status(200).json({
             message: "Customer deleted successfully",
         });
-        } catch (error) {
-            res.status(500).json({
-                message: "Internal Server Error",
-                error: error.message
-            });
-        }
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
 }
 
-async function filterCustomers(req,res){
+async function filterCustomers(req, res) {
     try {
 
-    let query = req.params.query
+        let query = req.body.query
 
-    console.log(query);
+        console.log(query);
 
-    if(!query){
+        if (!query) {
 
-      return res.status(400).json({
-        message: "Invalid Request",
-      });
-      
-    }
-  
-    let customers = await userModel.find({ name: { $regex: query, $options: "i" } });  
-    
-    console.log(customers);
+            return res.status(400).json({
+                message: "Invalid Request",
+            });
 
-    if(!customers){
-      return res.status(404).json({
-        message: "No customers found",
-      });
-    }
+        }
 
-    res.json(customers);
+        let customers = await userModel.find({ name: { $regex: query, $options: "i" } });
 
-  
+        console.log(customers);
+
+        if (customers.length === 0) {
+            return res.status(404).json({
+                message: "No customers found",
+            });
+        }
+
+        res.json(customers);
+
+
     } catch (error) {
-      res.status(500).json({
+        res.status(500).json({
 
-        message: "Internal Server Error",
-        error: error.message
+            message: "Internal Server Error",
+            error: error.message
 
-      });
+        });
     }
 }
-module.exports = {getCustomers,deletecustomer,filterCustomers};
+
+module.exports = { getCustomers, deletecustomer, filterCustomers };

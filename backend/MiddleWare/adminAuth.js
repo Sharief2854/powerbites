@@ -1,34 +1,36 @@
-const jwt=require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 
-function isAdmin(req,res,next){
+function isAdmin(req, res, next) {
 
-    let head=req.headers.authorization;
-    if(!head){
-        res.status(401).json({
+    console.log("Headers:", req.headers);
+
+    let head = req.headers.authorization;
+
+    if (!head) {
+        return res.status(401).json({
             message: "Token not provided"
-        })
-        return;
-    }
-    
-    let token=head.split(" ")[1]
-
-    let decoded=jwt.verify(token, process.env.SECRET_KEY);
-
-    if (decoded.role != "admin"){
-        res.status(401).json({
-            message:"inavlid token"
-        })
-        return;
+        });
     }
 
-    if(!decoded ){
-        res.status(401).json({
-            message:"inavlid token"
-        })
-        return;
+    let token = head.split(" ")[1];
+
+    console.log("Token:", token);
+
+    if (!token) {
+        return res.status(401).json({
+            message: "JWT missing after Bearer"
+        });
     }
-    // check databse
+
+    let decoded = jwt.verify(token, process.env.JWTKEY);
+
+    if (decoded.role !== "admin") {
+        return res.status(403).json({
+            message: "Admin access only"
+        });
+    }
+
     next();
-
 }
-module.exports=isAdmin;
+
+module.exports = isAdmin;

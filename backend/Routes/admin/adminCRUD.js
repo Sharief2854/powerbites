@@ -1,6 +1,6 @@
 const express = require("express");
 const userModel = require("../../Model/userModel");
-const {getCustomers,deletecustomer,filterCustomers} = require("../../Controller/AdminCustomerCont");
+const {getCustomers,deletecustomer,filterCustomers} = require("../../Controllers/AdminControllers/AdminCustomerCont");
 
 const router = express.Router();
 
@@ -11,7 +11,7 @@ router.get("/getAllcustomers", getCustomers);
 router.delete("/deletecustomer/:id", deletecustomer);
 
 //filter and get by alphabtes
-router.get("/filter/:query", filterCustomers);
+router.post("/filter", filterCustomers);
 
 
 module.exports = router;
