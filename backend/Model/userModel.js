@@ -15,8 +15,7 @@ const userSchema= new mongoose.Schema({
     },
     password:{
         type:String,
-        required:true,
-        unique:true
+        required:true
     },
     phone:{
         type:Number,
@@ -27,12 +26,18 @@ const userSchema= new mongoose.Schema({
         type:Boolean,
         default:false
     },
-    role:{
-        type:String,
-        default:"Customer"
+     createdAt: {
+        type: Date,
+        default: Date.now,
+        expires: "10d" 
     }
 
-})
+},
+{
+    timestamps:true
+}  
+ )
+
 
 const userModel = mongoose.model("users",userSchema)
-module.exports = userModel
+module.exports = userModel  

@@ -2,11 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors')
-
-const forgetpassword = require('./Routes/Auth/ForgetPassword');
-const adminCRUD = require('./Routes/Auth/adminCRUD');
-const ConnectDB = require('./Config/connectDB');
-const isAdmin = require('./MiddleWare/adminAuth');
+const ConnectDB = require('./config/ConnectDB');
+const RegRouter = require("./Routes/Auth/Registration")
+const ResetRouter = require("./Routes/Auth/ResetPassword")
+const LoginRouter = require("./Routes/Auth/Login")
 
 ConnectDB()
 
@@ -15,8 +14,11 @@ app.use(cors())
 app.use(express.json())
 
 
-app.use("/Auth",forgetpassword)
-app.use("/crudAdmin",adminCRUD)
+app.use("/auth",RegRouter)
+app.use("/resetPass",ResetRouter)
+app.use("/auth",LoginRouter)
+
+
 
 
 app.listen(4500,()=>{
