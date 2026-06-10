@@ -1,13 +1,13 @@
 import { styled, Button } from "@mui/material"
 
 // style Buttons
-export const PrimaryButton = styled(Button)(({sx ,theme })=>({
+export const PrimaryButton = styled(Button)(({theme })=>({
     backgroundColor:theme.colorScheme.palette.dark.primary.main,
     color:theme.colorScheme.palette.dark.primary.contrastText,
-    borderRadius:'3px',
-    width:'200px',
-    height:'35px',
-    ...sx
+    borderRadius:'20px',
+    width:'150px',
+    padding:'10px',
+    height:'40px'
 }))
 
 export const SecondaryButton = styled(PrimaryButton)(({sx ,theme })=>({
