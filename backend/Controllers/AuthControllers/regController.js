@@ -24,7 +24,7 @@ async function regController(req, res) {
 
 
         const info = await transporter.sendMail({
-            from: "Powerbites",
+            from: process.env.EMAIL,
             to: response.email,
             subject: "Welcome to Powerbites",
             text: `Welcome to Powerbites,${response.name} your verification code is ${otp}`,
@@ -46,7 +46,8 @@ async function regController(req, res) {
             })
         }
         res.status(200).json({
-            message: "check your email"
+            message: "check your email",
+            response
         })
 
 
@@ -62,13 +63,13 @@ async function verifyOtp(req, res) {
     try {
         let userId = req.params.id;
         let body = req.body;
-        if (!body.otp|| userId) {
+        if (!body.otp || !userId) {
             return res.status(400).json({
                 message: "All fields are required"
             })
         }
 
-        let result = await otpModel.findOne({ otp: body.otp, user: body.userId })
+        let result = await otpModel.findOne({ otp: body.otp, user: userId })
 
         if(!result){
             return res.status(400).json({
@@ -76,9 +77,12 @@ async function verifyOtp(req, res) {
             })
         }
 
-       let user= await userModel.findByIdAndUpdate(body.userId,{
-            isVerified:true
+       let user= await userModel.findByIdAndUpdate({_id:userId},{isVerified:true },{new:true})
+       if(!user){
+        return res.status(400).json({
+            message:"Something went wrong"
         })
+       }
 
        let deleteOtp =await otpModel.findByIdAndDelete(result._id)
 
