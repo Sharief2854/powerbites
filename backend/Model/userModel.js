@@ -21,12 +21,27 @@ const userSchema= new mongoose.Schema({
         required:true
     
     },
+    role:{
+        type:String,
+        default:"customer",
+        enum:["customer","admin"]
+    },
     isVerified:{
         type:Boolean,
         default:false
     },
+     createdAt: {
+        type: Date,
+        default: Date.now,
+        expires: "10d" 
+    }
 
-})
+},
+{
+    timestamps:true
+}  
+ )
+
 
 const userModel = mongoose.model("users",userSchema)
 module.exports = userModel  
