@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Box,
@@ -8,6 +7,7 @@ import {
   Container,
   Grid,
   FormControl,
+  Paper,
 } from "@mui/material";
 import {
   validateEmail,
@@ -20,6 +20,8 @@ import {
 import AuthCard from "./AuthCard";
 import VerifyOtp from "./VerifyOtp";
 import Login from "./Login";
+import { useNavigate } from "react-router-dom";
+import MainAuthCard from "./MainAuthCard";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -31,7 +33,7 @@ function Register() {
   });
   const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState("");
-
+  const navigate = useNavigate();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -86,104 +88,132 @@ function Register() {
   };
   console.log("showOtp :", showOtp);
   console.log("otp :", otp);
-//   const HandleLogin = () => {
-//     return (<Login/>)
-//   };
 
   if (showOtp) {
     return <VerifyOtp verOtp={otp} />;
   }
 
   return (
-    <Box>
-      <AuthCard title="Sign-Up">
-        <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            label="Name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            error={!!nameError}
-            helperText={nameError}
-            autoComplete="name"
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            error={!!emailError}
-            helperText={emailError}
-            autoComplete="email"
-            margin="normal"
-          />
-          <PasswordField
-            fullWidth
-            label="Password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            type="password"
-            error={!!passwordError}
-            helperText={passwordError}
-            autoComplete="current-password"
-            margin="normal"
-          />
-          <PasswordField
-            fullWidth
-            label="Confirm Password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            type="password"
-            error={!!confirmPasswordError}
-            helperText={confirmPasswordError}
-            autoComplete="new-password"
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="PhoneNo"
-            name="phoneNo"
-            value={formData.phoneNo}
-            onChange={handleChange}
-            type="tel"
-            error={!!phoneError}
-            helperText={phoneError}
-            autoComplete="tel"
-            margin="normal"
-          />
-
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            disabled={!hasError}
-            sx={{ mt: 2 }}
-          >
-            Register
-          </Button>
-        </Box>
-        {/* <Box sx={{
+    <Box
+      sx={{
+       minHeight:'100vh',
+       display:'flex',
+       justifyContent:'center',
+       alignItems:'center',
+       bgcolor:'#e0e0e0',
+       p:2,
+      }}
+    >
+      <MainAuthCard 
+      leftContent={
+        <Box sx={{
           display:'flex',
           justifyContent:'center',
           alignItems:'center',
-          backgroundColor:'green'
         }}>
-          <Typography>
-            Already have an account?dfghgf
-          </Typography>
-          <span
-            style={{ color: "#1976d2", cursor: "pointer", fontWeight: 500 }}
-            onClick={HandleLogin}
-          >
-            Loginlokijhgv
-          </span>
-        </Box> */}
-      </AuthCard>
+          <Typography variant="h4">PowerBites</Typography>
+          <Typography variant="h6"> welcome to PowerBites</Typography>
+
+        </Box>
+      } 
+      rightContent={
+        <Box>
+          <AuthCard title="Sign-Up">
+            <Box component="form" onSubmit={handleSubmit}>
+              <TextField
+                fullWidth
+                label="Name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                error={!!nameError}
+                helperText={nameError}
+                autoComplete="name"
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                label="Email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                error={!!emailError}
+                helperText={emailError}
+                autoComplete="email"
+                margin="normal"
+              />
+              <PasswordField
+                fullWidth
+                label="Password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                type="password"
+                error={!!passwordError}
+                helperText={passwordError}
+                autoComplete="current-password"
+                margin="normal"
+              />
+              <PasswordField
+                fullWidth
+                label="Confirm Password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                type="password"
+                error={!!confirmPasswordError}
+                helperText={confirmPasswordError}
+                autoComplete="new-password"
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                label="PhoneNo"
+                name="phoneNo"
+                value={formData.phoneNo}
+                onChange={handleChange}
+                type="tel"
+                error={!!phoneError}
+                helperText={phoneError}
+                autoComplete="tel"
+                margin="normal"
+              />
+
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={!hasError}
+                sx={{ mt: 2 }}
+              >
+                Register
+              </Button>
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "10px",
+                mt: 2,
+              }}
+            >
+              <Typography>Already have an account?</Typography>
+              <Typography
+                variant="text"
+                sx={{
+                  color: "blue",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+                onClick={() => navigate("/login")}
+              >
+                Login
+              </Typography>
+            </Box>
+          </AuthCard>
+          </Box>
+      } />
     </Box>
   );
 }
