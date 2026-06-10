@@ -22,7 +22,7 @@ function AuthCard({ title, children }) {
       >
         <CardContent
           sx={{
-            p: { xs: 2, sm: 4 },
+            p: { xs: 2, sm: 3 },
           }}
         >
           <Typography 

@@ -16,10 +16,10 @@ function App() {
       <BrowserRouter>
 
       <Routes>
-        <Route path ="/reg" element={<Register/>}/>
+        <Route path ="/" element={<Register/>}/>
         <Route path ="/verifyOtp" element={<VerifyOtp/>}/>
         <Route path ="/login" element={<Login/>}/>
-        <Route path ="/" element={<MainAuthCard/>}/>
+        <Route path ="/auth" element={<MainAuthCard/>}/>
       </Routes>
       
       </BrowserRouter>
