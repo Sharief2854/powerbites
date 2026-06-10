@@ -6,9 +6,11 @@ const app = express();
 const userRouter= require("./router/userRouter");
 const connected = require("./Confin/db");
 const cors = require("cors");
-const isUser=require("./middleWare/authMid")
+const isUser=require("./middleWare/authMid");
+// const { userLogin } = require("./Controller/loginController");
 app.use(express.json()); 
 connected()
+// app.use("/login",user)
 app.use("/user",isUser ,userRouter)
 app.get("/home", (req, res) => {
   res.send("server working");

@@ -3,16 +3,16 @@ const jwt = require("jsonwebtoken");
 
 function isUser(req, res, next) {
   try {
-    // console.log(head)
+  
     let user = req.headers.authorization;
-    if (!user) {
+    if (!authHeader) {
       return res.status(401).json({
         message: "Token missing",
       });
     }
-    let arr = head.split(" ");
+    let arr = authHeader.split(" ");
     let token = arr[1];
-    let decode = jwt.verify(token, process.env.JWT_SCEATECODE);
+    let decode = jwt.verify(token, process.env.EMAIL);
     req.userId = decode.id
 
     console.log("token",token);
