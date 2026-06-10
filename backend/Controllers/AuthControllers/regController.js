@@ -23,6 +23,14 @@ async function regController(req, res) {
                 message: "Something went wrong"
             })
         }
+        if(response.isVerified){
+            let info = await emailSender(response)
+            res.status(200).json({
+                message: "check your email",
+                response
+            })
+            return
+        }
 
         let info = await emailSender(response)
 
