@@ -33,7 +33,7 @@ router.post("/login",async(req,res)=>{
   
 })
 
-router.post("/getuser",async(req,res)=>{
+router.post("/getUser",async(req,res)=>{
     let body = req.body;
     console.log(body)
     try{

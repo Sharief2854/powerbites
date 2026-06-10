@@ -2,7 +2,6 @@
 
 require("dotenv").config();
 const express = require("express");
-const console = require("node:console");
 const app = express();
 const userRouter= require("./router/userRouter");
 const connected = require("./Confin/db");
