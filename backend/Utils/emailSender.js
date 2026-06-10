@@ -1,9 +1,12 @@
 const transporter = require("../config/emailConfig");
+const otpGenerator = require('otp-generator');
+
 
 async function emailSender(user){
 
       try{
-        let otp = Math.trunc(Math.random() * 10000)
+        let otp = otpGenerator.generate(4, { digits:true,upperCaseAlphabets: false, specialChars: false,lowerCaseAlphabets:false })
+        console.log(otp)
     
     
             const info = await transporter.sendMail({
