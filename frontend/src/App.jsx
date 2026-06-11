@@ -11,6 +11,7 @@ import ForgotPassword from "./Pages/Common/ForgetPassword";
 import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
 import Home from "./Pages/Common/Home";
+import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
 
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
         <Route path ="/forgetverifyOtp/:id" element={<ForgotVerifyOtp/>}/>
         <Route path ="/auth" element={<MainAuthCard/>}/>
         <Route path ="/home" element={<Home/>}/>
+        <Route path = "/userdetails" element={<UserDetails/>}/>
       </Routes>
       
       </BrowserRouter>

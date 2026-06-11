@@ -57,7 +57,7 @@ function Login() {
       navigate("/home")
     }
     else if(decoded.role == "admin"){
-      navigate("/home")
+      navigate("/userdetails")
     }
     
 
