@@ -3,12 +3,14 @@ import React, { useState } from 'react'
 import AuthCard from './AuthCard'
 import Login from './Login';
 import { validateOtp } from '../utils/Validation';
+import { useNavigate } from 'react-router-dom';
 
 
 function VerifyOtp({verOtp}) {
 
     const [showOtp,setShowOtp] = useState(false);
     const[otp,setOtp] =useState("");
+    const navigate = useNavigate();
 
     const otpError = otp ? validateOtp(otp):"";
 
@@ -22,16 +24,10 @@ function VerifyOtp({verOtp}) {
            return "";
         }
          setShowOtp(true)
-            console.log("otp success",otp)
+        console.log("otp success",otp)
+        navigate("/login");
         
-    }
-
-    if(showOtp){
-        return (
-            <Box>
-                <Login/>
-            </Box>
-        )
+        
     }
 
 
