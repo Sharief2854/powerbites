@@ -63,7 +63,7 @@ async function regController(req, res) {
                 message: "Something went wrong"
             })
         }
-        let result = await userModel.findByIdAndUpdate(userToProcess._id, { "createdAt.expires": "5m" }, { returnDocument: 'after' }).select("-password -name -email -phone -role -isVerified")
+        let result = await userModel.findByIdAndUpdate(userToProcess._id, { expireAt: new Date(Date.now() + 5 * 60 * 1000) }, { returnDocument: 'after' }).select("-password -name -email -phone -role -isVerified")
 
         res.status(200).json({
             message: "check your email",
@@ -99,7 +99,7 @@ async function verifyOtp(req, res) {
 
         const user = await userModel.findByIdAndUpdate(
             userId,
-            { isVerified: true, "createdAt.expires": null },
+            { isVerified: true, $unset: { expireAt: 1 } },
             { returnDocument: 'after' }
         );
 
