@@ -55,7 +55,7 @@ async function regController(req, res) {
 
         let setOtp = await otpModel.create({
             otp: info.otp,
-            user: response._id
+            user: userToProcess._id
         })
 
         if (!setOtp) {
