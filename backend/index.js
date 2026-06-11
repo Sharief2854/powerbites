@@ -8,6 +8,9 @@ const ResetRouter = require("./Routes/Auth/ResetPassword")
 const LoginRouter = require("./Routes/Auth/Login")
 const adminRouter = require("./Routes/admin/adminCRUD");
 const isAdmin = require('./MiddleWare/adminAuth');
+const CartRouter = require('./Routes/Cart/cartRouter');
+const bannerRouter = require('./Routes/Banner/bannerRoutes');
+
 
 ConnectDB()
 
@@ -21,6 +24,8 @@ app.use("/resetPass",ResetRouter)
 // app.use("/auth",LoginRouter)
 
 app.use("/crudAdmin",isAdmin,adminRouter)
+app.use("/cart",CartRouter)
+app.use("/banner",bannerRouter)
 
 
 

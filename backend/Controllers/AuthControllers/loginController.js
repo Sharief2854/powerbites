@@ -30,7 +30,7 @@ const { generateAccessToken, generateRefreshToken } = require("../../Utils/Token
         if (!user) {
             return res.status(400).json({
                 message: "User not found",
-                isUser = false
+                isUser: false
             })
         }
 
