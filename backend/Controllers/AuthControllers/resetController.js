@@ -2,6 +2,7 @@ const userModel = require("../../Model/userModel");
 const transporter = require("../../config/emailConfig");
 const otpModel = require("../../Model/otpModel");
 const emailSender = require("../../Utils/emailSender");
+const resetModel = require("../../Model/ResetModel");
 
 async function forgotPassword(req,res) {
      try {
@@ -125,6 +126,13 @@ async function resetPassword(req,res){
 
         user.password = body.password;
         await user.save(); 
+
+        let clearReset =await resetModel.deleteOne({user:id})
+        if(!clearReset){
+              return res.status(400).json({
+                message:"Something went wrong"
+            })
+        }
 
         res.status(200).json({
             message: "Password reset successfully"

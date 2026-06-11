@@ -39,7 +39,7 @@ const { generateAccessToken } = require("../../Utils/TokenGenerator");
             })
 
         }
-        if (!user.isVerified) {
+        if (user.isVerified === false) {
 
              let info = await emailSender(user)
 
@@ -55,6 +55,11 @@ const { generateAccessToken } = require("../../Utils/TokenGenerator");
             if (!setOtp) {
                 return res.status(400).json({
                     message: "Something went wrong"
+                })
+
+                return res.status(400).json({
+                    message: "Please verify your email",
+                    user: user._id
                 })
             }
 
