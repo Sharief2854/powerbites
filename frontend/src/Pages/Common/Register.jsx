@@ -322,8 +322,8 @@ function Register() {
     console.log("res data :",res.data)
     // let otpvalue = Math.floor(1000 + Math.random() * 9000); // Generates reliable 4-digit code
     // console.log("otp :", otpvalue);
-    // setShowOtp(true);
     localStorage.setItem("userId",res.data.response._id);
+    // setShowOtp(true);
     // setOtp(otpvalue);
     setFormData({
       name: "",
@@ -332,10 +332,17 @@ function Register() {
       confirmPassword: "",
       phone: "",
     });
-    navigate(`/verifyOtp/${res.data.userId}}`)
+    alert(res.data.message)
+    navigate(`/verifyOtp/${localStorage.getItem("userId")}`)
 
     } catch (err) {
-      console.log(err.message);
+      console.log(err.response);
+      alert(err.response.data.message);
+      if(err.response.data.message == "user already exist"){
+        navigate("/verifyOtp/${localStorage.getItem('userId')}")
+      }
+      
+      
     }
   
   };

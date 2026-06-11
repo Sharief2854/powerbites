@@ -100,7 +100,7 @@ import {
   PasswordField,
 } from "../utils/Validation";
 import AuthCard from "./AuthCard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import MainAuthCard from "./MainAuthCard";
 import axios from "axios";
 
@@ -110,6 +110,8 @@ function ResetPassword() {
     confirmPassword: "",
   });
   const navigate = useNavigate();
+  const userId = useParams().id
+
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -139,11 +141,14 @@ function ResetPassword() {
       return alert("Confirm password must match the password.");
     }
     let password = formData.password;
-    let res = await axios.post(`http://localhost:4500/resetPass/resetpassword/${localStorage.getItem("userId")}`,{password});
+    let res = await axios.post(`http://localhost:4500/resetPass/resetpassword/${userId}`,{password});
 
     console.log("res data :",res.data)
 
     console.log("Password Update Request Payload:", formData);
+    if(res.status != 200){
+      return alert(res.data.message);
+    }
     alert("Password updated successfully!");
 
     // Clear form fields
@@ -156,7 +161,7 @@ function ResetPassword() {
     navigate("/login");
   }
   catch(err){
-    console.log(err);
+    console.log(err.message);
   }
   };
 

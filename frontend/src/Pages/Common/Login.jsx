@@ -5,6 +5,7 @@ import AuthCard from "./AuthCard";
 import MainAuthCard from "./MainAuthCard";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 function Login() {
   const navigate = useNavigate();
@@ -44,12 +45,36 @@ function Login() {
 
     console.log("res data :",res.data)
     
-      
+    let token = res.data.token;
+    console.log("token :",token);
+    localStorage.setItem("token",res.data.token);
+    const decoded = jwtDecode(token);
+    console.log("decoded :",decoded)  
     // Dynamic reset after an API handshake (or keep for convenience)
     setFormData({ email: "", password: "" });
+
+    if(decoded.role == "customer"){
+      navigate("/home")
+    }
+    else if(decoded.role == "admin"){
+      navigate("/home")
+    }
+    
+
   }
   catch(err){
-    console.log(err);
+    if(err.response.data.message == "please verify your account"){
+      alert(err.response.data.message);
+      navigate(`/verifyOtp/${err.response.data.user._id}`);
+    }
+    else if(err.response.data.message == "user not found"){
+      alert(err.response.data.message);
+      navigate("/");
+    }
+    else{
+      alert(err.response.data.message); 
+    }
+    console.log(err); 
     
   }
 

@@ -10,6 +10,7 @@ import MainAuthCard from "./Pages/Common/MainAuthCard";
 import ForgotPassword from "./Pages/Common/ForgetPassword";
 import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
+import Home from "./Pages/Common/Home";
 
 
 function App() {
@@ -23,9 +24,10 @@ function App() {
         <Route path ="/verifyOtp/:id" element={<VerifyOtp/>}/>
         <Route path ="/login" element={<Login/>}/>
         <Route path ="/forget" element={<ForgotPassword/>}/>
-        <Route path ="/reset" element={<ResetPassword/>}/>
-        <Route path ="/forgetverifyOtp" element={<ForgotVerifyOtp/>}/>
+        <Route path ="/resetpassword/:id" element={<ResetPassword/>}/>
+        <Route path ="/forgetverifyOtp/:id" element={<ForgotVerifyOtp/>}/>
         <Route path ="/auth" element={<MainAuthCard/>}/>
+        <Route path ="/home" element={<Home/>}/>
       </Routes>
       
       </BrowserRouter>

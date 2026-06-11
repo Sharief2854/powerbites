@@ -46,7 +46,7 @@
 // export default VerifyOtp
 
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -55,14 +55,14 @@ import {
 } from "@mui/material";
 import { validateOtp } from "../utils/Validation";
 import AuthCard from "./AuthCard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import MainAuthCard from "./MainAuthCard";
 import axios from "axios";
 
-function VerifyOtp({ verOtp }) {
+function VerifyOtp() {
   const [otp, setOtp] = useState("");
   const navigate = useNavigate();
-
+  let userId = useParams().id
   // Validation Checks using your centralized utility functions
   const otpError = otp ? validateOtp(otp) : "";
 
@@ -74,12 +74,11 @@ function VerifyOtp({ verOtp }) {
     try{
     console.log("Entered otp:", otp, "type:", typeof otp);
     console.log("Expected verOtp:", verOtp, "type:", typeof verOtp);
-    // Dynamic type matching (casting string input to number for comparison)
-    
-    let res = await axios.post(`http://localhost:4500/auth/verifyOtp/${localStorage.getItem("userId")}`,{otp});
+
+    let res = await axios.post(`http://localhost:4500/auth/verifyOtp/${userId}`,{otp});
     
     console.log("res data :",res.data)
-    if (res.data.otp !== Number(otp)) {
+    if (res.data.message !== "OTP verified successfully") {
       alert("OTP does not match. Please try again.");
       return;
     }
@@ -93,10 +92,16 @@ function VerifyOtp({ verOtp }) {
     navigate("/login");
   }
   catch(err){
-    console.log(err);
+    console.log(err.response.data.message);
+    alert(err.response.data.message);
   }
   };
 
+  useEffect(()=>{
+    userId = localStorage.getItem("userId");
+    console.log("userId :",userId);
+
+  },[])
 
   return (
     <Box

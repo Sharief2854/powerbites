@@ -130,7 +130,7 @@ function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
-  //const navigate = useNavigate();
+
 
   const handleChange = (event) => {
     setEmail(event.target.value);
@@ -233,7 +233,7 @@ function ForgotPassword() {
                   disabled={!isFormValid}
                   sx={{ mt: 3, py: 1.2, fontWeight: 'bold' }}
                 >
-                  Send Recovery Link
+                  Send Recovery OTP
                 </Button>
               </Box>
             ) : (
@@ -274,7 +274,7 @@ function ForgotPassword() {
                   onClick={() => setIsSubmitted(false)}
                   sx={{ py: 1, borderColor: '#4A1BF1', color: '#4A1BF1', fontWeight: 'bold' }}
                 >
-                  Resend Link
+                  Resend Otp
                 </Button>
               </Box>
             )}
