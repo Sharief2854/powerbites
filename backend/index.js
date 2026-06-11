@@ -6,6 +6,8 @@ const ConnectDB = require('./config/ConnectDB');
 const RegRouter = require("./Routes/Auth/Registration")
 const ResetRouter = require("./Routes/Auth/ResetPassword")
 const LoginRouter = require("./Routes/Auth/Login")
+const adminRouter = require("./Routes/admin/adminCRUD");
+const isAdmin = require('./MiddleWare/adminAuth');
 
 ConnectDB()
 
@@ -18,6 +20,7 @@ app.use("/auth",RegRouter)
 app.use("/resetPass",ResetRouter)
 app.use("/auth",LoginRouter)
 
+app.use("/crudAdmin",isAdmin,adminRouter)
 
 
 

@@ -11,33 +11,48 @@ async function regController(req, res) {
         let body = req.body;
 
         if (!body.name || !body.email || !body.password || !body.phone) {
-           return res.status(400).json({
+            return res.status(400).json({
                 message: "All fields are required"
             })
         }
-        let response = await userModel.create(body)
-        if (!response) {
-            return res.status(400).json({
-                message: "Something went wrong"
-            })
+
+        // 1. Find user or create a new one
+        let userToProcess = await userModel.findOne({ email: body.email });
+
+        if (userToProcess) {
+            if (userToProcess.isVerified) {
+                return res.status(403).json({
+                    message: "User already exists",
+                    existingUser: userToProcess
+                });
+            }
+            // If not verified, execution naturally continues below to resend OTP
+        } else {
+            userToProcess = await userModel.create(body);
+            if (!userToProcess) {
+                return res.status(400).json({
+                    message: "Something went wrong"
+                });
+            }
         }
-        if(response.isVerified){
-            let info = await emailSender(response)
-            res.status(200).json({
-                message: "check your email",
-                response
+
+        let existingOtp = await otpModel.findOne({ user: userToProcess._id })
+
+        if (existingOtp) {
+            return res.status(404).json({
+                message: "otp is already sent"
             })
-            return
         }
 
         let info = await emailSender(response)
 
-      
+
         if (!info) {
             return res.status(400).json({
                 message: "Something went wrong"
             })
         }
+
         let setOtp = await otpModel.create({
             otp: info.otp,
             user: response._id
@@ -48,9 +63,11 @@ async function regController(req, res) {
                 message: "Something went wrong"
             })
         }
+        let result = await userModel.findByIdAndUpdate(userToProcess._id, { "createdAt.expires": "5m" }, { returnDocument: 'after' }).select("-password -name -email -phone -role -isVerified")
+
         res.status(200).json({
             message: "check your email",
-            response
+            result
         })
 
 
@@ -82,12 +99,12 @@ async function verifyOtp(req, res) {
 
         const user = await userModel.findByIdAndUpdate(
             userId,
-            { isVerified: true },
-            { new: true }
+            { isVerified: true, "createdAt.expires": null },
+            { returnDocument: 'after' }
         );
 
         if (!user) {
-           
+
             return res.status(404).json({
                 message: "User not found"
             });
@@ -95,7 +112,7 @@ async function verifyOtp(req, res) {
 
         res.status(200).json({
             message: "OTP verified successfully",
-            user
+
         });
     } catch (err) {
         res.status(500).json({
@@ -105,6 +122,6 @@ async function verifyOtp(req, res) {
 }
 
 module.exports = { regController, verifyOtp };
-        
 
-module.exports ={regController,verifyOtp}
+
+module.exports = { regController, verifyOtp }
