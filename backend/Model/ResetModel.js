@@ -22,4 +22,4 @@ let ResetSchema= new mongoose.Schema({
 )
 let resetModel=mongoose.model("Reset",ResetSchema)
 
-module.exports=ResetModel
+module.exports=resetModel
