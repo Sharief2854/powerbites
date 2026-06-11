@@ -72,8 +72,8 @@ function VerifyOtp() {
   const handleSubmit = async(event) => {
     event.preventDefault();
     try{
-   // console.log("Entered otp:", otp, "type:", typeof otp);
-    //console.log("Expected verOtp:", "type:", typeof verOtp);
+    console.log("Entered otp:", otp, "type:", typeof otp);
+    console.log("Expected verOtp:", verOtp, "type:", typeof verOtp);
 
     let res = await axios.post(`http://localhost:4500/auth/verifyOtp/${userId}`,{otp});
     
@@ -93,7 +93,7 @@ function VerifyOtp() {
   }
   catch(err){
     console.log(err.response.data.message);
-    alert(err.response.message);
+    alert(err.response.data.message);
   }
   };
 
@@ -119,16 +119,15 @@ function VerifyOtp() {
         leftContent={
           <Box
             sx={{
+               maxWidth: 350,
               width: "100%",
-              height: "50%", // Inherits matched layout scale from parent component
+              height: "100%", 
+              flex: 1, // Tells the box to grow and fill the parent flex container
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
               alignItems: "center",
               gap: 1.5,
-              p: 4,
-              bgcolor: "rgba(255, 192, 203, 0.15)", // Uniform transparent tint style accent
-              color: "white",
             }}
           >
             <Typography variant="h4" fontWeight="bold">PowerBites</Typography>
@@ -159,7 +158,7 @@ function VerifyOtp() {
                 helperText={otpError} // Displays your custom validation message
                 autoComplete="one-time-code"
                 margin="normal"
-                inputProps={{ maxLength: 6 }} // Limits standard input length if needed
+                slotProps={{ htmlInput: { maxLength: 6 } }} // Limits standard input length if needed
               />
 
               <Button
