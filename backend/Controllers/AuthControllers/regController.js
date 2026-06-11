@@ -124,4 +124,4 @@ async function verifyOtp(req, res) {
 module.exports = { regController, verifyOtp };
 
 
-module.exports = { regController, verifyOtp }
+
