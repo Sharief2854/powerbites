@@ -1,7 +1,7 @@
 const emailSender = require("../../Utils/emailSender");
-const {  generateAccessToken,generateRefreshToken } = require("../../Utils/TokenGenerator");
 const userModel = require("../../Model/userModel");
 const otpModel = require("../../Model/otpModel");
+const { generateAccessToken } = require("../../Utils/TokenGenerator");
 
 
 
