@@ -10,11 +10,14 @@ const userSchema= new mongoose.Schema({
     email:{
         type:String,
         required:true,
-        unique:true
+        unique:true,
+        // RegExp:/^[^\s@]+@[^\s@]+\.[^\s@]+$/
     },
     password:{
         type:String,
-        required:true
+        required:true,
+        // RegExp:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+        
     },
     phone:{
         type:Number,
@@ -33,7 +36,7 @@ const userSchema= new mongoose.Schema({
      createdAt: {
         type: Date,
         default: Date.now,
-        expires: "10d" 
+        expires: null 
     }
 
 },
