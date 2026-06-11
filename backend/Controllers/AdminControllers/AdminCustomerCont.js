@@ -5,15 +5,6 @@ const userModel = require("../../Model/userModel");
 async function getCustomers(req, res) {
     try {
 
-        let body = req.body;
-
-        if (!body) {
-            return res.status(400).json({
-                message: "Invalid Request",
-            });
-
-        }
-
         let customers = await userModel.find({}).select("-password");
         if (!customers) {
             return res.status(404).json({
@@ -21,7 +12,7 @@ async function getCustomers(req, res) {
             });
         }
 
-        res.json(customers)
+        res.status(200).json(customers)
 
         console.log(customers);
 
