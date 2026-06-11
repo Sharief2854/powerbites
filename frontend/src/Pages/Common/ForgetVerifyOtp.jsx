@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Box, Button, Paper, TextField, Typography } from "@mui/material";
-import PasswordChange from "./PasswordChange";
+//import PasswordChange from "./PasswordChange";
+import axios from "axios";
 
 function ForgotVerifyOtp({ otp, email}) {
   const [enteredOtp, setEnteredOtp] = useState("");
   const [error, setError] = useState("");
   const [verified, setVerified] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const value = e.target.value.replace(/\D/g, "").slice(0, 4);
@@ -13,13 +15,17 @@ function ForgotVerifyOtp({ otp, email}) {
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-
+    try{
     if (enteredOtp.length !== 4) {
       setError("Please enter 4-digit OTP");
       return;
     }
+    let otp = enteredOtp;
+    let res = await axios.post(`http://localhost:4500/resetPass/verifyOtp/${localStorage.getItem("userId")}`,{otp});
+
+    console.log("res data :",res.data)
 
     if (Number(enteredOtp) !== Number(otp)) {
       setError("Invalid OTP");
@@ -27,11 +33,14 @@ function ForgotVerifyOtp({ otp, email}) {
     }
 
     setVerified(true);
+    navigate("/resetpassword");
+  }
+  catch(err){
+    console.log(err);
+  }
   };
 
-  if (verified) {
-    return <PasswordChange email={email}/>;
-  }
+
 
   return (
     <Box

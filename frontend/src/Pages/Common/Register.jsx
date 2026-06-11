@@ -29,7 +29,7 @@
 //     email: "",
 //     password: "",
 //     confirmPassword: "",
-//     phoneNo: "",
+//     phone: "",
 //   });
 //   const [showOtp, setShowOtp] = useState(false);
 //   const [otp, setOtp] = useState("");
@@ -50,13 +50,13 @@
 //   const confirmPasswordError = formData.confirmPassword
 //     ? validateConfirmPassword(formData.confirmPassword)
 //     : "";
-//   const phoneError = formData.phoneNo ? validatePhone(formData.phoneNo) : "";
+//   const phoneError = formData.phone ? validatePhone(formData.phone) : "";
 //   const nameError = formData.name ? validateName(formData.name) : "";
 
 //   const hasError =
 //     formData.name &&
 //     formData.email &&
-//     formData.phoneNo &&
+//     formData.phone &&
 //     formData.password &&
 //     formData.confirmPassword &&
 //     !nameError &&
@@ -83,7 +83,7 @@
 //       email: "",
 //       password: "",
 //       confirmPassword: "",
-//       phoneNo: "",
+//       phone: "",
 //     });
 //   };
 //   console.log("showOtp :", showOtp);
@@ -182,9 +182,9 @@
 //               />
 //               <TextField
 //                 fullWidth
-//                 label="PhoneNo"
-//                 name="phoneNo"
-//                 value={formData.phoneNo}
+//                 label="phone"
+//                 name="phone"
+//                 value={formData.phone}
 //                 onChange={handleChange}
 //                 type="tel"
 //                 error={!!phoneError}
@@ -250,6 +250,7 @@ import {
   PasswordField,
 } from "../utils/Validation";
 import AuthCard from "./AuthCard";
+import axios from "axios";
 import VerifyOtp from "./VerifyOtp";
 import { useNavigate } from "react-router-dom";
 import MainAuthCard from "./MainAuthCard";
@@ -260,10 +261,10 @@ function Register() {
     email: "",
     password: "",
     confirmPassword: "",
-    phoneNo: "",
+    phone: "",
   });
-  const [showOtp, setShowOtp] = useState(false);
-  const [otp, setOtp] = useState("");
+  //const [showOtp, setShowOtp] = useState(false);
+  //const [otp, setOtp] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (event) => {
@@ -282,14 +283,14 @@ function Register() {
     ? validateConfirmPassword(formData.confirmPassword) 
     : "";
   
-  // FIX: Changed formData.phone to formData.phoneNo to match initial state
-  const phoneError = formData.phoneNo ? validatePhone(formData.phoneNo) : "";
+  // FIX: Changed formData.phone to formData.phone to match initial state
+  const phoneError = formData.phone ? validatePhone(formData.phone) : "";
 
   // Evaluates to true only if all fields are filled AND contain zero errors
   const isFormValid =
     formData.name &&
     formData.email &&
-    formData.phoneNo &&
+    formData.phone &&
     formData.password &&
     formData.confirmPassword &&
     !nameError &&
@@ -298,32 +299,48 @@ function Register() {
     !passwordError &&
     !confirmPasswordError;
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async(event) => {
     event.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
+    try {
+      
+        if (formData.password !== formData.confirmPassword) {
       return alert("Confirm password must match the password.");
     }
 
-    console.log("formData :", formData);
+    let obj ={
+      name:formData.name,
+      email:formData.email,
+      phone:formData.phone,
+      password:formData.password,
+    }
 
-    let otpvalue = Math.floor(1000 + Math.random() * 9000); // Generates reliable 4-digit code
-    setOtp(otpvalue);
-    console.log("otp :", otpvalue);
-    setShowOtp(true);
-
+    console.log("formData :", obj);
+    
+    let res = await axios.post("http://localhost:4500/auth/register",obj);
+    
+    console.log("res data :",res.data)
+    // let otpvalue = Math.floor(1000 + Math.random() * 9000); // Generates reliable 4-digit code
+    // console.log("otp :", otpvalue);
+    // setShowOtp(true);
+    localStorage.setItem("userId",res.data.response._id);
+    // setOtp(otpvalue);
     setFormData({
       name: "",
       email: "",
       password: "",
       confirmPassword: "",
-      phoneNo: "",
+      phone: "",
     });
+    navigate(`/verifyOtp/${res.data.userId}}`)
+
+    } catch (err) {
+      console.log(err.message);
+    }
+  
   };
 
-  if (showOtp) {
-    return <VerifyOtp verOtp={otp} />;
-  }
+
 
   return (
     <Box
@@ -342,7 +359,7 @@ function Register() {
           <Box 
             sx={{
               width: "100%",
-              height: "100%", // Inherit matched height from parent Grid layout wrapper
+              height: "50%", // Inherit matched height from parent Grid layout wrapper
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
@@ -354,7 +371,7 @@ function Register() {
             }}
           >
             <Typography variant="h4" fontWeight="bold">PowerBites</Typography>
-            <Typography variant="h6">Welcome to PowerBites schbshdghd</Typography>
+            <Typography variant="h6">Welcome to PowerBites </Typography>
           </Box>
         } 
         rightContent={
@@ -414,8 +431,8 @@ function Register() {
               <TextField
                 fullWidth
                 label="Phone No"
-                name="phoneNo"
-                value={formData.phoneNo}
+                name="phone"
+                value={formData.phone}
                 onChange={handleChange}
                 type="tel"
                 error={!!phoneError}
