@@ -2,22 +2,27 @@
 
 require("dotenv").config();
 const express = require("express");
-const app = express();
-const userRouter= require("./router/userRouter");
-const connected = require("./Confin/db");
+const mongoose = require("mongoose");
 const cors = require("cors");
-const isUser=require("./middleWare/authMid");
-// const { userLogin } = require("./Controller/loginController");
-app.use(express.json()); 
-connected()
-// app.use("/login",user)
-app.use("/user",isUser ,userRouter)
+const connected = require("./config/connectDB");
+// const connected = require("./config/connectDB");
+const app = express();
+
+const path = require("path");
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+app.use(cors());
+app.use(express.json());
+connected();
+const ProductRouter = require("./Routes/Auth/ProductRouter/ProductRouter"); 
+
+app.use("/product", ProductRouter);
 app.get("/home", (req, res) => {
   res.send("server working");
 });
 
+console.log("hii");
 
-console.log("hii")
 app.listen(process.env.PORT, () => {
   console.log("server is running on port 5000");
 });

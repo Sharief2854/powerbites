@@ -28,9 +28,11 @@ async function addProduct(req,res) {
      console.log(req.file,"file")
      console.log(body,"body")
 
-     if(req.file){
-      body.photo = req.file.filename;
-     }
+    console.log(req.files);
+
+     if(req.files && req.files.length > 0){
+         body.photo = req.files.map(file => file.filename);
+      }
      let Product= await ProductModel.create(body)
      if(!Product){
         return
@@ -49,9 +51,6 @@ async function addProduct(req,res) {
 
     
 } 
-
-
-
 async function updateProduct(req,res) {
     try{
         let id = req.params.id
@@ -99,8 +98,6 @@ async function deleteProduct(req,res) {
    }
 
 }
-
- 
 
 module.exports = {addProduct,updateProduct, deleteProduct,allProduct}
 
