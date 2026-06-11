@@ -12,6 +12,8 @@ const CartRouter = require('./Routes/Cart/cartRouter');
 const bannerRouter = require('./Routes/Banner/bannerRoutes');
 
 
+const customerProfileRouter = require('./Routes/customer/customerProfile');
+const isCustomer = require('./MiddleWare/customerAuth');
 ConnectDB()
 
 const app = express()
@@ -23,9 +25,13 @@ app.use("/auth",RegRouter,LoginRouter)
 app.use("/resetPass",ResetRouter)
 // app.use("/auth",LoginRouter)
 
+// Admin routes CRUD opertions with authentication middleware
 app.use("/crudAdmin",isAdmin,adminRouter)
 app.use("/cart",CartRouter)
 app.use("/banner",bannerRouter)
+
+// Customer profile updating routes with authentication middleware
+app.use("/updateCustomerProfile", isCustomer,customerProfileRouter) 
 
 
 
