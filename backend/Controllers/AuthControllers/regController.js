@@ -10,8 +10,6 @@ async function regController(req, res) {
     try {
         let body = req.body;
 
-
-
         if (!body.name || !body.email || !body.password || !body.phone) {
            return res.status(400).json({
                 message: "All fields are required"
