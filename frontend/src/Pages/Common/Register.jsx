@@ -328,10 +328,10 @@ function Register() {
       alert(res.data.message);
       navigate(`/verifyOtp/${localStorage.getItem("userId")}`);
     } catch (err) {
-      console.log(err.response);
-      alert(err.response.data.message);
-      if (err.response.data.message == "user already exist") {
-        navigate("/verifyOtp/${localStorage.getItem('userId')}");
+      console.log(err.response.data);
+      alert(err.response.message);
+      if (err.response.message == "user already exist") {
+        navigate(`/verifyOtp/${localStorage.getItem('userId')}`);
       }
     }
   };
@@ -347,9 +347,14 @@ function Register() {
         background:
           "linear-gradient(135deg, #3654F4 0%, #4A1BF1 40%, #3C1A77 100%)",
         boxShadow: "inset 0px 4px 20px rgba(74, 27, 241, 0.3)",
+         
       }}
     >
-      <MainAuthCard
+      <Box sx={{
+        border:'2px solid black',
+      }}>
+      <MainAuthCard 
+      
         leftContent={
           <Box
             sx={{
@@ -361,8 +366,7 @@ function Register() {
               alignItems: "center",
               gap: 1.5,
               p: 4,
-              // bgcolor: "rgba(255, 192, 203, 0.15)", // Transparent tint style accent
-              // color: "white",
+              
             }}
           >
             <Typography variant="h4" fontWeight="bold">
@@ -477,6 +481,7 @@ function Register() {
           </AuthCard>
         }
       />
+      </Box>
     </Box>
   );
 }

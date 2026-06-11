@@ -34,6 +34,7 @@ function MainAuthCard({ leftContent, rightContent }) {
         justifyContent: "center",
         alignItems: "stretch",
         width: "100%",
+       
         
       }}
     >
@@ -48,6 +49,8 @@ function MainAuthCard({ leftContent, rightContent }) {
             alignItems:'center',
             minHeight: 650,
             p: 2,
+            bgcolor: "rgba(255, 192, 203, 0.15)", // Transparent tint style accent
+            color: "white",
           }}
         >
           {leftContent}
@@ -62,6 +65,7 @@ function MainAuthCard({ leftContent, rightContent }) {
             width: "450px",
             minHeight: 650,
             p: 2,
+            backgroundColor:'white',
           }}
         >
           {rightContent}
