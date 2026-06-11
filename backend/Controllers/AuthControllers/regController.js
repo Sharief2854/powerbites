@@ -23,9 +23,10 @@ async function regController(req, res) {
             if (userToProcess.isVerified) {
                 return res.status(403).json({
                     message: "User already exists",
-                    existingUser: userToProcess
+                    existingUser: true
                 });
             }
+
             // If not verified, execution naturally continues below to resend OTP
         } else {
             userToProcess = await userModel.create(body);
@@ -124,4 +125,4 @@ async function verifyOtp(req, res) {
 module.exports = { regController, verifyOtp };
 
 
-module.exports = { regController, verifyOtp }
+
