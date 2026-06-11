@@ -96,18 +96,18 @@
 //   return (
 //     <Box
 //       sx={{
-      
+
 //        display:'flex',
 //        justifyContent:'center',
 //        alignItems:'center',
 //        p:2,
 //        background: 'linear-gradient(135deg, #3654F4 0%, #4A1BF1 40%, #3C1A77 100%)',
 //   boxShadow: 'inset 0px 4px 20px rgba(74, 27, 241, 0.3)',
- 
+
 //       }}
 //     >
-      
-//       <MainAuthCard 
+
+//       <MainAuthCard
 //       leftContent={
 //         <Box sx={{
 //           width: "100%",
@@ -117,21 +117,20 @@
 //       justifyContent: "center",
 //       alignItems: "center",
 //       gap: 1.5,
-      
-      
+
 //         }}>
 
 //           <Typography variant="h4">PowerBites</Typography>
 //           <Typography variant="h6"> welcome to PowerBites</Typography>
 
 //         </Box>
-//       } 
+//       }
 //       rightContent={
-       
+
 //           <AuthCard title="Sign-Up" sx={{
 //           width:'100%',
 //           maxWidth:450,
-          
+
 //         }}>
 //             <Box component="form" onSubmit={handleSubmit}>
 //               <TextField
@@ -226,7 +225,7 @@
 //               </Typography>
 //             </Box>
 //           </AuthCard>
-          
+
 //       } />
 //     </Box>
 //   );
@@ -235,12 +234,7 @@
 // export default Register;
 
 import React, { useState } from "react";
-import {
-  Box,
-  Button,
-  Typography,
-  TextField,
-} from "@mui/material";
+import { Box, Button, Typography, TextField } from "@mui/material";
 import {
   validateEmail,
   validatePassword,
@@ -278,11 +272,13 @@ function Register() {
   // Validation Checks
   const nameError = formData.name ? validateName(formData.name) : "";
   const emailError = formData.email ? validateEmail(formData.email) : "";
-  const passwordError = formData.password ? validatePassword(formData.password) : "";
-  const confirmPasswordError = formData.confirmPassword 
-    ? validateConfirmPassword(formData.confirmPassword) 
+  const passwordError = formData.password
+    ? validatePassword(formData.password)
     : "";
-  
+  const confirmPasswordError = formData.confirmPassword
+    ? validateConfirmPassword(formData.confirmPassword)
+    : "";
+
   // FIX: Changed formData.phone to formData.phone to match initial state
   const phoneError = formData.phone ? validatePhone(formData.phone) : "";
 
@@ -299,71 +295,63 @@ function Register() {
     !passwordError &&
     !confirmPasswordError;
 
-  const handleSubmit = async(event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     try {
-      
-        if (formData.password !== formData.confirmPassword) {
-      return alert("Confirm password must match the password.");
-    }
+      if (formData.password !== formData.confirmPassword) {
+        return alert("Confirm password must match the password.");
+      }
 
-    let obj ={
-      name:formData.name,
-      email:formData.email,
-      phone:formData.phone,
-      password:formData.password,
-    }
+      let obj = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+      };
 
-    console.log("formData :", obj);
-    
-    let res = await axios.post("http://localhost:4500/auth/register",obj);
-    
-    console.log("res data :",res.data)
-    // let otpvalue = Math.floor(1000 + Math.random() * 9000); // Generates reliable 4-digit code
-    // console.log("otp :", otpvalue);
-    localStorage.setItem("userId",res.data.response._id);
-    // setShowOtp(true);
-    // setOtp(otpvalue);
-    setFormData({
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      phone: "",
-    });
-    alert(res.data.message)
-    navigate(`/verifyOtp/${localStorage.getItem("userId")}`)
+      console.log("formData :", obj);
 
+      let res = await axios.post("http://localhost:4500/auth/register", obj);
+
+      console.log("res data :", res.data);
+
+      localStorage.setItem("userId", res.data.response._id);
+
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        phone: "",
+      });
+      alert(res.data.message);
+      navigate(`/verifyOtp/${localStorage.getItem("userId")}`);
     } catch (err) {
       console.log(err.response);
       alert(err.response.data.message);
-      if(err.response.data.message == "user already exist"){
-        navigate("/verifyOtp/${localStorage.getItem('userId')}")
+      if (err.response.data.message == "user already exist") {
+        navigate("/verifyOtp/${localStorage.getItem('userId')}");
       }
-      
-      
     }
-  
   };
-
-
 
   return (
     <Box
       sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh', // Ensures complete viewport coverage dynamically
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh", // Ensures complete viewport coverage dynamically
         p: 2,
-        background: 'linear-gradient(135deg, #3654F4 0%, #4A1BF1 40%, #3C1A77 100%)',
-        boxShadow: 'inset 0px 4px 20px rgba(74, 27, 241, 0.3)',
+        background:
+          "linear-gradient(135deg, #3654F4 0%, #4A1BF1 40%, #3C1A77 100%)",
+        boxShadow: "inset 0px 4px 20px rgba(74, 27, 241, 0.3)",
       }}
     >
-      <MainAuthCard 
+      <MainAuthCard
         leftContent={
-          <Box 
+          <Box
             sx={{
               width: "100%",
               height: "50%", // Inherit matched height from parent Grid layout wrapper
@@ -373,21 +361,23 @@ function Register() {
               alignItems: "center",
               gap: 1.5,
               p: 4,
-              bgcolor: 'rgba(255, 192, 203, 0.15)', // Transparent tint style accent
-              color: 'white'
+              // bgcolor: "rgba(255, 192, 203, 0.15)", // Transparent tint style accent
+              // color: "white",
             }}
           >
-            <Typography variant="h4" fontWeight="bold">PowerBites</Typography>
+            <Typography variant="h4" fontWeight="bold">
+              PowerBites
+            </Typography>
             <Typography variant="h6">Welcome to PowerBites </Typography>
           </Box>
-        } 
+        }
         rightContent={
-          <AuthCard 
-            title="Sign-Up" 
+          <AuthCard
+            title="Sign-Up"
             sx={{
-              width: '100%',
-              boxShadow: 'none',
-              bgcolor: 'transparent'
+              width: "100%",
+              boxShadow: "none",
+              bgcolor: "transparent",
             }}
           >
             <Box component="form" onSubmit={handleSubmit} noValidate>
@@ -453,12 +443,12 @@ function Register() {
                 fullWidth
                 variant="contained"
                 disabled={!isFormValid} // Button is safely disabled if forms contain invalid data
-                sx={{ mt: 3, py: 1.2, fontWeight: 'bold' }}
+                sx={{ mt: 3, py: 1.2, fontWeight: "bold" }}
               >
                 Register
               </Button>
             </Box>
-            
+
             <Box
               sx={{
                 display: "flex",
@@ -485,7 +475,7 @@ function Register() {
               </Typography>
             </Box>
           </AuthCard>
-        } 
+        }
       />
     </Box>
   );

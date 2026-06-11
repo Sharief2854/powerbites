@@ -72,8 +72,8 @@ function VerifyOtp() {
   const handleSubmit = async(event) => {
     event.preventDefault();
     try{
-    console.log("Entered otp:", otp, "type:", typeof otp);
-    console.log("Expected verOtp:", verOtp, "type:", typeof verOtp);
+   // console.log("Entered otp:", otp, "type:", typeof otp);
+    //console.log("Expected verOtp:", "type:", typeof verOtp);
 
     let res = await axios.post(`http://localhost:4500/auth/verifyOtp/${userId}`,{otp});
     
@@ -93,7 +93,7 @@ function VerifyOtp() {
   }
   catch(err){
     console.log(err.response.data.message);
-    alert(err.response.data.message);
+    alert(err.response.message);
   }
   };
 

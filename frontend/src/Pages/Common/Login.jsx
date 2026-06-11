@@ -63,7 +63,7 @@ function Login() {
 
   }
   catch(err){
-    if(err.response.data.message == "please verify your account"){
+    if(err.response.data.message == "Please verify your email"){
       alert(err.response.data.message);
       navigate(`/verifyOtp/${err.response.data.user._id}`);
     }

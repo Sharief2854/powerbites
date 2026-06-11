@@ -44,7 +44,7 @@ async function regController(req, res) {
             })
         }
 
-        let info = await emailSender(response)
+        //let info = await emailSender(response)
 
 
         if (!info) {
