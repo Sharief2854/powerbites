@@ -20,6 +20,6 @@ let ResetSchema= new mongoose.Schema({
     
 },{timestamps:true}
 )
-let ResetModel=mongoose.model("Reset",ResetSchema)
+let resetModel=mongoose.model("Reset",ResetSchema)
 
 module.exports=ResetModel

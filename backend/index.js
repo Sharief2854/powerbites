@@ -16,9 +16,9 @@ app.use(cors())
 app.use(express.json())
 
 
-app.use("/auth",RegRouter)
+app.use("/auth",RegRouter,LoginRouter)
 app.use("/resetPass",ResetRouter)
-app.use("/auth",LoginRouter)
+// app.use("/auth",LoginRouter)
 
 app.use("/crudAdmin",isAdmin,adminRouter)
 
