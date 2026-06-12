@@ -230,7 +230,7 @@ export default function DashboardLayout() {
                 <Typography variant="body2" color="text.secondary" gutterBottom>
                   {title}
                 </Typography>
-                <Typography variant="h3" sx={{ fontWeight: 700, color: '#1E1154' }}>
+                <Typography variant="h3" sx={{ fontWeight: 700, color: '#1E1154',fontSize:{xs:10,sm:30} }}>
                   {index === 3 ? '$24,500' : Math.floor(Math.random() * 800) + 120}
                 </Typography>
                 <Typography variant="caption" color="#22C55E" sx={{ fontWeight: 600 }}>
