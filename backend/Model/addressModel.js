@@ -9,6 +9,8 @@ const addressSchema = new mongoose.Schema({
 
   label: {
     type: String, // Home, Work
+    default: "Home",
+    enum: ["Home", "Work", "Other"],
     required: true
   },
 
