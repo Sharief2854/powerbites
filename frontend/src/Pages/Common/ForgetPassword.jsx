@@ -124,6 +124,7 @@ import AuthCard from "./AuthCard";
 import MainAuthCard from "./MainAuthCard";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import api from "../../api/axiosConfig";
 //import MailOutlineIcon from '@mui/icons-material/MailOutline'; // Optional: run `npm install @mui/icons-material` if you haven't
 
 function ForgotPassword() {
@@ -148,17 +149,18 @@ function ForgotPassword() {
 
     console.log("Sending recovery link to:", email);
     // TODO: Integrate your actual Password Reset API endpoint here
-    let res = await axios.post("http://localhost:4500/resetPass/forgotpassword",{email});
+    let response = await api.post("http://localhost:4500/resetPass/forgotpassword",{email});
 
-    console.log("res data :",res.data)
+    console.log("res data :",response.data)
     // Toggle success state to show a beautiful success confirmation
     setIsSubmitted(true);
 
-    navigate(`/forgetverifyOtp/${res.data.user}`)
+    navigate(`/forgetverifyOtp/${response.data.user}`)
 
   }
   catch(err){
-    console.log(err);
+    console.log(err.response.data.message);
+    alert(err.response.data.message);
   }
 }
 
@@ -179,16 +181,15 @@ function ForgotPassword() {
         leftContent={
           <Box 
             sx={{
+              maxWidth: 350,
               width: "100%",
               height: "100%", 
+              flex: 1, // Tells the box to grow and fill the parent flex container
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
               alignItems: "center",
               gap: 1.5,
-              p: 4,
-              bgcolor: 'rgba(255, 192, 203, 0.15)', 
-              color: 'white'
             }}
           >
             <Typography variant="h4" fontWeight="bold">PowerBites</Typography>

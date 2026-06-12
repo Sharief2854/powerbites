@@ -1,13 +1,15 @@
 import { Box } from "@mui/material"
-import Register from "./pages/Common/Register"
-import Login from "./pages/Common/Login"
-import VerifyOtp from "./pages/Common/VerifyOtp"
+import Register from "./Pages/Common/Register"
+import Login from "./Pages/Common/Login"
+import VerifyOtp from "./Pages/Common/VerifyOtp"
 import { BrowserRouter,Routes,Route } from "react-router-dom";
 import MainAuthCard from "./Pages/Common/MainAuthCard";
 import ForgotPassword from "./Pages/Common/ForgetPassword";
 import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
 import Home from "./Pages/Common/Home";
+import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
+import LandingPage from "./Pages/Common/LandingPage";
 import Products from "./Pages/Admin/Products/Products";
 import UpdateProducts from "./Pages/Admin/Products/UpdateProducts";
 
@@ -16,8 +18,7 @@ function App() {
 
   return (
     <Box>
-      <BrowserRouter>
-
+        <BrowserRouter>
       <Routes>
         <Route path ="/register" element={<Register/>}/>
         <Route path ="/verifyOtp/:id" element={<VerifyOtp/>}/>
