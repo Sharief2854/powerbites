@@ -57,7 +57,7 @@ function Login() {
       navigate("/home")
     }
     else if(decoded.role == "admin"){
-      navigate("/userdetails")
+      navigate("/home")
     }
     
 
@@ -69,7 +69,7 @@ function Login() {
     }
     else if(err.response.data.message == "user not found"){
       alert(err.response.data.message);
-      navigate("/");
+      navigate("/resgister");
     }
     else{
       alert(err.response.data.message); 

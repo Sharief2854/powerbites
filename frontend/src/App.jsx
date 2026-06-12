@@ -12,6 +12,8 @@ import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
 import Home from "./Pages/Common/Home";
 import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
+import LandingPage from "./Pages/Common/LandingPage";
+
 
 
 function App() {
@@ -21,7 +23,8 @@ function App() {
       <BrowserRouter>
 
       <Routes>
-        <Route path ="/" element={<Register/>}/>
+        <Route path ="/" element={<LandingPage/>}>
+        <Route path ="/register" element={<Register/>}/>
         <Route path ="/verifyOtp/:id" element={<VerifyOtp/>}/>
         <Route path ="/login" element={<Login/>}/>
         <Route path ="/forget" element={<ForgotPassword/>}/>
@@ -30,6 +33,7 @@ function App() {
         <Route path ="/auth" element={<MainAuthCard/>}/>
         <Route path ="/home" element={<Home/>}/>
         <Route path = "/userdetails" element={<UserDetails/>}/>
+        </Route>
       </Routes>
       
       </BrowserRouter>
