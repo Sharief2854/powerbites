@@ -8,8 +8,16 @@ const ResetRouter = require("./Routes/Auth/ResetPassword")
 const LoginRouter = require("./Routes/Auth/Login")
 const adminRouter = require("./Routes/admin/adminCRUD");
 const isAdmin = require('./MiddleWare/adminAuth');
+const CartRouter = require('./Routes/Cart/cartRouter');
+const bannerRouter = require('./Routes/Banner/bannerRoutes');
+const multer = require('multer');
+
+
 const customerProfileRouter = require('./Routes/customer/customerProfile');
 const isCustomer = require('./MiddleWare/customerAuth');
+const upload = require('./config/multerConfig');
+
+
 ConnectDB()
 
 const app = express()
@@ -23,6 +31,8 @@ app.use("/resetPass",ResetRouter)
 
 // Admin routes CRUD opertions with authentication middleware
 app.use("/crudAdmin",isAdmin,adminRouter)
+app.use("/cart",CartRouter)
+app.use("/banner",bannerRouter)
 
 // Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter) 
