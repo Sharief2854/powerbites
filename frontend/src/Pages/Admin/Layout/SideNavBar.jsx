@@ -61,7 +61,8 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
                   '&.Mui-selected': { bgcolor: 'rgba(167, 139, 250, 0.15)' },
                 }}
-                onClick={() => console.log(`${item.text} clicked`)}
+                onClick={() => navigate(`/admin/${item.text.toLowerCase()}`)}
+                 
               >
                 <ListItemIcon sx={{ color: '#C4B5FD', minWidth: 40 }}>
                   {item.icon}
@@ -86,7 +87,7 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
                     justifyContent: 'center',
                     '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
                   }}
-                  onClick={() => navigate(`/admin/${item.text.toLowerCase()}`)}
+                  onClick={() =>  console.log(`${item.text} clicked`)}
                 >
                   <ListItemIcon sx={{ color: '#C4B5FD', minWidth: 40, display: 'flex', justifyContent: 'center' }}>
                     {item.icon}
