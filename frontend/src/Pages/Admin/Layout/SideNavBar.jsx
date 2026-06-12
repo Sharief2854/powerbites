@@ -1,4 +1,3 @@
-'use client';
 
 import React from 'react';
 import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Tooltip, Drawer, Toolbar } from '@mui/material';
@@ -9,6 +8,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
+import { useNavigate } from 'react-router-dom';
 
 const drawerWidth = 260;
 const collapsedWidth = 80;
@@ -23,14 +23,16 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
     { text: 'Settings', icon: <SettingsIcon /> },
   ];
 
+  const navigate = useNavigate();
+
   const getDrawerContent = (isExpanded) => (
     <Box sx={{ height: '100%', bgcolor: '#1E1154', color: 'white', display: 'flex', flexDirection: 'column' }}>
       <Toolbar sx={{ px: isExpanded ? 3 : 2, justifyContent: isExpanded ? 'flex-start' : 'center' }}>
         {isExpanded ? (
           <Typography
             variant="h5"
-            fontWeight="bold"
             sx={{
+              fontWeight: 'bold',
               color: '#fff',
               letterSpacing: '-0.5px',
               display: 'flex',
@@ -59,7 +61,8 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
                   '&.Mui-selected': { bgcolor: 'rgba(167, 139, 250, 0.15)' },
                 }}
-                onClick={() => console.log(`${item.text} clicked`)}
+                onClick={() => navigate(`/admin/${item.text.toLowerCase()}`)}
+                 
               >
                 <ListItemIcon sx={{ color: '#C4B5FD', minWidth: 40 }}>
                   {item.icon}
@@ -84,7 +87,7 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
                     justifyContent: 'center',
                     '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
                   }}
-                  onClick={() => console.log(`${item.text} clicked`)}
+                  onClick={() =>  console.log(`${item.text} clicked`)}
                 >
                   <ListItemIcon sx={{ color: '#C4B5FD', minWidth: 40, display: 'flex', justifyContent: 'center' }}>
                     {item.icon}
