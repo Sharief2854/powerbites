@@ -6,6 +6,7 @@ import MainAuthCard from "./MainAuthCard";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import api from "../../api/axiosConfig";
 
 function Login() {
   const navigate = useNavigate();
@@ -41,13 +42,13 @@ function Login() {
 
     console.log("Logging in with:", formData);
     // TODO: Integrate your actual API Authentication call here
-    let res = await axios.post(" http://localhost:4500/auth/login",formData);
+    let response = await api.post("/auth/login",formData);
 
-    console.log("res data :",res.data)
+    console.log("res data :",response.data)
     
-    let token = res.data.token;
+    let token = response.data.token;
     console.log("token :",token);
-    localStorage.setItem("token",res.data.token);
+    localStorage.setItem("token",response.data.token);
     const decoded = jwtDecode(token);
     console.log("decoded :",decoded)  
     // Dynamic reset after an API handshake (or keep for convenience)
@@ -57,24 +58,25 @@ function Login() {
       navigate("/home")
     }
     else if(decoded.role == "admin"){
-      navigate("/home")
+      navigate("/admin")
     }
     
 
   }
   catch(err){
-    if(err.response.data.message == "please verify your account"){
+    console.log("data ",err.response.data); 
+    console.log("error ",err.response); 
+    if(err.response.data.isVerified === false){
       alert(err.response.data.message);
-      navigate(`/verifyOtp/${err.response.data.user._id}`);
+      navigate(`/verifyOtp/${err.response.data.user}`);
     }
-    else if(err.response.data.message == "user not found"){
+    else if(err.response.data.isUser === true){
       alert(err.response.data.message);
       navigate("/resgister");
     }
     else{
       alert(err.response.data.message); 
     }
-    console.log(err); 
     
   }
 
@@ -160,7 +162,7 @@ function Login() {
             <Box
               sx={{
                 display: "flex",
-                justifyContent: "center",
+                justifyContent: "space-between",
                 alignItems: "center",
                 //gap: "8px",
                 mt: 3,
@@ -178,7 +180,7 @@ function Login() {
               >
                 Forget Password
               </Typography>
-              
+              <Box>
               <Typography variant="body2" color="text.secondary">
                 Don't have an account?
               </Typography>
@@ -194,6 +196,8 @@ function Login() {
               >
                 Sign Up
               </Typography>
+              </Box>
+              
             </Box>
           </AuthCard>
         } 

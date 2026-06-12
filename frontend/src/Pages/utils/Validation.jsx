@@ -22,9 +22,9 @@ export const validatePassword = (password) => {
     if (!password) return "Password is required";
     const valid = 
     password.length >= 8 &&
-    /[a-z]/.test(password) ||
-    /[A-Z]/.test(password) ||
-    /[0-9]/.test(password) ||
+    /[a-z]/.test(password) &&
+    /[A-Z]/.test(password) &&
+    /[0-9]/.test(password) &&
     /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
     return valid ? 
@@ -35,9 +35,9 @@ export const validateConfirmPassword = (confirmpassword) => {
     if (!confirmpassword) return "Password is required";
     const valid = 
     confirmpassword.length >= 8 &&
-    /[a-z]/.test(confirmpassword) ||
-    /[A-Z]/.test(confirmpassword) ||
-    /[0-9]/.test(confirmpassword) ||
+    /[a-z]/.test(confirmpassword) &&
+    /[A-Z]/.test(confirmpassword) &&
+    /[0-9]/.test(confirmpassword) &&
     /[!@#$%^&*(),.?":{}|<>]/.test(confirmpassword);
 
     return valid ? 
@@ -74,34 +74,28 @@ export const PasswordField = ({
 
   return (
     <TextField
-      {...props}
-      fullWidth
-      label={label}
-      value={value}
-      onChange={onChange}
-      type={showPassword ? "text" : "password"}
-      margin="normal"
-      slotProps={{
-        input: {
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                onClick={() =>
-                  setShowPassword(!showPassword)
-                }
-                edge="end"
-              >
-                {showPassword ? (
-                  <VisibilityOff />
-                ) : (
-                  <Visibility />
-                )}
-              </IconButton>
-            </InputAdornment>
-          ),
-        },
-      }}
-    />
+  {...props}
+  fullWidth
+  label={label}
+  value={value}
+  onChange={onChange}
+  type={showPassword ? "text" : "password"}
+  margin="normal"
+  slotProps={{
+    input: {
+      endAdornment: (
+        <InputAdornment position="end">
+          <IconButton
+            onClick={() => setShowPassword(!showPassword)}
+            edge="end"
+          >
+            {showPassword ? <VisibilityOff /> : <Visibility />}
+          </IconButton>
+        </InputAdornment>
+      ),
+    }
+  }}
+/>
+
   );
 };
-

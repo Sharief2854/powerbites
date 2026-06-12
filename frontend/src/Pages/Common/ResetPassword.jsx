@@ -103,6 +103,7 @@ import AuthCard from "./AuthCard";
 import { useNavigate, useParams } from "react-router-dom";
 import MainAuthCard from "./MainAuthCard";
 import axios from "axios";
+import api from "../../api/axiosConfig";
 
 function ResetPassword() {
   const [formData, setFormData] = useState({
@@ -141,13 +142,13 @@ function ResetPassword() {
       return alert("Confirm password must match the password.");
     }
     let password = formData.password;
-    let res = await axios.post(`http://localhost:4500/resetPass/resetpassword/${userId}`,{password});
+    let response = await api.post(`http://localhost:4500/resetPass/resetpassword/${userId}`,{password});
 
-    console.log("res data :",res.data)
+    console.log("res data :",response.data)
 
     console.log("Password Update Request Payload:", formData);
-    if(res.status != 200){
-      return alert(res.data.message);
+    if(response.status != 200){
+      return alert(response.data.message);
     }
     alert("Password updated successfully!");
 
@@ -161,7 +162,8 @@ function ResetPassword() {
     navigate("/login");
   }
   catch(err){
-    console.log(err.message);
+    console.log(err.response.data.message);
+    alert(err.response.data.message)
   }
   };
 

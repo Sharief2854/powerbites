@@ -1,34 +1,34 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import React from "react";
 
-function AuthCard({ title, children }) {
+function AuthCard({ title, children, sx }) {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        p: 2,
+        width: "100%",
       }}
     >
       <Card
         sx={{
           width: "100%",
-          maxWidth: 450,
+          maxWidth: 350,
           borderRadius: 3,
           boxShadow: 5,
+          ...sx
         }}
       >
         <CardContent
           sx={{
-            p: { xs: 2, sm: 3 },
+            p: { xs: 1, sm: 2 },
           }}
         >
           <Typography 
           variant="h4" 
           align="center" 
-          gutterBottom
+          
           >
             {title}
         </Typography>

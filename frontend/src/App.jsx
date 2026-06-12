@@ -2,9 +2,9 @@
 //import './App.css'
 
 import { Box } from "@mui/material"
-import Register from "./pages/Common/Register"
-import Login from "./pages/Common/Login"
-import VerifyOtp from "./pages/Common/VerifyOtp"
+import Register from "./Pages/Common/Register"
+import Login from "./Pages/Common/Login"
+import VerifyOtp from "./Pages/Common/VerifyOtp"
 import { BrowserRouter,Routes,Route } from "react-router-dom";
 import MainAuthCard from "./Pages/Common/MainAuthCard";
 import ForgotPassword from "./Pages/Common/ForgetPassword";
@@ -20,8 +20,7 @@ function App() {
 
   return (
     <Box>
-      <BrowserRouter>
-
+        <BrowserRouter>
       <Routes>
         <Route path ="/" element={<LandingPage/>}>
         <Route path ="/register" element={<Register/>}/>
@@ -35,8 +34,7 @@ function App() {
         <Route path = "/userdetails" element={<UserDetails/>}/>
         </Route>
       </Routes>
-      
-      </BrowserRouter>
+    </BrowserRouter>
      
     </Box>
   )

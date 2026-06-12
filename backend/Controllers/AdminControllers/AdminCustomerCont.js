@@ -4,14 +4,15 @@ const userModel = require("../../Model/userModel");
 
 async function getCustomers(req, res) {
     try {
-        let customers = await userModel.find({}).select("-password");
+
+        let customers = await userModel.find({role : "customer"}).select("-password");
         if (!customers) {
             return res.status(404).json({
                 message: "No customers found",
             });
         }
 
-        res.json(customers)
+        res.status(200).json(customers)
 
         console.log(customers);
 
