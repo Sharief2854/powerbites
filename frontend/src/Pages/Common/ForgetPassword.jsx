@@ -124,6 +124,7 @@ import AuthCard from "./AuthCard";
 import MainAuthCard from "./MainAuthCard";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import api from "../../api/axiosConfig";
 //import MailOutlineIcon from '@mui/icons-material/MailOutline'; // Optional: run `npm install @mui/icons-material` if you haven't
 
 function ForgotPassword() {
@@ -148,7 +149,7 @@ function ForgotPassword() {
 
     console.log("Sending recovery link to:", email);
     // TODO: Integrate your actual Password Reset API endpoint here
-    let response = await axios.post("http://localhost:4500/resetPass/forgotpassword",{email});
+    let response = await api.post("http://localhost:4500/resetPass/forgotpassword",{email});
 
     console.log("res data :",response.data)
     // Toggle success state to show a beautiful success confirmation
