@@ -28,14 +28,16 @@ function CustomerProfile() {
     const formData = new FormData();
     formData.append("photo", file);
 
+// if (file) {
+//       setImage(URL.createObjectURL(file));
+//     }    
     try {
       const response = await api.post(
-        "/updateCustomerProfile/uploadPhoto/6a2a987342fbcdfda0a5c5ab",
+        "/updateCustomerProfile/uploadPhoto/6a2a987342fbcdfda0a5c5ad",
         formData,
       );
 
       console.log(response.data);
-      setImage(response.data.photo);
     } catch (error) {
       console.log(error);
     }
