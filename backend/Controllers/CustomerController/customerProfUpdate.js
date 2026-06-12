@@ -5,7 +5,7 @@ const addressModel = require("../../Model/addressModel");
 
 async function updateCustomerProfile(req, res) {
     try {
-        let userId = req.userId; 
+        let userId = req.userId;
 
         console.log("User ID from token:", userId);
 
@@ -16,6 +16,13 @@ async function updateCustomerProfile(req, res) {
         }
 
         let { name, password, phone } = req.body;
+        
+        if (!name && !password && !phone) {
+            return res.status(400).json({
+                message: "All fields are required"
+            });
+        }
+
 
         const user = await userModel.findById(userId);
 
@@ -32,19 +39,19 @@ async function updateCustomerProfile(req, res) {
             return res.status(403).json({
                 message: "Customer access only",
             });
-        }   
-        
+        }
 
-        if(name){
+
+        if (name) {
             user.name = name;
-        } 
-        if(password){
+        }
+        if (password) {
             user.password = password;
-        } 
-        if(phone){
+        }
+        if (phone) {
             user.phone = phone;
         }
-        
+
         await user.save();
 
         res.status(200).json({
@@ -67,7 +74,7 @@ async function updateCustomerProfile(req, res) {
 async function deleteCustomerProfile(req, res) {
     try {
 
-        let userId = req.userId; 
+        let userId = req.userId;
         console.log("User ID from token:", userId);
 
         if (!userId) {
@@ -75,14 +82,14 @@ async function deleteCustomerProfile(req, res) {
                 message: "Unauthorized: User ID missing in token"
             });
         }
-        
-       let result = await userModel.findByIdAndDelete(userId);
 
-       if(!result){
-        return res.status(404).json({
-            message: "User not found",
-        });
-       }
+        let result = await userModel.findByIdAndDelete(userId);
+
+        if (!result) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
 
         res.status(200).json({
             message: "Profile deleted successfully",
@@ -97,86 +104,86 @@ async function deleteCustomerProfile(req, res) {
 };
 
 async function addingAddress(req, res) {
-     try {
-            let userId = req.userId; 
-            console.log("User ID from token:", userId);
-    
-            if (!userId) {
-                return res.status(401).json({
-                    message: "Unauthorized: User ID missing in token"
-                });
-            }
-    
-              let { label, street, city, state, pincode } = req.body;
-    
+    try {
+        let userId = req.userId;
+        console.log("User ID from token:", userId);
+
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized: User ID missing in token"
+            });
+        }
+
+        let { label, street, city, state, pincode } = req.body;
+
         if (!label || !street || !city || !state || !pincode) {
-          return res.status(400).json({
-            message: "All address fields are required"
-          });
-        }
-    
-            const user = await addressModel.create({
-                    userId,
-                    label,
-                    street,
-                    city,
-                    state,
-                    pincode
-            });
-    
-            if (!user) {
-                return res.status(404).json({
-                    message: "User not found",
-                });
-            }   
-            res.status(200).json({
-                message: "Address added successfully",
-                address: user.address
-            });
-        }catch (error) {
-            res.status(500).json({
-                message: "Internal Server Error",
-                error: error.message
+            return res.status(400).json({
+                message: "All address fields are required"
             });
         }
+
+        const user = await addressModel.create({
+            userId,
+            label,
+            street,
+            city,
+            state,
+            pincode
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+        res.status(200).json({
+            message: "Address added successfully",
+            address: user.address
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
 };
 
 async function deleteAddress(req, res) {
-     try {
-            let userId = req.userId; 
-            console.log("User ID from token:", userId);
-    
-            if (!userId) {
-                return res.status(401).json({
-                    message: "Unauthorized: User ID missing in token"
-                });
-            }
-    
-            let addressId = req.params.id;  
-            let result = await addressModel.findOneAndDelete({ _id: addressId, userId });
-    
-            if (!result) {
-                return res  .status(404).json({
-                    message: "Address not found or does not belong to user",
-                });
-            }       
-            res.status(200).json({
-                message: "Address deleted successfully",
-            });
-        }catch (error) {         
-            res.status(500).json({
-                message: "Internal Server Error",
-                error: error.message
+    try {
+        let userId = req.userId;
+        console.log("User ID from token:", userId);
+
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized: User ID missing in token"
             });
         }
+
+        let addressId = req.params.id;
+        let result = await addressModel.findOneAndDelete({ _id: addressId, userId });
+
+        if (!result) {
+            return res.status(404).json({
+                message: "Address not found or does not belong to user",
+            });
+        }
+        res.status(200).json({
+            message: "Address deleted successfully",
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
 };
 
 async function updateAddress(req, res) {
     try {
-        let userId = req.userId; 
+        let userId = req.userId;
         console.log("User ID from token:", userId);
 
-        if (!userId) {  
+        if (!userId) {
             return res.status(401).json({
                 message: "Unauthorized: User ID missing in token"
             });
@@ -185,7 +192,7 @@ async function updateAddress(req, res) {
         let { label, street, city, state, pincode } = req.body;
         const address = await addressModel.findOne({ _id: addressId, userId });
 
-        if (!address) { 
+        if (!address) {
             return res.status(404).json({
                 message: "Address not found or does not belong to user",
             });
@@ -198,20 +205,20 @@ async function updateAddress(req, res) {
         }
         if (city) {
             address.city = city;
-        }   
+        }
         if (state) {
             address.state = state;
         }
         if (pincode) {
             address.pincode = pincode;
-        }   
+        }
         await address.save();
 
         res.status(200).json({
             message: "Address updated successfully",
             address: address
         });
-    }catch (error) {
+    } catch (error) {
         res.status(500).json({
             message: "Internal Server Error",
             error: error.message
@@ -227,4 +234,3 @@ module.exports = {
     deleteAddress,
     updateAddress
 }
-    
