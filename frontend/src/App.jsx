@@ -11,7 +11,7 @@ import ForgotPassword from "./Pages/Common/ForgetPassword";
 import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
 import Home from "./Pages/Common/Home";
-import DashboardLayout from "./Pages/Admin/Dashboard";
+import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
 
 
 function App() {
@@ -20,7 +20,7 @@ function App() {
     <Box>
         <BrowserRouter>
       <Routes>
-        <Route path="/reg" element={<Register />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/verifyOtp/:id" element={<VerifyOtp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forget" element={<ForgotPassword />} />
