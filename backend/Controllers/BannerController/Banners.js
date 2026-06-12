@@ -111,6 +111,49 @@ async function updateBanner(req,res){
     }
 }
 
+async function bannerStatus(req,res){
+    try{
+        let id = req.params.id;
+        let status = req.body.status;
+        if(!status){
+            return res.status(400).json({
+                message:"Status is required"
+            })
+        }
+        let banner = await bannerModel.findById(id);
+
+        if(!banner){
+            return res.status(404).json({
+                message:"Banner not found"
+            })
+        }
+        if(banner.status === status){
+            return res.status(400).json({
+                message:`Banner is already in this ${banner.status} status`
+            })
+        }
+
+        let result = await bannerModel.findByIdAndUpdate(id,{status},{new:true, runValidators:true})
+
+        if(!result){
+            return res.status(400).json({
+                message:"Something went wrong while updating the status"
+            })
+
+        }
+
+        res.status(200).json({
+            message:"Status updated successfully",
+            result
+        })
+
+       
+    }
+    catch(err){
+
+    }
+}
 
 
-module.exports = { allBanners, setBanner, deleteBanner, updateBanner };
+
+module.exports = { allBanners, setBanner, deleteBanner, updateBanner, bannerStatus};
