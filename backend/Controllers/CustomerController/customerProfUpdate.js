@@ -109,12 +109,12 @@ async function deleteCustomerProfile(req, res) {
 async function getCustomerProfile(req, res) {
     try {
         let userId = req.userId;
-        console.log("User ID from token:", userId); 
+        console.log("User ID from token:", userId);
         if (!userId) {
             return res.status(401).json({
                 message: "Unauthorized: User ID missing in token"
             });
-        }   
+        }
         const user = await userModel.findById(userId).select("-password");
         if (!user) {
             return res.status(404).json({
@@ -137,36 +137,36 @@ async function getCustomerProfile(req, res) {
 async function postCustomerPhoto(req, res) {
     try {
         let userId = req.userId;
-        console.log("User ID from token:", userId); 
+        console.log("User ID from token:", userId);
         if (!userId) {
             return res.status(401).json({
                 message: "Unauthorized: User ID missing in token"
             });
-         }
+        }
         if (!req.file) {
             return res.status(400).json({
-                message: "Validation Error: Please select an image file to upload."          
+                message: "Validation Error: Please select an image file to upload."
             });
         }
         console.log("File received:", req.file);
 
         const rawpath = req.file.path;
-        
-            
+
+
         const usefullUrl = rawpath.replace(/\\/g, "/");
 
         const newPhoto = new photoModel
-        ({
-            userId,
-            url: usefullUrl
-        });
+            ({
+                userId,
+                url: usefullUrl
+            });
         await newPhoto.save();
         res.status(201).json({
             message: "Photo uploaded successfully",
             photo: newPhoto
         });
     } catch (error) {
-        console.error("Error uploading photo:", error); 
+        console.error("Error uploading photo:", error);
         res.status(500).json({
             message: "Internal server error"
         });
@@ -184,12 +184,12 @@ async function updateCustomerPhoto(req, res) {
             });
         }
         if (!req.file) {
-            return res.status(400).json({   
+            return res.status(400).json({
                 message: "Validation Error: Please select an image file to upload."
             });
         }
         console.log("File received:", req.file);
-        const rawpath = req.file.path;  
+        const rawpath = req.file.path;
         const usefullUrl = rawpath.replace(/\\/g, "/");
         const photo = await photoModel.findOne({ userId });
         if (!photo) {
@@ -230,70 +230,86 @@ async function addingAddress(req, res) {
             });
         }
 
-        let { label, street, city, state, pincode } = req.body;
-
-        if (!label || !street || !city || !state || !pincode) {
+        let { label, street, city, state, pincode, country } = req.body;
+        if (!label || !street || !city || !state || !pincode || !country) {
             return res.status(400).json({
-                message: "All address fields are required"
+                message: "All fields are required"
             });
-        }
-
-        const user = await addressModel.create({
+        }       
+        const count = await addressModel.countDocuments({ userId });
+        const newAddress = new addressModel({
             userId,
             label,
             street,
-            city,
+            city,   
             state,
-            pincode
+            pincode,
+            country,
+            isDefault: count === 0 ? true : false
         });
+        await newAddress.save();
 
-        if (!user) {
-            return res.status(404).json({
-                message: "User not found",
-            });
-        }
-        res.status(200).json({
+        if (count > 0) {
+            await addressModel.updateMany(
+                { userId, _id: { $ne: newAddress._id } },
+                { $set: { isDefault: false } }
+            );
+        }                   
+        res.status(201).json({
             message: "Address added successfully",
-            address: user.address
+            address: newAddress
         });
     } catch (error) {
+        console.error("Error adding address:", error);
         res.status(500).json({
-            message: "Internal Server Error",
-            error: error.message
+            message: "Internal server error"
         });
-    }
+    }   
 };
 
 // Customer delete address management controller functions
 async function deleteAddress(req, res) {
     try {
         let userId = req.userId;
-        console.log("User ID from token:", userId);
 
         if (!userId) {
             return res.status(401).json({
-                message: "Unauthorized: User ID missing in token"
+                message: "Unauthorized"
             });
         }
 
         let addressId = req.params.id;
-        let result = await addressModel.findOneAndDelete({ _id: addressId, userId });
+
+        const result = await addressModel.findOneAndDelete({
+            _id: addressId,
+            userId
+        });
 
         if (!result) {
             return res.status(404).json({
-                message: "Address not found or does not belong to user",
+                message: "Address not found"
             });
         }
-        res.status(200).json({
-            message: "Address deleted successfully",
+        if (result.isDefault) {
+            const anotherAddress = await addressModel.findOne({ userId });
+
+            if (anotherAddress) {
+                anotherAddress.isDefault = true;
+                await anotherAddress.save();
+            }
+        }
+
+        return res.json({
+            message: "Address deleted successfully"
         });
+
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             message: "Internal Server Error",
             error: error.message
         });
     }
-};
+}
 
 // Customer update address management controller functions
 async function updateAddress(req, res) {
@@ -342,7 +358,7 @@ async function updateAddress(req, res) {
             error: error.message
         });
     }
-}
+};
 
 
 module.exports = {
@@ -353,5 +369,6 @@ module.exports = {
     updateAddress,
     getCustomerProfile,
     postCustomerPhoto,
-    updateCustomerPhoto
+    updateCustomerPhoto,
+    
 }
