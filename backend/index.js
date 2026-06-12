@@ -32,7 +32,7 @@ app.use("/resetPass",ResetRouter)
 // Admin routes CRUD opertions with authentication middleware
 app.use("/crudAdmin",isAdmin,adminRouter)
 app.use("/cart",CartRouter)
-app.use("/banner",bannerRouter)
+app.use("/banner",isAdmin,bannerRouter)
 
 // Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter) 

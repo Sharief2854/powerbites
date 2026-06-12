@@ -10,6 +10,7 @@ import AuthCard from "./AuthCard";
 import { useNavigate, useParams } from "react-router-dom";
 import MainAuthCard from "./MainAuthCard";
 import axios from "axios";
+import api from "../../api/axiosConfig";
 function ForgotVerifyOtp() {
   const [otp, setotp] = useState("");
   const [error, setError] = useState("");
@@ -37,7 +38,7 @@ function ForgotVerifyOtp() {
       return;
     }
     //let otp = otp;
-    let res = await axios.post(`http://localhost:4500/resetPass/verifyOtp/${userId}`,{otp});
+    let res = await api.post(`http://localhost:4500/resetPass/verifyOtp/${userId}`,{otp});
 
     console.log("res data :",res.data)
 

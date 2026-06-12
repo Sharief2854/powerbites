@@ -1,51 +1,3 @@
-// import { Box, Button, TextField } from '@mui/material'
-// import React, { useState } from 'react'
-// import AuthCard from './AuthCard'
-// import Login from './Login';
-// import { validateOtp } from '../utils/Validation';
-// import { useNavigate } from 'react-router-dom';
-
-
-// function VerifyOtp({verOtp}) {
-
-//     const [showOtp,setShowOtp] = useState(false);
-//     const[otp,setOtp] =useState("");
-//     const navigate = useNavigate();
-
-//     const otpError = otp ? validateOtp(otp):"";
-
-//     const handleSubmit = (event) => {
-//         event.preventDefault();
-//         console.log("otp :",otp,"types",typeof otp);
-//         console.log("verOtp :",verOtp,"verotp type",typeof verOtp);
-//         if(verOtp !== Number(otp)){
-//            alert("Otp Not match");
-//            setShowOtp(false)
-//            return "";
-//         }
-//          setShowOtp(true)
-//         console.log("otp success",otp)
-//         navigate("/login");
-        
-        
-//     }
-
-
-//   return (
-//    <Box>
-//     <AuthCard title="Verify OTP">
-//         <Box component='form' onSubmit={handleSubmit}>
-//             <TextField fullWidth label="OTP" name="otp" value={otp} onChange={(e)=>setOtp(e.target.value)} error={!!otp}  autoComplete="otp" margin="normal" />
-//             <Button type="submit" fullWidth variant="contained" sx={{ mt: 2 }}>Verify</Button>
-//         </Box>
-//     </AuthCard>
-//    </Box>
-//   )
-// }
-
-// export default VerifyOtp
-
-
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -58,6 +10,7 @@ import AuthCard from "./AuthCard";
 import { useNavigate, useParams } from "react-router-dom";
 import MainAuthCard from "./MainAuthCard";
 import axios from "axios";
+import api from "../../api/axiosConfig";
 
 function VerifyOtp() {
   const [otp, setOtp] = useState("");
@@ -75,7 +28,7 @@ function VerifyOtp() {
     console.log("Entered otp:", otp, "type:", typeof otp);
     console.log("Expected verOtp:", verOtp, "type:", typeof verOtp);
 
-    let res = await axios.post(`http://localhost:4500/auth/verifyOtp/${userId}`,{otp});
+    let res = await api.post(`http://localhost:4500/auth/verifyOtp/${userId}`,{otp});
     
     console.log("res data :",res.data)
     if (res.data.message !== "OTP verified successfully") {
