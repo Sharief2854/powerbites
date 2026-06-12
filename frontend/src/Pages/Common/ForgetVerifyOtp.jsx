@@ -1,11 +1,17 @@
-import React, { useState } from "react";
-import { Box, Button, Paper, TextField, Typography } from "@mui/material";
-//import PasswordChange from "./PasswordChange";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Button,
+  Typography,
+  TextField,
+} from "@mui/material";
+import { validateOtp } from "../utils/Validation";
+import AuthCard from "./AuthCard";
 import { useNavigate, useParams } from "react-router-dom";
-
+import MainAuthCard from "./MainAuthCard";
+import axios from "axios";
 function ForgotVerifyOtp() {
-  const [enteredOtp, setEnteredOtp] = useState("");
+  const [otp, setotp] = useState("");
   const [error, setError] = useState("");
   const [verified, setVerified] = useState(false);
   const navigate = useNavigate();
@@ -13,18 +19,24 @@ function ForgotVerifyOtp() {
 
   const handleChange = (e) => {
     const value = e.target.value.replace(/\D/g, "").slice(0, 4);
-    setEnteredOtp(value);
+    setotp(value);
     setError("");
   };
+
+
+   const otpError = otp ? validateOtp(otp) : "";
+
+    // Evaluates to true only if OTP is typed and contains zero validation errors
+    const isFormValid = otp && !otpError;
 
   const handleSubmit = async(e) => {
     e.preventDefault();
     try{
-    if (enteredOtp.length !== 4) {
+    if (otp.length !== 4) {
       setError("Please enter 4-digit OTP");
       return;
     }
-    let otp = enteredOtp;
+    //let otp = otp;
     let res = await axios.post(`http://localhost:4500/resetPass/verifyOtp/${userId}`,{otp});
 
     console.log("res data :",res.data)
@@ -39,98 +51,109 @@ function ForgotVerifyOtp() {
   }
   catch(err){
     console.log(err);
+    alert(err.response.data.message);
   }
   };
 
 
 
   return (
-    <Box
+   <Box
       sx={{
-        minHeight: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        px: 2,
-        py: 4,
-        backgroundColor: "#f5f5f5",
+        minHeight: "100vh", // Complete dynamic viewport coverage
+        p: 2,
+        background: "linear-gradient(135deg, #3654F4 0%, #4A1BF1 40%, #3C1A77 100%)",
+        boxShadow: "inset 0px 4px 20px rgba(74, 27, 241, 0.3)",
       }}
     >
-      <Paper
-        elevation={3}
-        sx={{
-          width: "100%",
-          maxWidth: { xs: "100%", sm: 420 },
-          p: { xs: 3, sm: 4 },
-          borderRadius: 3,
-        }}
-      >
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 3,
-          }}
-        >
-          <Typography
-            variant="h5"
+      <MainAuthCard
+        leftContent={
+          <Box
             sx={{
-              textAlign: "center",
-              fontWeight: 600,
-              fontSize: { xs: "1.4rem", sm: "1.8rem" },
+               maxWidth: 350,
+              width: "100%",
+              height: "100%", 
+              flex: 1, // Tells the box to grow and fill the parent flex container
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 1.5,
             }}
           >
-            Verify OTP
-          </Typography>
-
-          <Typography
-            variant="body2"
+            <Typography variant="h4" fontWeight="bold">PowerBites</Typography>
+            <Typography variant="h6">Welcome to PowerBites</Typography>
+          </Box>
+        }
+        rightContent={
+          <AuthCard
+            title="Verify OTP"
             sx={{
-              textAlign: "center",
-              color: "text.secondary",
+              width: "100%",
+              boxShadow: "none",
+              bgcolor: "transparent",
             }}
           >
-            Enter your 4-digit OTP
-          </Typography>
+            <Box component="form" onSubmit={handleSubmit} noValidate>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                A verification code has been generated. Please enter it below to verify your account.
+              </Typography>
 
-          <TextField
-            fullWidth
-            value={enteredOtp}
-            onChange={handleChange}
-            label="Enter OTP"
-            inputProps={{
-              maxLength: 4,
-              inputMode: "numeric",
-              pattern: "[0-9]*",
-              style: {
-                textAlign: "center",
-                fontSize: "1.3rem",
-                letterSpacing: "10px",
-              },
-            }}
-          />
+              <TextField
+                fullWidth
+                label="Enter OTP"
+                name="otp"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                error={!!otpError} // FIX: Changed from !!otp so it doesn't stay red continuously
+                helperText={otpError} // Displays your custom validation message
+                autoComplete="one-time-code"
+                margin="normal"
+                slotProps={{ htmlInput: { maxLength: 6 } }} // Limits standard input length if needed
+              />
 
-          {error && (
-            <Typography color="error" textAlign="center">
-              {error}
-            </Typography>
-          )}
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={!isFormValid} // Safe button lockout if checks fail
+                sx={{ mt: 3, py: 1.2, fontWeight: "bold" }}
+              >
+                Verify
+              </Button>
+            </Box>
 
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            sx={{
-              py: 1.2,
-              textTransform: "none",
-            }}
-          >
-            Verify OTP
-          </Button>
-        </Box>
-      </Paper>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "8px",
+                mt: 3,
+              }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                Back to sign up?
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#4A1BF1",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  "&:hover": { textDecoration: "underline" },
+                }}
+                onClick={() => navigate("/register")} // Safely fall back if they want to escape
+              >
+                Register
+              </Typography>
+            </Box>
+          </AuthCard>
+        }
+      />
     </Box>
   );
 }
