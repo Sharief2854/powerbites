@@ -72,7 +72,7 @@ function Login() {
     }
     else if(err.response.data.isUser === true){
       alert(err.response.data.message);
-      navigate("/");
+      navigate("/resgister");
     }
     else{
       alert(err.response.data.message); 

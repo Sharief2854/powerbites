@@ -11,7 +11,9 @@ import ForgotPassword from "./Pages/Common/ForgetPassword";
 import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
 import Home from "./Pages/Common/Home";
-import DashboardLayout from "./Pages/Admin/Dashboard";
+import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
+import LandingPage from "./Pages/Common/LandingPage";
+
 
 
 function App() {
@@ -20,15 +22,17 @@ function App() {
     <Box>
         <BrowserRouter>
       <Routes>
-        <Route path="/reg" element={<Register />} />
-        <Route path="/verifyOtp/:id" element={<VerifyOtp />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/forget" element={<ForgotPassword />} />
-        <Route path="/resetpassword/:id" element={<ResetPassword />} />
-        <Route path="/forgetverifyOtp/:id" element={<ForgotVerifyOtp />} />
-        <Route path="/auth" element={<MainAuthCard />} />
-        <Route path="/home" element={<Home />} />
-       <Route path="/" element ={<DashboardLayout/>} />
+        <Route path ="/" element={<LandingPage/>}>
+        <Route path ="/register" element={<Register/>}/>
+        <Route path ="/verifyOtp/:id" element={<VerifyOtp/>}/>
+        <Route path ="/login" element={<Login/>}/>
+        <Route path ="/forget" element={<ForgotPassword/>}/>
+        <Route path ="/resetpassword/:id" element={<ResetPassword/>}/>
+        <Route path ="/forgetverifyOtp/:id" element={<ForgotVerifyOtp/>}/>
+        <Route path ="/auth" element={<MainAuthCard/>}/>
+        <Route path ="/home" element={<Home/>}/>
+        <Route path = "/userdetails" element={<UserDetails/>}/>
+        </Route>
       </Routes>
     </BrowserRouter>
      
