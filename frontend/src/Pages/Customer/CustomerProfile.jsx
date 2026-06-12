@@ -32,17 +32,19 @@ function CustomerProfile() {
 //       setImage(URL.createObjectURL(file));
 //     }    
     try {
-      const response = await api.post(
-        "/updateCustomerProfile/uploadPhoto/6a2a987342fbcdfda0a5c5ad",
+        let id = "6a2a987342fbcdfda0a5c5b0";
+      const response = await api.put(
+        `/updateCustomerProfile/updatePhoto/6a2a987342fbcdfda0a5c5b0`,
         formData,
       );
 
       console.log(response.data);
+      setImage(response.data.photo);
     } catch (error) {
       console.log(error);
-    }
+    // }
   };
-
+  }
   return (
     <Box>
       <CustomerCard>
