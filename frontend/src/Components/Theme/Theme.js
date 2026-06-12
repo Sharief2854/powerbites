@@ -5,21 +5,21 @@ export const theme = createTheme({
     palette: {
       dark: {
         primary: {
-          main: "rgb(23, 140, 163)",
+          main: "#3E1A89",
           contrastText: "#fff",
         },
         secondary: {
           main: "rgb(255, 255, 255)",
-          contrastText: "rgb(23, 140, 163)",
+          contrastText: "#3E1A89",
         },
       },
       light: {
         primary: {
           main: "rgb(255, 255, 255)",
-          contrastText: "rgb(23, 140, 163)",
+          contrastText: "#3E1A89",
         },
         secondary: {
-          main: "rgb(23, 140, 163)",
+          main: "#3E1A89",
           contrastText: "#fff",
         },
       },
