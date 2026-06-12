@@ -147,7 +147,7 @@ export default function Products() {
     submissionData.append("stock", productData.stock);
 
     photo.forEach((file) => {
-      submissionData.append("photo", file);
+      submissionData.append("image", file);
     });
     submissionData.forEach((value, key) => {
       console.log(key, value);

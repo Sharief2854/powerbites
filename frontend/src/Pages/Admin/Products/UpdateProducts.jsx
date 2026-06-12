@@ -121,19 +121,17 @@ function removeExisting(index) {
   );
 
   selectedFile.forEach((file) => {
-    formData.append("photo", file);
+    formData.append("image", file);
   });
 
   try {
-    // let response = await axios.put(
-    //   `http://localhost:4500/product/updateProduct/${product._id}`,
-    //   formData,
-    //   header
-    // );
+    let response = await axios.put(
+      `http://localhost:4500/product/updateProduct/${product._id}`,
+      formData,
+      header
+    );
 
-    dispatch(updateProduct(productData
-      // response.data.products
-    ));
+    dispatch(updateProduct(response.data.products));
     enqueueSnackbar("Product updated successfully", { variant: "success" ,anchorOrigin:{vertical:'top',horizontal:'right'}});
   } catch (error) {
     enqueueSnackbar("Failed to update", { variant: "error" });
