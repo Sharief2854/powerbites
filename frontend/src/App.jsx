@@ -53,8 +53,7 @@ function App() {
 
         <Route path ="/customer" element={<ProtectedRoutes role="customer"><CustomerDashboard/></ProtectedRoutes>}>
         <Route path="/customer/users" element={<UserDetails/>}/>
-        <Route path="/customer/products" element={<AdminProducts/>}/>
-        <Route path="/customer/products/updateProduct/:id" element={<UpdateProducts/>}/>
+        <Route path="/customer/profile" element={<CustomerProfile/>}/>
         </Route>
       </Routes>
       
