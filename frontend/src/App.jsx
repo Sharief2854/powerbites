@@ -1,6 +1,3 @@
-
-//import './App.css'
-
 import { Box } from "@mui/material"
 import Register from "./Pages/Common/Register"
 import Login from "./Pages/Common/Login"
@@ -13,7 +10,8 @@ import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
 import Home from "./Pages/Common/Home";
 import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
 import LandingPage from "./Pages/Common/LandingPage";
-
+import Products from "./Pages/Admin/Products/Products";
+import UpdateProducts from "./Pages/Admin/Products/UpdateProducts";
 
 
 function App() {
@@ -22,7 +20,6 @@ function App() {
     <Box>
         <BrowserRouter>
       <Routes>
-        <Route path ="/" element={<LandingPage/>}>
         <Route path ="/register" element={<Register/>}/>
         <Route path ="/verifyOtp/:id" element={<VerifyOtp/>}/>
         <Route path ="/login" element={<Login/>}/>
@@ -31,11 +28,16 @@ function App() {
         <Route path ="/forgetverifyOtp/:id" element={<ForgotVerifyOtp/>}/>
         <Route path ="/auth" element={<MainAuthCard/>}/>
         <Route path ="/home" element={<Home/>}/>
-        <Route path = "/userdetails" element={<UserDetails/>}/>
+
+
+        <Route path ="/admin" element={<Home/>}>
+        <Route path="admin/products" element={<Products/>}/>
+        <Route path="admin/products/updateProduct/:id" element={<UpdateProducts/>}/>
         </Route>
+
       </Routes>
-    </BrowserRouter>
-     
+      
+      </BrowserRouter>
     </Box>
   )
 }
