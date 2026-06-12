@@ -10,10 +10,14 @@ const adminRouter = require("./Routes/admin/adminCRUD");
 const isAdmin = require('./MiddleWare/adminAuth');
 const CartRouter = require('./Routes/Cart/cartRouter');
 const bannerRouter = require('./Routes/Banner/bannerRoutes');
+const multer = require('multer');
 
 
 const customerProfileRouter = require('./Routes/customer/customerProfile');
 const isCustomer = require('./MiddleWare/customerAuth');
+const upload = require('./config/multerConfig');
+
+
 ConnectDB()
 
 const app = express()
