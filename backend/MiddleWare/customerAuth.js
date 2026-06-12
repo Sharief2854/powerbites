@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 
 function isCustomer(req, res, next) {
 
-    console.log("Headers:", req.headers);
+    // console.log("Headers:", req.headers);
 
     let head = req.headers.authorization;
 
