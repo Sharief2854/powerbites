@@ -11,7 +11,7 @@ import ForgotPassword from "./Pages/Common/ForgetPassword";
 import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
 import Home from "./Pages/Common/Home";
-import DashboardLayout from "./Pages/Common/Dashboard";
+import DashboardLayout from "./Pages/Admin/Dashboard";
 
 
 function App() {

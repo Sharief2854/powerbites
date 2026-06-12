@@ -58,6 +58,7 @@ import AuthCard from "./AuthCard";
 import { useNavigate, useParams } from "react-router-dom";
 import MainAuthCard from "./MainAuthCard";
 import axios from "axios";
+import api from "../../api/axiosConfig";
 
 function VerifyOtp() {
   const [otp, setOtp] = useState("");
@@ -75,7 +76,7 @@ function VerifyOtp() {
     console.log("Entered otp:", otp, "type:", typeof otp);
     console.log("Expected verOtp:", verOtp, "type:", typeof verOtp);
 
-    let res = await axios.post(`http://localhost:4500/auth/verifyOtp/${userId}`,{otp});
+    let res = await api.post(`http://localhost:4500/auth/verifyOtp/${userId}`,{otp});
     
     console.log("res data :",res.data)
     if (res.data.message !== "OTP verified successfully") {
