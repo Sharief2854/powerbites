@@ -1,8 +1,9 @@
 const express = require("express");
 const userModel = require("../../Model/userModel");
 const addressModel = require("../../Model/addressModel");
+const photoModel = require("../../Model/photoModel");
 
-
+// Customer profile update controller functions
 async function updateCustomerProfile(req, res) {
     try {
         let userId = req.userId;
@@ -16,7 +17,7 @@ async function updateCustomerProfile(req, res) {
         }
 
         let { name, password, phone } = req.body;
-        
+
         if (!name && !password && !phone) {
             return res.status(400).json({
                 message: "All fields are required"
@@ -71,6 +72,7 @@ async function updateCustomerProfile(req, res) {
     }
 };
 
+// delete customer profile controller function
 async function deleteCustomerProfile(req, res) {
     try {
 
@@ -103,6 +105,120 @@ async function deleteCustomerProfile(req, res) {
     }
 };
 
+//get customer profile controller function
+async function getCustomerProfile(req, res) {
+    try {
+        let userId = req.userId;
+        console.log("User ID from token:", userId); 
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized: User ID missing in token"
+            });
+        }   
+        const user = await userModel.findById(userId).select("-password");
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+        res.status(200).json({
+            message: "Profile retrieved successfully",
+            user: user
+        });
+    } catch (error) {
+        console.error("Error fetching profile:", error);
+        res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+};
+
+// Customer photo upload controller functions
+async function postCustomerPhoto(req, res) {
+    try {
+        let userId = req.userId;
+        console.log("User ID from token:", userId); 
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized: User ID missing in token"
+            });
+         }
+        if (!req.file) {
+            return res.status(400).json({
+                message: "Validation Error: Please select an image file to upload."          
+            });
+        }
+        console.log("File received:", req.file);
+
+        const rawpath = req.file.path;
+        
+            
+        const usefullUrl = rawpath.replace(/\\/g, "/");
+
+        const newPhoto = new photoModel
+        ({
+            userId,
+            url: usefullUrl
+        });
+        await newPhoto.save();
+        res.status(201).json({
+            message: "Photo uploaded successfully",
+            photo: newPhoto
+        });
+    } catch (error) {
+        console.error("Error uploading photo:", error); 
+        res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+};
+
+// Customer photo update controller functions
+async function updateCustomerPhoto(req, res) {
+    try {
+        let userId = req.userId;
+        console.log("User ID from token:", userId);
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized: User ID missing in token"
+            });
+        }
+        if (!req.file) {
+            return res.status(400).json({   
+                message: "Validation Error: Please select an image file to upload."
+            });
+        }
+        console.log("File received:", req.file);
+        const rawpath = req.file.path;  
+        const usefullUrl = rawpath.replace(/\\/g, "/");
+        const photo = await photoModel.findOne({ userId });
+        if (!photo) {
+            const newPhoto = new photoModel({
+                userId,
+                url: usefullUrl
+            });
+            await newPhoto.save();
+            res.status(201).json({
+                message: "Photo updated successfully",
+                photo: newPhoto
+            });
+        } else {
+            photo.url = usefullUrl;
+            await photo.save();
+            res.status(200).json({
+                message: "Photo updated successfully",
+                photo: photo
+            });
+        }
+    } catch (error) {
+        console.error("Error updating photo:", error);
+        res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}
+
+// Customer adding address management controller functions
 async function addingAddress(req, res) {
     try {
         let userId = req.userId;
@@ -148,6 +264,7 @@ async function addingAddress(req, res) {
     }
 };
 
+// Customer delete address management controller functions
 async function deleteAddress(req, res) {
     try {
         let userId = req.userId;
@@ -178,6 +295,7 @@ async function deleteAddress(req, res) {
     }
 };
 
+// Customer update address management controller functions
 async function updateAddress(req, res) {
     try {
         let userId = req.userId;
@@ -232,5 +350,8 @@ module.exports = {
     deleteCustomerProfile,
     addingAddress,
     deleteAddress,
-    updateAddress
+    updateAddress,
+    getCustomerProfile,
+    postCustomerPhoto,
+    updateCustomerPhoto
 }

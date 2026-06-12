@@ -37,7 +37,15 @@ app.use("/banner",isAdmin,bannerRouter)
 // Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter) 
 
-
+// Global error handling middleware to catch Multer errors safely
+app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        return res.status(400).json({ 
+            message: `Multer Error: ${err.message}. Make sure your form-data key is named exactly "file".` 
+        });
+    }
+    next(err);
+});
 
 app.listen(4500,()=>{
     console.log("server is running on port 4500")
