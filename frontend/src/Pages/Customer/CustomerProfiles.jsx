@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   Avatar,
@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
+import AddIcon from "@mui/icons-material/Add";
 import CustomerCard from "./CustomerCard";
 import api from "../../api/axiosConfig";
 import { jwtDecode } from "jwt-decode";
@@ -22,25 +23,27 @@ function CustomerProfile({ onBack }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const [image, setImage] = useState("");
 
   // 1. Read individual profile and address payloads from Redux
-  const editProfile = useSelector((state) => state.editprofile.editprofile) || {};
-  const editAddress = useSelector((state) => state.editprofile.editaddress) || {};
+  const editProfile =
+    useSelector((state) => state.editprofile.editprofile) || {};
+  const editAddress =
+    useSelector((state) => state.editprofile.editaddress) || {};
 
   // Debugging: Check the structure of the incoming data
   console.log("Loaded Profile Data:", editProfile);
   console.log("Loaded Address Data:", editAddress);
 
   // 2. Extract profile fields from editProfile
-  const {
-    name = "",
-    email = "N/A",
-    phone = "N/A",
-    image = "",
-  } = editProfile;
+  const { name, email, phone } = editProfile;
+
+//   console.log("city :", editAddress[0].city);
+//   console.log("state :", editAddress.state);
+//   console.log("phone :", editProfile.phone);
 
   // 3. Extract address fields from editAddress (with fallback to editProfile if fields live there)
-const {label, street, city, state, country, pincode} = editAddress;
+  const { label, street, city, state, country, pincode } = editAddress;
 
   const firstletterName = name ? name.charAt(0).toUpperCase() : "U";
 
@@ -66,7 +69,7 @@ const {label, street, city, state, country, pincode} = editAddress;
 
       const response = await api.post(
         `/updateCustomerProfile/uploadPhoto/${id}`,
-        uploadData
+        uploadData,
       );
 
       const imagePath =
@@ -77,19 +80,54 @@ const {label, street, city, state, country, pincode} = editAddress;
         response.data?.photo?.path;
 
       if (imagePath) {
-        const cleanPath = imagePath ? imagePath.replace(/\\/g, "/").replace(/^\/+/, "") : "";
-        const finalImageUrl = cleanPath ? `http://localhost:4500/${cleanPath}` : "";
+        const cleanPath = imagePath
+          ? imagePath.replace(/\\/g, "/").replace(/^\/+/, "")
+          : "";
+        const finalImageUrl = cleanPath
+          ? `http://localhost:4500/${cleanPath}`
+          : "";
+        setImage(finalImageUrl);
 
         // Update Redux store with the new photo URL alongside existing data
-        dispatch(getEditProfile({ ...editProfile, image: finalImageUrl }));
+        // dispatch(getEditProfile({ ...editProfile, image: finalImageUrl }));
       }
     } catch (error) {
       console.error("Image upload failed:", error);
     }
   };
 
+  async function geteditProfile() {
+    try {
+      let response = await api.get("/updateCustomerProfile/getProfile");
+      console.log(response.data);
+      dispatch(getEditProfile(response.data.user));
+    } catch (err) {
+      console.log(err.response.data.message);
+    }
+  }
 
-  
+  async function getCustomerAddress() {
+    try {
+      let response = await api.get();
+    } catch (err) {
+      console.log(err.response.data.message);
+    }
+  }
+
+  async function HandleDelete(id) {
+    try {
+      let response = await api.delete(`/updateCustomerProfile/deleteAddress/${id}`);
+        console.log("response :",response.data)
+        
+    }
+    catch(err){
+        console.log(err.response.data.message)
+    }
+  }
+
+  useEffect(() => {
+    geteditProfile();
+  }, []);
 
   return (
     <Box
@@ -162,7 +200,11 @@ const {label, street, city, state, country, pincode} = editAddress;
               >
                 {name || "User Profile"}
               </Typography>
-              <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
+              <Typography
+                variant="body2"
+                color="textSecondary"
+                sx={{ mt: 0.5 }}
+              >
                 Review your active dashboard profile records.
               </Typography>
             </Box>
@@ -178,7 +220,11 @@ const {label, street, city, state, country, pincode} = editAddress;
 
           <Grid container spacing={2} sx={{ mb: 1 }}>
             <Grid item xs={12} md={6}>
-              <Typography variant="caption" color="textSecondary" display="block">
+              <Typography
+                variant="caption"
+                color="textSecondary"
+                display="block"
+              >
                 Full Name
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 500 }}>
@@ -187,7 +233,11 @@ const {label, street, city, state, country, pincode} = editAddress;
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <Typography variant="caption" color="textSecondary" display="block">
+              <Typography
+                variant="caption"
+                color="textSecondary"
+                display="block"
+              >
                 Email Address
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 500 }}>
@@ -196,7 +246,11 @@ const {label, street, city, state, country, pincode} = editAddress;
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <Typography variant="caption" color="textSecondary" display="block">
+              <Typography
+                variant="caption"
+                color="textSecondary"
+                display="block"
+              >
                 Phone Number
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 500 }}>
@@ -204,25 +258,8 @@ const {label, street, city, state, country, pincode} = editAddress;
               </Typography>
             </Grid>
           </Grid>
-          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-            <Button
-              variant="outlined"
-              color="inherit"
-              onClick={onBack}
-              startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
-              sx={{
-                borderRadius: 2,
-                py: 0.5,
-                px: 2,
-                textTransform: "none",
-                color: "#4a5568",
-                borderColor: "#cbd5e1",
-                fontSize: "0.875rem",
-              }}
-            >
-              Back
-            </Button>
-
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
+            
             <Button
               variant="contained"
               onClick={() => navigate("/editprofile")}
@@ -258,92 +295,160 @@ const {label, street, city, state, country, pincode} = editAddress;
             Address Details {label && `(${label})`}
           </Typography>
 
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="caption" color="textSecondary" display="block">
-                Locality / Street
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                {street || "—"}
-              </Typography>
-            </Grid>
+          {editAddress.map((item, index) => (
+            <Box key={index} sx={{ mb: 3 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={6}>
+                  <Typography
+                    variant="caption"
+                    color="textSecondary"
+                    display="block"
+                  >
+                    Locality / Street
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {item.street || "—"}
+                  </Typography>
+                </Grid>
 
-            <Grid item xs={12} md={6}>
-              <Typography variant="caption" color="textSecondary" display="block">
-                City
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                {city || "—"}
-              </Typography>
-            </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography
+                    variant="caption"
+                    color="textSecondary"
+                    display="block"
+                  >
+                    City
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {item.city || "—"}
+                  </Typography>
+                </Grid>
 
-            <Grid item xs={12} md={6}>
-              <Typography variant="caption" color="textSecondary" display="block">
-                State
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                {state || "—"}
-              </Typography>
-            </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography
+                    variant="caption"
+                    color="textSecondary"
+                    display="block"
+                  >
+                    State
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {item.state || "—"}
+                  </Typography>
+                </Grid>
 
-            <Grid item xs={12} md={6}>
-              <Typography variant="caption" color="textSecondary" display="block">
-                Country
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                {country || "—"}
-              </Typography>
-            </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography
+                    variant="caption"
+                    color="textSecondary"
+                    display="block"
+                  >
+                    Country
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {item.country || "—"}
+                  </Typography>
+                </Grid>
 
-            <Grid item xs={12} md={6}>
-              <Typography variant="caption" color="textSecondary" display="block">
-                Pincode / ZIP
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                {pincode || "—"}
-              </Typography>
-            </Grid>
-          </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography
+                    variant="caption"
+                    color="textSecondary"
+                    display="block"
+                  >
+                    Pincode / ZIP
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {item.pincode || "—"}
+                  </Typography>
+                </Grid>
+              </Grid>
 
-          <Divider sx={{ my: 2 }} />
+              <Divider sx={{ my: 2 }} />
+
+            {/* Core Navigation Actions */}
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}
+              >
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  onClick={()=>HandleDelete(item._id)}
+                  startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
+                  sx={{
+                    borderRadius: 2,
+                    py: 0.5,
+                    px: 2,
+                    textTransform: "none",
+                    color: "#4a5568",
+                    borderColor: "#cbd5e1",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  Delete
+                </Button>
+
+                <Button
+                  variant="contained"
+                  onClick={() => navigate("/editprofile")}
+                  startIcon={<EditIcon sx={{ fontSize: 16 }} />}
+                  sx={{
+                    borderRadius: 2,
+                    py: 0.5,
+                    px: 3,
+                    textTransform: "none",
+                    backgroundColor: "#673ab7",
+                    fontSize: "0.875rem",
+                    "&:hover": { backgroundColor: "#5e35b1" },
+                  }}
+                >
+                  Edit Profile
+                </Button>
+              </Box>
+              
+            </Box>
+          ))}
 
           {/* Core Navigation Actions */}
-          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-            <Button
-              variant="outlined"
-              color="inherit"
-              onClick={onBack}
-              startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
-              sx={{
-                borderRadius: 2,
-                py: 0.5,
-                px: 2,
-                textTransform: "none",
-                color: "#4a5568",
-                borderColor: "#cbd5e1",
-                fontSize: "0.875rem",
-              }}
-            >
-              Back
-            </Button>
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}
+              >
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  onClick={onBack}
+                  startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
+                  sx={{
+                    borderRadius: 2,
+                    py: 0.5,
+                    px: 2,
+                    textTransform: "none",
+                    color: "#4a5568",
+                    borderColor: "#cbd5e1",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  Back
+                </Button>
 
-            <Button
-              variant="contained"
-              onClick={() => navigate("/editprofile")}
-              startIcon={<EditIcon sx={{ fontSize: 16 }} />}
-              sx={{
-                borderRadius: 2,
-                py: 0.5,
-                px: 3,
-                textTransform: "none",
-                backgroundColor: "#673ab7",
-                fontSize: "0.875rem",
-                "&:hover": { backgroundColor: "#5e35b1" },
-              }}
-            >
-              Edit Profile
-            </Button>
-          </Box>
+                <Button
+                  variant="contained"
+                  onClick={() => navigate("/editprofile")}
+                  startIcon={<AddIcon  sx={{ fontSize: 16 }} />}
+                  sx={{
+                    borderRadius: 2,
+                    py: 0.5,
+                    px: 3,
+                    textTransform: "none",
+                    backgroundColor: "#673ab7",
+                    fontSize: "0.875rem",
+                    "&:hover": { backgroundColor: "#5e35b1" },
+                  }}
+                >
+                  Add Address
+                </Button>
+              </Box>
+
         </Paper>
       </CustomerCard>
     </Box>

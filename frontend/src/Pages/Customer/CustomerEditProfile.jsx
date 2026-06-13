@@ -501,7 +501,7 @@
 // }
 
 // export default CustomerEditProfile;
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import {
   Box,
   Button,
@@ -530,6 +530,8 @@ function CustomerEditProfile() {
   
   const editProfile = useSelector((state) => state.editprofile.editprofile);
   const editAddress = useSelector((state) => state.editprofile.editaddress);
+  console.log("editProfile", editProfile);
+  console.log("editAddress", editAddress);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -550,18 +552,18 @@ function CustomerEditProfile() {
   const [uiMessage, setUiMessage] = useState({ text: "", isError: false });
 
   // Sync Personal Profile details from Redux
-  // useEffect(() => {
-  //   if (editProfile) {
-  //     setFormData({
-  //       name: editProfile.name || "",
-  //       email: editProfile.email || "",
-  //       phone: editProfile.phone || "",
-  //       password: editProfile.password || "",
-  //     });
-  //   }
-  // }, [editProfile]);
+  useEffect(() => {
+    if (editProfile) {
+      setFormData({
+        name: editProfile.name || "",
+        email: editProfile.email || "",
+        phone: editProfile.phone || "",
+        password: editProfile.password || "",
+      });
+    }
+  }, [editProfile]);
 
-  // Sync Address Details from Redux (falls back to editProfile keys if combined)
+ // Sync Address Details from Redux (falls back to editProfile keys if combined)
  useEffect(() => {
     if (editAddress && Object.keys(editAddress).length > 0) {
       setAddressForm({
@@ -606,22 +608,29 @@ function CustomerEditProfile() {
         });
         return;
       }
+      const decoded = jwtDecode(token);
+      const userId = decoded.id;
 
       const payload = {
         ...editProfile,
         name: formData.name,
         phone: formData.phone,
         password: formData.password,
+        userId: userId,
       };
 
-      dispatch(postEditProfile(payload));
+      // Send incoming data to the backend controller
+      let response = await api.put(`/updateCustomerProfile/updateProfile`, payload);
+      console.log("Server response data:", response.data);
+      
+      dispatch(postEditProfile(response.data.user));
       
       setUiMessage({
         text: "Profile records updated successfully!",
         isError: false,
       });
       
-      setTimeout(() => navigate("/CustomerProfile"), 1000);
+      navigate("/CustomerProfile")
     } catch (err) {
       setUiMessage({
         text: "An unexpected error occurred while saving profile changes.",
@@ -646,8 +655,9 @@ function CustomerEditProfile() {
       }
 
       const decoded = jwtDecode(token);
+      console.log("decoded",decoded)
       const userId = decoded.id;
-
+      console.log("user", userId)
       const payload = {
         ...addressForm,
         userId: editProfile?._id || userId,
@@ -675,6 +685,8 @@ function CustomerEditProfile() {
       });
     }
   };
+
+  
 
   return (
     <Box
