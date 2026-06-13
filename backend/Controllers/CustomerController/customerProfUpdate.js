@@ -135,6 +135,7 @@ async function getCustomerProfile(req, res) {
 
 // Customer photo upload controller functions
 async function postCustomerPhoto(req, res) {
+    console.log("postcustcgvhbjk")
     try {
         let userId = req.userId;
         console.log("User ID from token:", userId); 
@@ -231,7 +232,7 @@ async function addingAddress(req, res) {
         }
 
         let { label, street, city, state, pincode } = req.body;
-
+console.log("label",req.body)
         if (!label || !street || !city || !state || !pincode) {
             return res.status(400).json({
                 message: "All address fields are required"
@@ -246,7 +247,7 @@ async function addingAddress(req, res) {
             state,
             pincode
         });
-
+console.log("address save")
         if (!user) {
             return res.status(404).json({
                 message: "User not found",

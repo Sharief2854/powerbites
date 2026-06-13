@@ -23,6 +23,7 @@ ConnectDB()
 const app = express()
 app.use(cors())
 app.use(express.json())
+app.use("/upload", express.static("upload"));
 
 
 app.use("/auth",RegRouter,LoginRouter)
