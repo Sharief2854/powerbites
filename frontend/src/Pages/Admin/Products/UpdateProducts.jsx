@@ -1,6 +1,6 @@
 import { Box, Button, Chip, FormControl, FormControlLabel, Grid, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, SnackbarContent, Stack, Switch, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { PrimaryButton } from "../../../Components/StyledComponents/Buttons";
+import { PrimaryButton } from "../../../Components/Common/Buttons";
 import { useDispatch, useSelector } from "react-redux";
 import { enqueueSnackbar } from "notistack";
 import { updateProduct } from "../../../Redux/Slices/ProductSlice";
@@ -69,6 +69,7 @@ export default function UpdateProducts() {
     description: product.description,
     price: product.price,
     stock: product.stock,
+    discount: product.discount,
     isAvailable: product.isAvailable,
   });
   
@@ -113,6 +114,7 @@ function removeExisting(index) {
   formData.append("price", productData.price);
   formData.append("description", productData.description);
   formData.append("stock", productData.stock);
+  formData.append("discount", productData.discount);
   formData.append("isAvailable", productData.isAvailable);
 
   formData.append(
@@ -229,21 +231,18 @@ console.log(product,existingPhotos);
                 />
               </FormControl>
             </Grid>
-            <Grid size={{ xs: 6 }}>
-              {/* <FormControl fullWidth margin="normal">
+            <Grid  xs={6}>
+              <FormControl fullWidth margin="normal">
                 <InputLabel htmlFor="category">Category</InputLabel>
-                <Select
-                  id="category"
-                  label="Category"
+                <OutlinedInput
+                  id="discount"
+                  type="text"
+                  value={productData.discount}
                   onChange={handleChange}
-                  value={productData.category}
-                  name="category"
-                >
-                  <MenuItem value="organic">Organic</MenuItem>
-                  <MenuItem value="non-Perishable">Non-Perishable</MenuItem>
-                  <MenuItem value="perishable">Perishable</MenuItem>
-                </Select>
-              </FormControl> */}
+                  name="discount"
+                  label="Discount"
+                />
+              </FormControl>
             </Grid>
           </Grid>
           <FormControl fullWidth margin="normal">

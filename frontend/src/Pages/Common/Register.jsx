@@ -13,7 +13,7 @@ import axios from "axios";
 import VerifyOtp from "./VerifyOtp";
 import { useNavigate } from "react-router-dom";
 import MainAuthCard from "./MainAuthCard";
-import { PrimaryButton } from "../../Components/StyledComponents/Buttons";
+import { PrimaryButton } from "../../Components/Common/Buttons";
 import api from "../../api/axiosConfig";
 
 function Register() {
