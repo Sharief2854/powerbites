@@ -360,6 +360,58 @@ async function updateAddress(req, res) {
     }
 };
 
+// Customer get addresses controller function
+async function getCustomerAddresses (req, res) {
+    try {
+        let userId = req.userId;
+        console.log("User ID from token:", userId); 
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized: User ID missing in token"
+            });
+        }
+        const addresses = await addressModel.find({ userId });
+
+        res.status(200).json({  
+            message: "Addresses retrieved successfully",
+            addresses: addresses
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }   
+}
+
+//get customer address by address id controller function
+async function getCustomerAddressById(req, res) {
+    try {   
+        let userId = req.userId;
+        console.log("User ID from token:", userId); 
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized: User ID missing in token"
+            });
+        }   
+        let addressId = req.params.id;
+        const address = await addressModel.findOne({ _id: addressId, userId });
+        if (!address) {
+            return res.status(404).json({
+                message: "Address not found or does not belong to user",
+            });
+        }
+        res.status(200).json({
+            message: "Address retrieved successfully",
+            address: address
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+}
 
 module.exports = {
     updateCustomerProfile,
@@ -370,5 +422,6 @@ module.exports = {
     getCustomerProfile,
     postCustomerPhoto,
     updateCustomerPhoto,
-    
+    getCustomerAddresses,
+    getCustomerAddressById
 }
