@@ -10,7 +10,7 @@ const upload = require("../../config/multerConfig");
 const router = express.Router();
 
 // customer updating their own profile
-router.put("/updateProfile",updateCustomerProfile)
+router.put("/updateProfile  ",updateCustomerProfile)
 
 // customer deleting their own profile
 router.delete("/deleteProfile/:id",deleteCustomerProfile);
