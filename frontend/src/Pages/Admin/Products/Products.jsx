@@ -221,11 +221,11 @@ export default function Products() {
     direction={{ xs: "column-reverse", md: "row" }}
     spacing={4}
   >
-    <Grid item size={{ sm: 12, md: 7 }}>
+    <Grid size={{ sm: 12, md: 7 }}>
       <Grid container spacing={3}>
-        <Grid item size={12}>
+        <Grid size={{ xs: 12 }}>
           <Grid container spacing={2}>
-            <Grid item size={7}>
+            <Grid size={{ xs: 12, sm: 7 }}>
               <FormControl fullWidth>
                 <OutlinedInput
                   id="search"
@@ -239,7 +239,7 @@ export default function Products() {
               </FormControl>
             </Grid>
 
-            <Grid item size={5}>
+            <Grid size={{ xs: 12, sm: 5 }}>
               <FormControl fullWidth>
                 <Select
                   value={range}
@@ -260,7 +260,7 @@ export default function Products() {
           </Grid>
         </Grid>
 
-        <Grid item size={12}>
+        <Grid size={{ xs: 12 }}>
           <Grid container spacing={3}>
             {displayProducts?.map((product) => (
               <ProductCard key={uuidv4()} product={product} />
@@ -270,7 +270,7 @@ export default function Products() {
       </Grid>
     </Grid>
 
-    <Grid item size={{ sm: 12, md: 5 }}>
+    <Grid size={{ sm: 12, md: 5 }}>
       <Stack
         component="form"
         onSubmit={handlePost}
@@ -351,7 +351,7 @@ export default function Products() {
         </Stack>
 
         <Grid container spacing={2}>
-          <Grid item xs={6} size={5}>
+          <Grid size={{ xs: 6, sm: 5 }}>
             <FormControl fullWidth>
               <InputLabel>Price</InputLabel>
               <OutlinedInput
@@ -369,7 +369,7 @@ export default function Products() {
             </FormControl>
           </Grid>
 
-          <Grid item xs={6} size={7}>
+          <Grid size={{ xs: 6, sm: 7 }}>
             <FormControlLabel
               label="Stock Available"
               sx={{ color: "#3E1A89", mt: 1 }}

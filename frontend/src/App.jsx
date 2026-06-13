@@ -13,7 +13,8 @@ import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
 import LandingPage from "./Pages/Common/LandingPage";
 import Products from "./Pages/Admin/Products/Products";
 import UpdateProducts from "./Pages/Admin/Products/UpdateProducts";
-import CustomerProfile from "./Pages/Customer/CustomerProfile";
+import CustomerEditProfile from "./Pages/Customer/CustomerEditProfile";
+import CustomerProfiles from "./Pages/Customer/CustomerProfiles";
 
 
 function App() {
@@ -38,7 +39,10 @@ function App() {
         <Route path="admin/products" element={<Products/>}/>
         <Route path="admin/products/updateProduct/:id" element={<UpdateProducts/>}/>
         </Route>
-        <Route path ="/profile" element={<CustomerProfile/>}/>
+        <Route path ="/editprofile" element={<CustomerEditProfile/>}/>
+        <Route path ="/CustomerProfile" element={<CustomerProfiles/>}/>
+        
+        
 
       </Routes>
       

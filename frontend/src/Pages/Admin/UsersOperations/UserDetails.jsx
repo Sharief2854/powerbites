@@ -131,12 +131,14 @@ function UserDetails() {
               py: { xs: 1.2, sm: 1.4 },
             },
           }}
-          InputProps={{
-            startAdornment: (
+          slotProps={{
+            input: {
+              startAdornment: (
               <InputAdornment position="start">
                 <SearchIcon sx={{ fontSize: { xs: 20, sm: 22 } }} color="action" />
               </InputAdornment>
             ),
+            }
           }}
         />
 
