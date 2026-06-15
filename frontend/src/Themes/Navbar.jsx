@@ -17,6 +17,9 @@ import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import LoginIcon from "@mui/icons-material/Login";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import HomeIcon from "@mui/icons-material/Home";
+import PersonIcon from "@mui/icons-material/Person";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { Link } from "react-router-dom";
 
 const pages = [
@@ -25,17 +28,14 @@ const pages = [
     name: "Registration",
     path: "/",
     icon: <PersonAddAlt1Icon fontSize="small" />,
-  }
+  },
 ];
 
 const settings = [
-  { name: "Profile", path: "/login" },
-  {
-    name: "Account",
-    path: "/",
-  },
-  { name: "Contact US", path: "/about" },
-  { name: "Home", path: "/" },
+  { name: "Profile", path: "/login", icon: <PersonIcon fontSize="small" /> },
+  { name: "Account", path: "/", icon: <AccountCircleIcon fontSize="small" /> },
+  { name: "Contact US", path: "/about", icon: <InfoOutlinedIcon fontSize="small" /> },
+  { name: "Home", path: "/", icon: <HomeIcon fontSize="small" /> },
 ];
 
 function ResponsiveAppBar() {
@@ -65,9 +65,8 @@ function ResponsiveAppBar() {
   return (
     <AppBar
       position="static"
-      elevation={3}
       sx={{
-        background: "linear-gradient(90deg, #7b3f00 0%, #b85c38 100%)",
+        background: "linear-gradient(90deg, #1350d4 0%, #0b1269 100%)",
         borderRadius: { xs: 0, sm: 3 },
         mt: { xs: 0, sm: 1 },
       }}
@@ -80,7 +79,6 @@ function ResponsiveAppBar() {
             px: { xs: 1, sm: 2 },
           }}
         >
-          {/* Desktop logo */}
           <RestaurantMenuIcon
             sx={{
               display: { xs: "none", md: "flex" },
@@ -109,7 +107,6 @@ function ResponsiveAppBar() {
             POWER BITES
           </Typography>
 
-          {/* Mobile nav icon */}
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
               size="large"
@@ -155,27 +152,35 @@ function ResponsiveAppBar() {
                   onClick={handleCloseNavMenu}
                   sx={{
                     textDecoration: "none",
-                     alignItems:"center",
                     color: "#333",
                     py: 1.2,
+                    display: "flex",
+                    alignItems: "center",
                   }}
                 >
                   <ListItemIcon sx={{ minWidth: 36, color: "#7b3f00" }}>
                     {page.icon}
                   </ListItemIcon>
+
                   <ListItemText
-                    primary={page.name}
-                    primaryTypographyProps={{
-                      fontSize: "0.95rem",
-                      fontWeight: 500,
-                    }}
+                    disableTypography
+                    primary={
+                      <Typography
+                        sx={{
+                          fontSize: "0.95rem",
+                          fontWeight: 500,
+                          color: "#333",
+                        }}
+                      >
+                        {page.name}
+                      </Typography>
+                    }
                   />
                 </MenuItem>
               ))}
             </Menu>
           </Box>
 
-          {/* Mobile logo */}
           <RestaurantMenuIcon
             sx={{
               display: { xs: "flex", md: "none" },
@@ -205,12 +210,10 @@ function ResponsiveAppBar() {
             POWER BITES
           </Typography>
 
-          {/* Desktop menu */}
           <Box
             sx={{
               flexGrow: 1,
               display: { xs: "none", md: "flex" },
-
               justifyContent: "right",
               gap: 1,
             }}
@@ -227,7 +230,6 @@ function ResponsiveAppBar() {
                   color: "#fff8ef",
                   display: "flex",
                   alignItems: "center",
-                  textAlign:"left",
                   textTransform: "none",
                   fontSize: "0.96rem",
                   fontWeight: 600,
@@ -244,7 +246,6 @@ function ResponsiveAppBar() {
             ))}
           </Box>
 
-          {/* User menu */}
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton
@@ -299,17 +300,27 @@ function ResponsiveAppBar() {
                     textDecoration: "none",
                     color: "#333",
                     py: 1.2,
+                    display: "flex",
+                    alignItems: "center",
                   }}
                 >
                   <ListItemIcon sx={{ minWidth: 36, color: "#7b3f00" }}>
                     {setting.icon}
                   </ListItemIcon>
+
                   <ListItemText
-                    primary={setting.name}
-                    primaryTypographyProps={{
-                      fontSize: "0.95rem",
-                      fontWeight: 500,
-                    }}
+                    disableTypography
+                    primary={
+                      <Typography
+                        sx={{
+                          fontSize: "0.95rem",
+                          fontWeight: 500,
+                          color: "#333",
+                        }}
+                      >
+                        {setting.name}
+                      </Typography>
+                    }
                   />
                 </MenuItem>
               ))}
