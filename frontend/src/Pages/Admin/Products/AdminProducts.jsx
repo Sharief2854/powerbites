@@ -97,21 +97,20 @@ export default function AdminProducts() {
     setPhoto((prev) => prev.filter((_, i) => i !== index));
   }
 
+  console.log(getData);
+  
   let displayProducts = getData
     ?.filter((product) => {
       const matchesSearch = product.name
         .toLowerCase()
         .includes(searchProduct.toLowerCase());
       let matchesPrice = true;
-      console.log(range);
       
       if (range !== "" && range !== 0) {
         matchesPrice =
           product.price >= Number(range) - 1000 &&
           product.price < Number(range);
-      } else if (range == 0) {
-        matchesPrice = true;
-      }
+      } 
       let matchesAvailability = true;
       if (isAvailableOnly) {
         matchesAvailability =
@@ -128,6 +127,15 @@ export default function AdminProducts() {
       }
       return a.name.localeCompare(b.name);
     });
+    if(isAvailableOnly){
+    let filteredProducts= displayProducts.filter((i,ind)=>{
+      if(i.isAvailable){
+        return true
+      }
+      return false
+    })
+    displayProducts= filteredProducts
+  }
 
   let dispatch = useDispatch();
   let navigate = useNavigate();
@@ -143,6 +151,12 @@ export default function AdminProducts() {
       }));
     }
   }
+  function removeFile(index) {
+  setSelectedFile((prev) =>
+    prev.filter((_, i) => i !== index)
+  );
+}
+
   const handlePost = async (e) => {
     e.preventDefault();
 
@@ -165,22 +179,25 @@ export default function AdminProducts() {
     }
 
     try {
-      let response = await api.post(
-        "/admin/product/addProduct",
-        submissionData
-      );
-      dispatch(postProducts(response.data.products));
-      enqueueSnackbar("Product added successfully", { variant: "success" });
+      // let response = await api.post(
+      //   "/admin/product/addProduct",
+      //   submissionData
+      // );
+      // console.log(response.data.Products);
+      
+      dispatch(postProducts(productData));
+      // enqueueSnackbar("Product added successfully", { variant: "success" });
     } catch (error) {
       console.log(error.message);
-      enqueueSnackbar("Failed to add product", { variant: "error" });
+      // enqueueSnackbar("Failed to add product", { variant: "error" });
     }
   };
 
+  console.log(getData);
   async function allData() {
     try {
-      let response = await api.get("/admin/product/all");
-      dispatch(getProducts(response.data.products));
+      let response = await api.get("/admin/all");
+      dispatch(getProducts(response.data.data));
     } catch (error) {
       console.error("Fetch error:", error);
     }
@@ -193,8 +210,8 @@ export default function AdminProducts() {
   return (
     <Box
       sx={{
-        margin: "40px auto",
-        padding: "30px",
+        margin: "auto",
+        padding: "20px",
         backgroundColor: "white",
         borderRadius: "16px",
         boxShadow: "0 8px 25px rgba(62,26,137,0.08)",
@@ -289,7 +306,7 @@ export default function AdminProducts() {
                         <ProductCard product={product} />
                     ))
                   ) : (
-                    <Typography variant="body1" color="initial">
+                    <Typography variant="body1" color="initial" align="center" sx={{ mt: 2,fontWeight:'20px',width:'100%', textAlign:'center' }}>
                       Empty data
                     </Typography>
                   )}
@@ -336,8 +353,6 @@ export default function AdminProducts() {
                 sx={{ borderRadius: "10px" }}
               />
             </FormControl>
-            <input type="datetime-local"></input>
-
             <Button
               component="label"
               variant="contained"
@@ -401,6 +416,24 @@ export default function AdminProducts() {
                       </InputAdornment>
                     }
                     label="Price"
+                    sx={{ borderRadius: "10px" }}
+                  />
+                </FormControl>
+              </Grid>
+              <Grid item xs={6} size={5}>
+                <FormControl fullWidth>
+                  <InputLabel>Discount</InputLabel>
+                  <OutlinedInput
+                    type="number"
+                    name="discount"
+                    
+                    onChange={handleChange}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <span style={{ color: "#3E1A89" }}>%</span>
+                      </InputAdornment>
+                    }
+                    label="Discount"
                     sx={{ borderRadius: "10px" }}
                   />
                 </FormControl>

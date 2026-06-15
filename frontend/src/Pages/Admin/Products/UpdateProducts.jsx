@@ -1,4 +1,20 @@
-import { Box, Button, Chip, FormControl, FormControlLabel, Grid, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, SnackbarContent, Stack, Switch, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Chip,
+  FormControl,
+  FormControlLabel,
+  Grid,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  OutlinedInput,
+  Select,
+  SnackbarContent,
+  Stack,
+  Switch,
+  Typography,
+} from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { PrimaryButton } from "../../../Components/Common/Buttons";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,6 +24,8 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import styled from "@emotion/styled";
+import api from "../../../api/axiosConfig";
+
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
   clipPath: "inset(50%)",
@@ -20,40 +38,33 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 
-export function removeFile(index) {
-  setSelectedFile((prev) =>
-    prev.filter((_, i) => i !== index)
-  );
-}
-
-
 const Android12Switch = styled(Switch)(({ theme }) => ({
   padding: 8,
-  '& .MuiSwitch-track': {
+  "& .MuiSwitch-track": {
     borderRadius: 22 / 2,
-    '&::before, &::after': {
+    "&::before, &::after": {
       content: '""',
-      position: 'absolute',
-      top: '50%',
-      transform: 'translateY(-50%)',
+      position: "absolute",
+      top: "50%",
+      transform: "translateY(-50%)",
       width: 16,
       height: 16,
     },
-    '&::before': {
+    "&::before": {
       backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 24 24"><path fill="${encodeURIComponent(
         theme.palette.getContrastText(theme.palette.primary.main),
       )}" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/></svg>')`,
       left: 12,
     },
-    '&::after': {
+    "&::after": {
       backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 24 24"><path fill="${encodeURIComponent(
         theme.palette.getContrastText(theme.palette.primary.main),
       )}" d="M19,13H5V11H19V13Z" /></svg>')`,
       right: 12,
     },
   },
-  '& .MuiSwitch-thumb': {
-    boxShadow: 'none',
+  "& .MuiSwitch-thumb": {
+    boxShadow: "none",
     width: 16,
     height: 16,
     margin: 2,
@@ -62,8 +73,13 @@ const Android12Switch = styled(Switch)(({ theme }) => ({
 
 export default function UpdateProducts() {
   let allProducts = useSelector((state) => state?.product?.products);
-  let {id} = useParams()
-  let product = allProducts?.find((e)=>{return e.id == id})
+  let { id } = useParams();
+  let product = allProducts?.find((e) => {
+    // return e._id == id;
+    return e.id == id;
+  });
+  console.log(allProducts);
+
   const [productData, setProductData] = useState({
     name: product.name,
     description: product.description,
@@ -72,82 +88,82 @@ export default function UpdateProducts() {
     discount: product.discount,
     isAvailable: product.isAvailable,
   });
-  
-const [selectedFile, setSelectedFile] = useState([]);
-const [existingPhotos, setExistingPhotos] = useState([]);
-  const [photos, setPhotos] = useState([])
+
+  const [selectedFile, setSelectedFile] = useState([]);
+  const [existingPhotos, setExistingPhotos] = useState([]);
+  const [photos, setPhotos] = useState([]);
   let token = localStorage.getItem("token");
-  let header = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "multipart/form-data",
-    },
-  };
+
   let dispatch = useDispatch();
   function handleChange(e) {
-  const { name, value, files } = e.target;
+    const { name, value, files } = e.target;
 
-  if (name === "photo") {
-  const files = Array.from(e.target.files);
-
-  setSelectedFile((prev) =>
-    [...prev, ...files]
-  );
-} else {
-    setProductData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name === "photo") {
+      const files = Array.from(e.target.files);
+      setSelectedFile((prev) => [...prev,...existingPhotos, ...files]);
+    } else {
+      setProductData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   }
-}
-function removeExisting(index) {
-  setExistingPhotos((prev) =>
-    prev.filter((_, i) => i !== index)
-  );
-}
+  function removeFile(index) {
+    setSelectedFile((prev) => prev.filter((_, i) => i !== index));
+  }
+  function removeExisting(index) {
+    setExistingPhotos((prev) => prev.filter((_, i) => i !== index));
+  }
   async function updateProducts(e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  const formData = new FormData();
+    async function getById(params) {
+      try {
+        let response = await api.get(`admin/all/${product._id}`);
+        dispatch(getProducts(response.data.data));
+      } catch (error) {}
+    }
 
-  formData.append("name", productData.name);
-  formData.append("price", productData.price);
-  formData.append("description", productData.description);
-  formData.append("stock", productData.stock);
-  formData.append("discount", productData.discount);
-  formData.append("isAvailable", productData.isAvailable);
+    const formData = new FormData();
 
-  formData.append(
-    "existingPhotos",
-    JSON.stringify(existingPhotos)
-  );
+    formData.append("name", productData.name);
+    formData.append("price", productData.price);
+    formData.append("description", productData.description);
+    formData.append("stock", productData.stock);
+    formData.append("discount", productData.discount);
+    formData.append("isAvailable", productData.isAvailable);
 
-  selectedFile.forEach((file) => {
-    formData.append("image", file);
-  });
+    formData.append("existingPhotos", JSON.stringify(existingPhotos));
 
-  try {
-    let response = await axios.put(
-      `http://localhost:4500/product/updateProduct/${product._id}`,
-      formData,
-      header
-    );
+    selectedFile.forEach((file) => {
+      formData.append("file", file);
+    });
 
-    dispatch(updateProduct(response.data.products));
-    enqueueSnackbar("Product updated successfully", { variant: "success" ,anchorOrigin:{vertical:'top',horizontal:'right'}});
-  } catch (error) {
-    enqueueSnackbar("Failed to update", { variant: "error" });
+    try {
+      let response = await api.put(
+        `admin/updateProduct/${product._id}`,
+        formData,
+      );
+
+      if(response.status === 200){
+      dispatch(updateProduct(response.data.products));
+      enqueueSnackbar("Product updated successfully", {
+        variant: "success",
+        anchorOrigin: { vertical: "top", horizontal: "right" },
+      });}
+    } catch (error) {
+      enqueueSnackbar("Failed to update", { variant: "error" });
+    }
   }
-}
-
 
   useEffect(() => {
-  if (product) {
-    setProductData(product);
-    setExistingPhotos(product.photo || []);
-  }
-}, [product]);
-console.log(product,existingPhotos);
+    if (product) {
+      setProductData(product);
+      // setExistingPhotos(product.image.map((e) => e) || []);
+      // getById();
+    }
+  }, [product]);
+  console.log(product, existingPhotos);
 
   return (
     <Box>
@@ -191,31 +207,44 @@ console.log(product,existingPhotos);
             Upload Images
             <VisuallyHiddenInput
               type="file"
-               key="photo-input"
+              key="photo-input"
               name="photo"
               onChange={handleChange}
               multiple
             />
           </Button>
           {
-            <Stack direction={'row'}>{existingPhotos.map((img, index) => (
-  <Chip
-    key={index}
-    label={img.split("/").pop()}
-    sx={{fontSize:"9px"}}
-    onDelete={() => removeExisting(index)}
-  />
-))}
-          {selectedFile.map((file, index) => (
-  <Chip
-    key={index}
-    label={file.name}
-    sx={{fontSize:"9px"}}
-    onDelete={() => removeFile(index)}
-  />
-))}</Stack>}
+            <Stack
+              direction={"row"}
+              flexWrap="wrap"
+              gap={1}
+              sx={{
+                width: "100%",
+                maxHeight: "120px",
+                overflowY: "auto",
+                py: 0.5,
+              }}
+            >
+              {existingPhotos.map((img, index) => (
+                <Chip
+                  key={index}
+                  label={img.split("/").pop()}
+                  sx={{ fontSize: "9px" }}
+                  onDelete={() => removeExisting(index)}
+                />
+              ))}
+              {selectedFile.map((file, index) => (
+                <Chip
+                  key={index}
+                  label={file.name}
+                  sx={{ fontSize: "9px" }}
+                  onDelete={() => removeFile(index)}
+                />
+              ))}
+            </Stack>
+          }
           <Grid container spacing={2}>
-            <Grid  xs={6} >
+            <Grid xs={6}>
               <FormControl fullWidth margin="normal">
                 <InputLabel htmlFor="price">Price</InputLabel>
                 <OutlinedInput
@@ -231,16 +260,21 @@ console.log(product,existingPhotos);
                 />
               </FormControl>
             </Grid>
-            <Grid  xs={6}>
+            <Grid xs={6}>
               <FormControl fullWidth margin="normal">
-                <InputLabel htmlFor="category">Category</InputLabel>
+                <InputLabel>Discount</InputLabel>
                 <OutlinedInput
-                  id="discount"
-                  type="text"
+                  type="number"
+                  name="discount"
                   value={productData.discount}
                   onChange={handleChange}
-                  name="discount"
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <span style={{ color: "#3E1A89" }}>%</span>
+                    </InputAdornment>
+                  }
                   label="Discount"
+                  sx={{ borderRadius: "10px" }}
                 />
               </FormControl>
             </Grid>

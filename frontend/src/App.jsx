@@ -10,18 +10,17 @@ import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
 import Home from "./Pages/Common/Home";
 import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
-import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
 import LandingPage from "./Pages/Common/LandingPage";
 import LandingPageLayout from "./Pages/Common/LandingPageLayout";
 
 import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
 import Products from "./Pages/Admin/Products/AdminProducts";
 import UpdateProducts from "./Pages/Admin/Products/UpdateProducts";
-import DashboardLayout from "./Pages/Admin/Dashboard";
 import AdminProducts from "./Pages/Admin/Products/AdminProducts";
 import ProtectedRoutes from "./Routes/ProtectedRoutes";
 import CustomerDashboard from "./Pages/Customer/Layout/CustomerDashboard";
 import CustomerProfile from "./Pages/Customer/CustomerProfile";
+import Overview from "./Pages/Admin/Home/AdminHome";
 
 
 function App() {
@@ -42,11 +41,12 @@ function App() {
         <Route path ="/auth" element={<MainAuthCard/>}/>
         <Route path ="/home" element={<Home/>}/>
         </Route>
-        <Route path ="/profile" element={<CustomerProfile/>}/>
-
 
         <Route path ="/admin" element={<ProtectedRoutes role="admin"><DashboardLayout/></ProtectedRoutes>}>
-        <Route path ="/admin/users" element={<UserDetails/>}/>
+
+        <Route index element={<Overview/>}/>
+        <Route path ="/admin/overview" element={<Overview/>}/>
+        <Route path ="/admin/customers" element={<UserDetails/>}/>
         <Route path="/admin/products" element={<AdminProducts/>}/>
         <Route path="/admin/products/updateProduct/:id" element={<UpdateProducts/>}/>
         </Route>
@@ -56,7 +56,7 @@ function App() {
         <Route path="/customer/profile" element={<CustomerProfile/>}/>
         </Route>
       </Routes>
-      
+            
       </BrowserRouter>
     </Box>
   )
