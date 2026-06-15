@@ -29,7 +29,7 @@ function isCustomer(req, res, next) {
             message: "Customer access only"
         });
     }
-
+    console.log("decode ",decoded)
     req.userId = decoded.id;
     // req.role = decoded.role;
 

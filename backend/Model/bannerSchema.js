@@ -24,7 +24,7 @@ const bannerSchema = new mongoose.Schema({
     },
     offer: {
         type: String,
-        required: true
+        
     },
     discount: {
         type: String,
@@ -32,8 +32,8 @@ const bannerSchema = new mongoose.Schema({
     },
     status:{
         type:String,
-        default:"active",
-        enum:["active","inactive"]
+        default:"InActive",
+        enum:["Active","inActive"]
     },
 
     image: {

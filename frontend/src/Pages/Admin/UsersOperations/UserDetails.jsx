@@ -27,6 +27,7 @@ import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useDispatch, useSelector } from "react-redux";
 import { setData, deleteUser } from "../../../Redux/Slices/userSlice";
+import api from "../../../api/axiosConfig";
 
 function UserDetails() {
   const customers = useSelector((state) => state.user.users);
@@ -40,13 +41,8 @@ function UserDetails() {
 
   async function getData() {
     try {
-      const res = await axios.get(
-        "http://localhost:4500/crudAdmin/getAllcustomers",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+      const res = await api.get(
+        "/crudAdmin/getAllcustomers"
       );
       dispatch(setData(res.data));
     } catch (err) {
@@ -56,13 +52,8 @@ function UserDetails() {
 
   async function deleteCustomer(id) {
     try {
-      await axios.delete(
-        `http://localhost:4500/crudAdmin/deletecustomer/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+      await api.delete(
+        `/crudAdmin/deletecustomer/${id}`
       );
       dispatch(deleteUser(id));
       setOpenDelete(false);
@@ -131,12 +122,14 @@ function UserDetails() {
               py: { xs: 1.2, sm: 1.4 },
             },
           }}
-          InputProps={{
-            startAdornment: (
+          slotProps={{
+            input: {
+              startAdornment: (
               <InputAdornment position="start">
                 <SearchIcon sx={{ fontSize: { xs: 20, sm: 22 } }} color="action" />
               </InputAdornment>
             ),
+            }
           }}
         />
 

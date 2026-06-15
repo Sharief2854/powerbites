@@ -11,7 +11,6 @@ function LandingPage() {
 
   return (
     <Box>
-        <Navbar/>
         <Banner/>
         <Products/>
         <Footer/>

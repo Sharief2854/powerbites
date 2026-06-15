@@ -2,28 +2,102 @@ import React, { useEffect, useState } from "react";
 import { Box, Typography, Paper, Container, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-const images = [
-  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1200&q=80",
+const banners = [
+  {
+    title: "Exclusive",
+    subtitle: "Homemade food offer for you!",
+    discount: "Flat 10% Off",
+    limit: "Up to ₹100",
+    images: [
+      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=1200&q=80",
+    ],
+  },
+  {
+    title: "Special Deal",
+    subtitle: "Fresh sweets made with love!",
+    discount: "Flat 15% Off",
+    limit: "Up to ₹150",
+    images: [
+      "https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1464306076886-da185f6a9d05?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1506084868230-bb9d95c24759?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=1200&q=80",
+    ],
+  },
+  {
+    title: "Festival Offer",
+    subtitle: "Delicious homemade snacks for every occasion!",
+    discount: "Flat 20% Off",
+    limit: "Up to ₹200",
+    images: [
+      "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=1200&q=80",
+    ],
+  },
+  {
+    title: "Healthy Picks",
+    subtitle: "Nutritious homemade bites just for you!",
+    discount: "Flat 12% Off",
+    limit: "Up to ₹120",
+    images: [
+      "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1505576399279-565b52d4ac71?auto=format&fit=crop&w=1200&q=80",
+    ],
+  },
+  {
+    title: "Weekend Combo",
+    subtitle: "Enjoy your weekend with homemade flavors!",
+    discount: "Flat 18% Off",
+    limit: "Up to ₹180",
+    images: [
+      "https://images.unsplash.com/photo-1504674900247-ec6bf583e71b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1526318896980-cf78c088247c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=1200&q=80",
+    ],
+  },
 ];
 
 function HomemadeFoodBanner() {
-
-    const navigate = useNavigate();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovering, setIsHovering] = useState(false);
+  const navigate = useNavigate();
+  const [currentBanner, setCurrentBanner] = useState(0);
+  const [currentImage, setCurrentImage] = useState(0);
 
   useEffect(() => {
-    if (!isHovering) return;
+    const timer = setInterval(() => {
+      setCurrentImage((prevImage) => {
+        const lastImageIndex = banners[currentBanner].images.length - 1;
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
+        if (prevImage < lastImageIndex) {
+          return prevImage + 1;
+        }
+
+        setCurrentBanner((prevBanner) => (prevBanner + 1) % banners.length);
+        return 0;
+      });
     }, 2500);
 
-    return () => clearInterval(interval);
-  }, [isHovering]);
+    return () => clearInterval(timer);
+  }, [currentBanner]);
+
+  const activeBanner = banners[currentBanner];
+
+  const handleBannerChange = (bannerIndex) => {
+    setCurrentBanner(bannerIndex);
+    setCurrentImage(0);
+  };
 
   return (
     <Box>
@@ -35,6 +109,7 @@ function HomemadeFoodBanner() {
             overflow: "hidden",
             background: "linear-gradient(90deg, #ffd86b 0%, #ffb347 100%)",
             boxShadow: "0 12px 35px rgba(0,0,0,0.10)",
+            mt: 2,
           }}
         >
           <Box
@@ -59,23 +134,23 @@ function HomemadeFoodBanner() {
                 sx={{
                   fontSize: { xs: "2rem", sm: "2.6rem", md: "3.4rem" },
                   fontWeight: 800,
-                  color: "#0d47a1",
+                  color: "#ffffff",
                   lineHeight: 1.1,
                   mb: 1,
                 }}
               >
-                Exclusive
+                {activeBanner.title}
               </Typography>
 
               <Typography
                 sx={{
                   fontSize: { xs: "1.2rem", sm: "1.7rem", md: "2.2rem" },
                   fontWeight: 700,
-                  color: "#0d47a1",
+                  color: "#000000",
                   mb: 3,
                 }}
               >
-                Homemade food offer for you!
+                {activeBanner.subtitle}
               </Typography>
 
               <Box
@@ -96,7 +171,7 @@ function HomemadeFoodBanner() {
                     lineHeight: 1.1,
                   }}
                 >
-                  Flat 10% Off
+                  {activeBanner.discount}
                 </Typography>
 
                 <Typography
@@ -106,7 +181,7 @@ function HomemadeFoodBanner() {
                     mt: 0.5,
                   }}
                 >
-                  Up to ₹100
+                  {activeBanner.limit}
                 </Typography>
 
                 <Box
@@ -134,6 +209,7 @@ function HomemadeFoodBanner() {
               <Box sx={{ mt: 3 }}>
                 <Button
                   variant="contained"
+                  onClick={() => navigate("/login")}
                   sx={{
                     backgroundColor: "#111",
                     color: "#fff",
@@ -148,10 +224,33 @@ function HomemadeFoodBanner() {
                       boxShadow: "none",
                     },
                   }}
-                  onClick={()=>navigate("/login")}
                 >
                   Order Now
                 </Button>
+              </Box>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1,
+                  mt: 3,
+                  justifyContent: { xs: "center", md: "flex-start" },
+                }}
+              >
+                {banners.map((_, index) => (
+                  <Box
+                    key={index}
+                    onClick={() => handleBannerChange(index)}
+                    sx={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: "50%",
+                      cursor: "pointer",
+                      backgroundColor:
+                        currentBanner === index ? "#111" : "rgba(0,0,0,0.25)",
+                    }}
+                  />
+                ))}
               </Box>
             </Box>
 
@@ -167,34 +266,60 @@ function HomemadeFoodBanner() {
               }}
             >
               <Box
-                onMouseEnter={() => setIsHovering(true)}
-                onMouseLeave={() => {
-                  setIsHovering(false);
-                  setCurrentIndex(0);
-                }}
                 sx={{
                   width: "100%",
                   maxWidth: { xs: "100%", sm: 420, md: 500 },
-                  height: { xs: 240, sm: 300, md: 320 },
-                  borderRadius: 4,
-                  overflow: "hidden",
-                  backgroundColor: "#fff3e0",
-                  boxShadow: "0 14px 35px rgba(0,0,0,0.18)",
-                  cursor: "pointer",
                 }}
               >
                 <Box
-                  component="img"
-                  src={images[currentIndex]}
-                  alt={`homemade food ${currentIndex + 1}`}
                   sx={{
                     width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    display: "block",
-                    transition: "0.4s ease",
+                    height: { xs: 240, sm: 300, md: 320 },
+                    borderRadius: 4,
+                    overflow: "hidden",
+                    backgroundColor: "#fff3e0",
+                    boxShadow: "0 14px 35px rgba(0,0,0,0.18)",
                   }}
-                />
+                >
+                  <Box
+                    component="img"
+                    src={activeBanner.images[currentImage]}
+                    alt={`banner ${currentBanner + 1} image ${currentImage + 1}`}
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: 1,
+                    mt: 2,
+                    mb: 1,
+                  }}
+                >
+                  {activeBanner.images.map((_, index) => (
+                    <Box
+                      key={index}
+                      onClick={() => setCurrentImage(index)}
+                      sx={{
+                        width: 9,
+                        height: 9,
+                        borderRadius: "50%",
+                        cursor: "pointer",
+                        backgroundColor:
+                          currentImage === index
+                            ? "#0d47a1"
+                            : "rgba(13,71,161,0.25)",
+                      }}
+                    />
+                  ))}
+                </Box>
               </Box>
             </Box>
           </Box>

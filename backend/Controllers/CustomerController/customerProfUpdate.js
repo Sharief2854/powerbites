@@ -5,6 +5,7 @@ const photoModel = require("../../Model/photoModel");
 
 // Customer profile update controller functions
 async function updateCustomerProfile(req, res) {
+    console.log("update profile")
     try {
         let userId = req.userId;
 
@@ -23,7 +24,7 @@ async function updateCustomerProfile(req, res) {
                 message: "All fields are required"
             });
         }
-
+        console.log(name, password, phone);
 
         const user = await userModel.findById(userId);
 
@@ -134,6 +135,7 @@ async function getCustomerProfile(req, res) {
 
 // Customer photo upload controller functions
 async function postCustomerPhoto(req, res) {
+    console.log("postcustcgvhbjk")
     try {
         let userId = req.userId;
         console.log("User ID from token:", userId);
@@ -290,13 +292,14 @@ async function deleteAddress(req, res) {
         }
 
         let addressId = req.params.id;
-
+        console.log("addressid :",addressId)
         const result = await addressModel.findOneAndDelete({
             _id: addressId,
             userId
         });
-
+        console.log("result :",result)
         if (!result) {
+
             return res.status(404).json({
                 message: "Address not found"
             });

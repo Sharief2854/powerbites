@@ -9,7 +9,7 @@ import CardActions from '@mui/material/CardActions';
 import { deleteProducts } from '../../../Redux/Slices/ProductSlice';
 import { enqueueSnackbar, SnackbarProvider } from 'notistack';
 import axios from 'axios';
-import { PrimaryButton } from '../../../Components/StyledComponents/Buttons';
+import { PrimaryButton } from '../../../Components/Common/Buttons';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Grid } from '@mui/material';
@@ -38,7 +38,7 @@ export default function ProductCard({product}) {
               }  
     }
   return (
-    <Grid item size={6}>
+    <Grid size={{ xs: 12, sm: 6 }}>
     <Card sx={{ maxWidth: 345 }}>
       <SnackbarProvider/>
       <CardActionArea>

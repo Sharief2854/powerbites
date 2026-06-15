@@ -27,39 +27,94 @@ async function allBanners(req, res) {
 
 }
 
-async function setBanner(req, res) {
+// async function setBanner(req, res) {
+//     try{
+//         const body = req.body;
+
+//         if (!req.files || req.files.length === 0) {
+//             return res.status(400).json({ message: "At least one banner image is required." });
+//         }
+
+//         const imagePaths = req.files.map(file => file.path);
+
+//         const bannerData = {
+//             ...body,
+//             image: imagePaths
+//         };
+
+//         const newBanner = await bannerModel.create(bannerData);
+//         if(!newBanner){
+//             return res.status(400).json({
+//                 message:"Something went wrong while creating the banner."
+//             })
+//         }
+//         res.status(201).json({
+//             message:"Banner added successfully",
+//             newBanner
+//         })
+//     }
+//     catch(err){
+//         res.status(500).json({
+//             message: "Error creating banner", error: err.message
+//         })
+//     }
+    
+// }
+
+
+async function setProductBanner(req, res) {
     try{
+        const productId = req.params.productId;
         const body = req.body;
-
-        if (!req.files || req.files.length === 0) {
-            return res.status(400).json({ message: "At least one banner image is required." });
-        }
-
-        const imagePaths = req.files.map(file => file.path);
-
-        const bannerData = {
-            ...body,
-            image: imagePaths
-        };
-
-        const newBanner = await bannerModel.create(bannerData);
-        if(!newBanner){
+        if(!body){
             return res.status(400).json({
-                message:"Something went wrong while creating the banner."
+                message:"All fields are required"
             })
         }
+
+        let product = await productModel.findById(productId);
+
+        if(!product){
+            return res.status(404).json({
+                message:"Product not found"
+            })
+
+        }
+
+        let bannerData = {
+            ...body,
+            name: product.name,
+            image: product.image,
+            discount: product.discount
+        };
+
+        let banner = await bannerModel.create(bannerData);
+
+        if (!banner) {
+            return res.status(400).json({
+                message: "Something went wrong while creating the banner."
+            });
+        }
+
         res.status(201).json({
-            message:"Banner added successfully",
-            newBanner
+            message: "Banner added successfully",
+            banner
         })
+
+
+
     }
     catch(err){
         res.status(500).json({
             message: "Error creating banner", error: err.message
         })
     }
-    
+
+
 }
+
+
+
 async function deleteBanner(req, res) {
     try {
         let id = req.params.id;
@@ -156,4 +211,4 @@ async function bannerStatus(req,res){
 
 
 
-module.exports = { allBanners, setBanner, deleteBanner, updateBanner, bannerStatus};
+module.exports = { allBanners, setProductBanner, deleteBanner, updateBanner, bannerStatus};

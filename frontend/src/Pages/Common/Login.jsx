@@ -55,7 +55,7 @@ function Login() {
     setFormData({ email: "", password: "" });
 
     if(decoded.role == "customer"){
-      navigate("/home")
+      navigate("/customer")
     }
     else if(decoded.role == "admin"){
       navigate("/admin")
@@ -192,7 +192,7 @@ function Login() {
                   cursor: "pointer",
                   "&:hover": { textDecoration: "underline" },
                 }}
-                onClick={() => navigate("/")} // Assuming register route name
+                onClick={() => navigate("/register")} // Assuming register route name
               >
                 Sign Up
               </Typography>
