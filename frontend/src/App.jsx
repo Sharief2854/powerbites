@@ -14,10 +14,8 @@ import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
 import LandingPage from "./Pages/Common/LandingPage";
 import LandingPageLayout from "./Pages/Common/LandingPageLayout";
 
-import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
 import Products from "./Pages/Admin/Products/AdminProducts";
 import UpdateProducts from "./Pages/Admin/Products/UpdateProducts";
-import DashboardLayout from "./Pages/Admin/Dashboard";
 import AdminProducts from "./Pages/Admin/Products/AdminProducts";
 import ProtectedRoutes from "./Routes/ProtectedRoutes";
 import CustomerDashboard from "./Pages/Customer/Layout/CustomerDashboard";
@@ -45,8 +43,9 @@ function App() {
         <Route path ="/profile" element={<CustomerProfile/>}/>
 
 
+
         <Route path ="/admin" element={<ProtectedRoutes role="admin"><DashboardLayout/></ProtectedRoutes>}>
-        <Route path ="/admin/users" element={<UserDetails/>}/>
+        <Route path ="/admin/customers" element={<UserDetails/>}/>
         <Route path="/admin/products" element={<AdminProducts/>}/>
         <Route path="/admin/products/updateProduct/:id" element={<UpdateProducts/>}/>
         </Route>
