@@ -20,8 +20,12 @@ export default function AboutAndFooter() {
       {/* About Section */}
       <Box sx={{ py: { xs: 6, md: 10 }, backgroundColor: "#fffaf5" }}>
         <Container maxWidth="lg">
-          <Grid container spacing={5} alignItems="center">
-            <Grid item xs={12} md={6}>
+          <Grid container spacing={5} sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}>
+            <Grid xs={12} md={6}>
               <Typography
                 sx={{
                   color: "#ff9800",
@@ -101,7 +105,7 @@ export default function AboutAndFooter() {
       <Box sx={{ backgroundColor: "#111827", color: "#fff", pt: 6, pb: 3 }}>
         <Container maxWidth="lg">
           <Grid container spacing={4}>
-            <Grid item xs={12} md={4}>
+            <Grid xs={12} md={4}>
               <Typography
                 variant="h6"
                 sx={{ fontWeight: 800, mb: 2, color: "#ffffff" }}
@@ -121,7 +125,7 @@ export default function AboutAndFooter() {
               </Typography>
             </Grid>
 
-            <Grid item xs={12} sm={6} md={2.5}>
+            <Grid  xs={12} sm={6} md={2.5}>
               <Typography sx={{ fontWeight: 700, mb: 2 }}>Quick Links</Typography>
               <Stack spacing={1}>
                 <Link href="#" underline="none" color="#d1d5db">Home</Link>
@@ -131,7 +135,7 @@ export default function AboutAndFooter() {
               </Stack>
             </Grid>
 
-            <Grid item xs={12} sm={6} md={2.5}>
+            <Grid xs={12} sm={6} md={2.5}>
               <Typography sx={{ fontWeight: 700, mb: 2 }}>Categories</Typography>
               <Stack spacing={1}>
                 <Link href="#" underline="none" color="#d1d5db">Snacks</Link>
@@ -141,7 +145,7 @@ export default function AboutAndFooter() {
               </Stack>
             </Grid>
 
-            <Grid item xs={12} md={3}>
+            <Grid xs={12} md={3}>
               <Typography sx={{ fontWeight: 700, mb: 2 }}>Contact</Typography>
               <Stack spacing={1}>
                 <Typography sx={{ color: "#d1d5db", fontSize: "0.95rem" }}>
@@ -172,8 +176,7 @@ export default function AboutAndFooter() {
           <Divider sx={{ borderColor: "rgba(255,255,255,0.12)", my: 4 }} />
 
           <Typography
-            align="center"
-            sx={{ color: "#9ca3af", fontSize: "0.9rem" }}
+            sx={{ color: "#9ca3af", fontSize: "0.9rem", textAlign: "center"}}
           >
             © 2026 Homemade Foods. All rights reserved.
           </Typography>

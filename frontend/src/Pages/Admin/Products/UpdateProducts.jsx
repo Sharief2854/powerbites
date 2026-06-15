@@ -215,7 +215,7 @@ console.log(product,existingPhotos);
   />
 ))}</Stack>}
           <Grid container spacing={2}>
-            <Grid  xs={6} >
+            <Grid size={{ xs: 6 }} >
               <FormControl fullWidth margin="normal">
                 <InputLabel htmlFor="price">Price</InputLabel>
                 <OutlinedInput
