@@ -44,11 +44,6 @@ function App() {
         <Route path ="/auth" element={<MainAuthCard/>}/>
         <Route path ="/home" element={<Home/>}/>
         </Route>
-        <Route path ="/editprofile" element={<CustomerEditProfile/>}/>
-        <Route path ="/CustomerProfile" element={<CustomerProfiles/>}/>
-        
-        
-
 
         <Route path ="/admin" element={<ProtectedRoutes role="admin"><DashboardLayout/></ProtectedRoutes>}>
         <Route path ="/admin/users" element={<UserDetails/>}/>
