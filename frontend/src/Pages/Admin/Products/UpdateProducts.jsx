@@ -244,7 +244,11 @@ export default function UpdateProducts() {
             </Stack>
           }
           <Grid container spacing={2}>
+<<<<<<< HEAD
             <Grid xs={6}>
+=======
+            <Grid size={{ xs: 6 }} >
+>>>>>>> 7e4f853f106b0662a32b1183722c859c81c31b33
               <FormControl fullWidth margin="normal">
                 <InputLabel htmlFor="price">Price</InputLabel>
                 <OutlinedInput

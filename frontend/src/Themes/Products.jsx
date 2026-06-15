@@ -14,6 +14,7 @@ import {
 import { Navigate, useNavigate } from "react-router-dom";
 
 
+
 const products = [
   {
     id: 1,
@@ -130,17 +131,14 @@ const products = [
 export default function HomemadeFoodGrid() {
 const navigate = useNavigate();
   return (
-    <Box sx={{ backgroundColor: "#ffffff", py: 6, w:"100%",mx:"auto",  }}>
-      <Container maxWidth="xl"
-      sx={{
-        mx:"auto"
-      }}>
+    <Box sx={{ backgroundColor: "#ffffff", py: 6, w:"100%",mx:"auto", mt:5  }}>
+      <Container maxWidth="xl">
         <Typography
           variant="h4"
-          align="center"
           sx={{
             fontWeight: 800,
             color: "#111827",
+            textAlign: "center",
             mb: 1,
             fontSize: { xs: "1.8rem", md: "2.2rem" },
           }}
@@ -149,11 +147,11 @@ const navigate = useNavigate();
         </Typography>
 
         <Typography
-          align="center"
           sx={{
             color: "#6b7280",
             mb: 5,
             fontSize: "1rem",
+            textAlign: "center",
           }}
         >
           Fresh homemade snacks and sweets with special prices
@@ -162,21 +160,16 @@ const navigate = useNavigate();
   container
   rowSpacing={5}
   columnSpacing={3}
-  alignItems="stretch"
-
   sx={{
-    mx:"auto",
-    justifyContent:"center",
-    pt:1
+    mx: "auto",
+    justifyContent: "center",
+    pt: 1,
+    alignItems: "stretch",
   }}
 >
   {products.map((item) => (
     <Grid
-      item
-      xs={12}
-      sm={6}
-      md={4}
-      lg={3}
+      size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
       key={item.id}
       sx={{
         display: "flex",
@@ -327,7 +320,7 @@ const navigate = useNavigate();
                 boxShadow: "none",
               },
             }}
-            onClick={()=>navigate("/login")}
+            onClick={() => navigate("/login")}
           >
             View Product
           </Button>
