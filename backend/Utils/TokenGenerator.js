@@ -5,8 +5,6 @@ const jwt = require('jsonwebtoken');
 
 
 function generateAccessToken(user) {
-
-
     let token = jwt.sign(
         { id: user._id, role: user.role },
         process.env.JWTKEY,
@@ -15,9 +13,7 @@ function generateAccessToken(user) {
     )
     return token;
 
-
 }
-
 function generateRefreshToken(user) {
     let token = jwt.sign(
         { id: user._id, role: user.role },

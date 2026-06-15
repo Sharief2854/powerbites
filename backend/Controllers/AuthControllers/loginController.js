@@ -8,8 +8,7 @@ const { generateAccessToken, generateRefreshToken } = require("../../Utils/Token
  async function login(req,res){
     try {
         let body = req.body;
-        
-
+         console.log(body)
         if (!body) {
             return res.status(400).json({
                 message: "All fields are required"
@@ -19,7 +18,7 @@ const { generateAccessToken, generateRefreshToken } = require("../../Utils/Token
                 console.log(body)
 
         
-        if (!body.email || !body.password) {
+        if (!body.email||!body.password) {
             return res.status(400).json({
                 message: "email or password is missing"
             })

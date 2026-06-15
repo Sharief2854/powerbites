@@ -1,12 +1,10 @@
 const express = require("express");
 const ProductModel = require("../../Model/ProductModel");
-
-
-
+const { schema } = require("../../Model/userModel");
 async function allProduct(req, res) {
     try {
 
-     const data = await ProductModel.find();
+        const data = await ProductModel.find({ isAvailable: true });
         if (!data) {
             return res.status(400).json({
                 message: "No Products found"
@@ -25,28 +23,28 @@ async function allProduct(req, res) {
     }
 
 }
- async function addProduct(req, res) {
+async function addProduct(req, res) {
 
     try {
         let body = req.body
         console.log(req.file, "file")
 
-    //   const image= req.files.map(file => file.path)
-    //     let Product = await ProductModel.create(body)
+        //   const image= req.files.map(file => file.path)
+        //     let Product = await ProductModel.create(body)
 
-     if (!req.files || req.files.length === 0) {
+        if (!req.files || req.files.length === 0) {
             return res.status(400).json({ message: "Product image is required." });
         }
 
-      const imagePaths = req.files.map(file => file.path);
+        const imagePaths = req.files.map(file => file.path);
 
-        const ProductData = {...body,image: imagePaths };
+        const ProductData = { ...body, image: imagePaths };
         const Product = await ProductModel.create(ProductData);
-                if(!Product){
-                    return res.status(400).json({
-                        message:"Something went wrong while creating the Products."
-                    })
-                }
+        if (!Product) {
+            return res.status(400).json({
+                message: "Something went wrong while creating the Products."
+            })
+        }
 
         if (!Product) {
             return
@@ -67,38 +65,6 @@ async function allProduct(req, res) {
 }
 
 
-
-// async function updateProduct(req, res) {
-//     try {
-//         let id = req.params.id
-//        const ProductData = { ...req.body };
-
-//         if (req.files && req.files.length > 0) {
-//             const imagePaths = req.files.map(file => file.path);
-//             updateData.image = imagePaths;
-//         }
-
-//         let Products = await ProductModel.findByIdAndUpdate(id, ProductData, { new: true, runValidators: true });
-
-//         if(!Products){
-//             return res.status(404).json({
-//                 message:"Products not found"
-//             })
-//         }
-//         res.status(200).json({
-//             data: Products,
-//             message: "product updated successfully"
-//         })
-//     }
-
-        
-//     catch (err) {
-//         res.status(500).json({
-//             message: "server problem"
-//         })
-//     }
-
-// }
 async function updateProduct(req, res) {
     try {
         const id = req.params.id;
@@ -108,8 +74,7 @@ async function updateProduct(req, res) {
             const imagePaths = req.files.map(file => file.path);
             ProductData.image = imagePaths;
         }
-
-        const product = await ProductModel.findByIdAndUpdate(id, ProductData,{new: true,}
+        const product = await ProductModel.findByIdAndUpdate(id, ProductData, { new: true, }
         );
 
         if (!product) {
@@ -124,7 +89,7 @@ async function updateProduct(req, res) {
         });
 
     }
-    
+
     catch (err) {
         return res.status(500).json({
             message: "Error updating product",
@@ -133,7 +98,7 @@ async function updateProduct(req, res) {
     }
 }
 
- async function deleteProduct(req, res) {
+async function deleteProduct(req, res) {
 
     try {
         let id = req.params.id
@@ -157,4 +122,86 @@ async function updateProduct(req, res) {
 
 }
 
-module.exports = { addProduct ,updateProduct,deleteProduct,allProduct}
+// fliterin Products schema
+
+async function getProductbyId(req, res) {
+    try {
+        const id = req.params.id;
+        const product = await ProductModel.findOne({ _id: req.params.id, isAvailable: true });
+
+        if (!product) {
+            return
+            res.status(404).json({
+                message: "product not availble"
+            })
+
+        }
+
+        res.status(200).json({
+            data: product,
+            message: "Availabled Products"
+        })
+
+    }
+    catch (err) {
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
+
+
+// get
+async function search(req, res) {
+    try {
+        const { search } = req.query;
+        const products = await ProductModel.find({
+            name: {  $regex: search,  $options: "i" },  
+            isAvailable: true
+             });  
+
+        if (products.length === 0) {
+            return res.status(404).json({
+                message: "No products found"
+            });
+        }
+
+        res.status(200).json(products);
+
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+}
+
+async function filterProducts(req, res) {
+    try {
+        const products = await ProductModel.find({
+            isAvailable: true,
+            stock: { $gt: 0 },
+            rating: { $gte: 4 },
+            price: {
+                $gte: 500,
+                $lte: 2000
+            }
+        });
+
+        if (products.length === 0) {
+            return res.status(404).json({
+                message: "No products found"
+            });
+        }
+        res.status(200).json({
+            data: products
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "server error"
+        });
+    }
+}
+
+
+module.exports = { addProduct, updateProduct, deleteProduct, allProduct, getProductbyId, search, filterProducts}

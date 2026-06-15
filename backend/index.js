@@ -16,6 +16,7 @@ const multer = require('multer');
 const customerProfileRouter = require('./Routes/customer/customerProfile');
 const isCustomer = require('./MiddleWare/customerAuth');
 const upload = require('./config/multerConfig');
+const productRouter=require("./Routes/Products/ProdutsRouter")
 
 
 ConnectDB()
@@ -25,16 +26,16 @@ app.use(cors())
 app.use(express.json())
 
 
-app.use("/auth",RegRouter,LoginRouter)
+app.use("/auth",RegRouter)
 app.use("/resetPass",ResetRouter)
-// app.use("/auth",LoginRouter)
+app.use("/auth",LoginRouter)
 
-// Admin routes CRUD opertions with authentication middleware
+app.use("/admin",isAdmin,productRouter)
+
 app.use("/crudAdmin",isAdmin,adminRouter)
 app.use("/cart",CartRouter)
 app.use("/banner",isAdmin,bannerRouter)
 
-// Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter) 
 
 

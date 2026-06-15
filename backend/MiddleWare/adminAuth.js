@@ -5,6 +5,7 @@ function isAdmin(req, res, next) {
     console.log("Headers:", req.headers);
 
     let head = req.headers.authorization;
+    console.log("Headers:", req.headers);
 
     if (!head) {
         return res.status(401).json({
