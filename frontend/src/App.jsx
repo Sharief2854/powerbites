@@ -9,8 +9,8 @@ import ForgotPassword from "./Pages/Common/ForgetPassword";
 import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
 import Home from "./Pages/Common/Home";
-//import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
-//import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
+import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
+import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
 import LandingPage from "./Pages/Common/LandingPage";
 import LandingPageLayout from "./Pages/Common/LandingPageLayout";
 
