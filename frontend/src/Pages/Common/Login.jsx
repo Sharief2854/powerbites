@@ -192,7 +192,7 @@ function Login() {
                   cursor: "pointer",
                   "&:hover": { textDecoration: "underline" },
                 }}
-                onClick={() => navigate("/")} // Assuming register route name
+                onClick={() => navigate("/register")} // Assuming register route name
               >
                 Sign Up
               </Typography>
