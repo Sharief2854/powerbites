@@ -282,12 +282,12 @@ async function deleteAddress(req, res) {
         }
 
         let addressId = req.params.id;
-
+        console.log("addressid :",addressId)
         const result = await addressModel.findOneAndDelete({
             _id: addressId,
             userId
         });
-
+        console.log("result :",result)
         if (!result) {
             return res.status(404).json({
                 message: "Address not found"

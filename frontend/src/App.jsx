@@ -9,8 +9,8 @@ import ForgotPassword from "./Pages/Common/ForgetPassword";
 import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
 import Home from "./Pages/Common/Home";
-//import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
-//import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
+import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
+import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
 import LandingPage from "./Pages/Common/LandingPage";
 import LandingPageLayout from "./Pages/Common/LandingPageLayout";
 
@@ -42,11 +42,6 @@ function App() {
         <Route path ="/auth" element={<MainAuthCard/>}/>
         <Route path ="/home" element={<Home/>}/>
         </Route>
-        <Route path ="/editprofile" element={<CustomerEditProfile/>}/>
-        <Route path ="/CustomerProfile" element={<CustomerProfiles/>}/>
-        
-        
-
 
 
         <Route path ="/admin" element={<ProtectedRoutes role="admin"><DashboardLayout/></ProtectedRoutes>}>

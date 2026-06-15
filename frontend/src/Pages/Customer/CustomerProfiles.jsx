@@ -527,7 +527,9 @@ const [confirmDelete, setConfirmDelete] = useState({
 
   const setAsDefault = async (id) => {
     try {
-      await api.put(`/updateCustomerProfile/setDefaultAddress/${id}`);
+      console.log("Setting default address for ID:", id);
+      await api.get(`/updateCustomerProfile/setDefaultAddress/${id}`);
+      console.log("Default address updated!");
       fetchData();
       setMessage({ text: "Default address updated!", type: "success" });
     } catch (err) {

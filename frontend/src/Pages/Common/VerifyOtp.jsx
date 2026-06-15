@@ -25,8 +25,8 @@ function VerifyOtp() {
   const handleSubmit = async(event) => {
     event.preventDefault();
     try{
-    console.log("Entered otp:", otp, "type:", typeof otp);
-    console.log("Expected verOtp:", verOtp, "type:", typeof verOtp);
+    // console.log("Entered otp:", otp, "type:", typeof otp);
+    // console.log("Expected verOtp:", verOtp, "type:", typeof verOtp);
 
     let res = await api.post(`http://localhost:4500/auth/verifyOtp/${userId}`,{otp});
     
