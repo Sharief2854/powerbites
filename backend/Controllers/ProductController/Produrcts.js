@@ -121,3 +121,71 @@ async function deleteProduct(req, res) {
     }
 
 }
+async function getProductbyId(req, res) {
+    try {
+        const { id } = req.params;
+        const product = await ProductModel.findById(id);
+
+        if (!product) {
+            return res.status(404).json({
+                message: "Product not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Product fetched successfully",
+            data: product
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            message: "Server error",
+            error: err.message
+        });
+    }
+}
+async function search(req, res) {
+    try {
+    
+        if (!product) {
+            return res.status(404).json({
+                message: "Product not found"
+            });
+        }
+        const products = await ProductModel.find({
+            productName: { $regex: search, $options: "i" }
+        });
+
+        res.status(200).json({
+            data:products,
+            message: "Products fetched successfully",
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
+async function filterProducts(req, res) {
+    try {
+        const { rating } = req.query;
+
+        const products = await ProductModel.find({
+            rating: { $gte: Number(rating) }
+        });
+
+        res.status(200).json({
+            message: "Products filtered successfully",
+            data: products
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            message: err.message
+        });
+    }
+}
+module.exports = {addProduct,updateProduct,deleteProduct,allProduct,getProductbyId, search,filterProducts} 
+// module.exports = { addProduct, updateProduct, deleteProduct, allProduct, search, filterProducts, getProductbyId }

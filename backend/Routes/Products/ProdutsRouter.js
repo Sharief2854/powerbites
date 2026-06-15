@@ -3,6 +3,8 @@ const upload = require('../../config/multerConfig');
 const router = express.Router(); 
 
 const {addProduct,updateProduct,deleteProduct,allProduct,getProductbyId, search,filterProducts} = require("../../Controllers/ProductController/Produrcts");
+
+// module.exports = { addProduct, updateProduct, deleteProduct, allProduct, search, filterProducts, getProductbyId }
 const ProductModel = require("../../Model/ProductModel");
 
 
