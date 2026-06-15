@@ -1,8 +1,10 @@
 const express = require("express");
 const upload = require('../../config/multerConfig');
-const {addProduct,updateProduct,deleteProduct,allProduct} = require("../../Controllers/ProductControllers/ProductController");
+const {addProduct,updateProduct,deleteProduct,} = require("../../Controllers/ProductController/Produrcts");
+const {allProduct} = require("../../Controllers/ProductController/Produrcts")
 
 const router = express.Router();
+
 router.post("/addProduct", upload.array("file", 100), addProduct);
 
 router.put("/updateProduct/:id",upload.array("file", 100),updateProduct);
