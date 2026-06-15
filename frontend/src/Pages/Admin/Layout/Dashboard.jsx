@@ -23,6 +23,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Sidebar from './SideNavBar';
+import { Outlet } from 'react-router-dom';
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -45,6 +46,7 @@ export default function DashboardLayout() {
   const handleClose = () => {
     setAnchorEl(null);
   };
+  console.log("admin")
 
   const handleLogout = () => {
     handleClose();
@@ -209,8 +211,8 @@ export default function DashboardLayout() {
           transition: 'width 0.3s ease',
         }}
       >
-        <Grid container spacing={3}>
-          {/* KPI Cards */}
+        {/* <Grid container spacing={3}>
+          
           {['Total Sales', 'Active Orders', 'Total Products', 'Total Revenue'].map((title, index) => (
             <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
               <Paper
@@ -240,7 +242,7 @@ export default function DashboardLayout() {
             </Grid>
           ))}
 
-          {/* Recent Orders Section */}
+          
           <Grid size={{ xs: 12 }}>
             <Paper
               elevation={0}
@@ -261,7 +263,8 @@ export default function DashboardLayout() {
               </Typography>
             </Paper>
           </Grid>
-        </Grid>
+        </Grid> */}
+        <Outlet/>
       </Box>
     </Box>
   );
