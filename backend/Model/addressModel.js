@@ -7,12 +7,13 @@ const addressSchema = new mongoose.Schema({
     required: true
   },
 
-  label: {
-    type: String, // Home, Work
+label: {
+    type: String,
     default: "Home",
-    enum: ["Home", "Work", "Other"],
-    required: true
-  },
+    required: true,
+    trim: true,
+    minlength: 1
+},
 
   street: {
     type: String,
