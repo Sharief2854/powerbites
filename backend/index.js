@@ -13,6 +13,8 @@ const CartRouter = require('./Routes/Cart/cartRouter');
 const bannerRouter = require('./Routes/Banner/bannerRoutes');
 const multer = require('multer');
 
+const couponRouter = require('./Routes/Coupon/couponRouter');
+
 
 const customerProfileRouter = require('./Routes/customer/customerProfile');
 const isCustomer = require('./MiddleWare/customerAuth');
@@ -34,7 +36,11 @@ app.use("/resetPass",ResetRouter)
 app.use("/crudAdmin",isAdmin,adminRouter)
 app.use("/cart",CartRouter)
 app.use("/products",isAdmin,ProductRouter)
-app.use("/banner",isAdmin,bannerRouter)
+app.use("/banner",bannerRouter)
+
+
+
+app.use("/coupon",couponRouter)
 
 // Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter) 

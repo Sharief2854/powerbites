@@ -4,8 +4,8 @@ const mongoose = require('mongoose');
 
 
 
-const bannerSchema = new mongoose.Schema({
-    name: {
+const cuoponSchema = new mongoose.Schema({
+    code: {
         type: String,
         required: true
     },
@@ -14,6 +14,11 @@ const bannerSchema = new mongoose.Schema({
         ref: "users",
         required: true
     },
+    min_order_value: {
+        type: Number,
+        required: true
+    },
+    
     title: {
         type: String,
         required: true
@@ -30,20 +35,25 @@ const bannerSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    max_discount: {
+        type: Number,
+        required: true
+    },
     status:{
         type:String,
-        default:"InActive",
+        default:"inActive",
         enum:["Active","inActive"]
     },
+    starts_At:{
+        type:Date,
+        required:true
+    },
+    ends_At:{
+        type:Date,
+        required:true
+    },
+    
 
-    image: {
-        type: [String],
-        required: true,
-        validate: {
-            validator: (arr) => arr.length <= 5,
-            message: 'A banner cannot have more than 5 images.'
-        }
-    }
 
 },
     {
@@ -52,5 +62,5 @@ const bannerSchema = new mongoose.Schema({
 )
 
 
-const bannerModel = mongoose.model("banner", bannerSchema)
-module.exports = bannerModel  
+const cuoponModel = mongoose.model("cuopon", cuoponSchema)
+module.exports = cuoponModel  
