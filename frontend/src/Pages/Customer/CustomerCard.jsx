@@ -14,7 +14,7 @@ function CustomerCard({ title, children, sx }) {
       <Card
         sx={{
           width: "100%",
-          maxWidth: 350,
+        //   maxWidth: 800,
           borderRadius: 3,
           boxShadow: 5,
           ...sx

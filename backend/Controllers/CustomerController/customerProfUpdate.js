@@ -5,6 +5,7 @@ const photoModel = require("../../Model/photoModel");
 
 // Customer profile update controller functions
 async function updateCustomerProfile(req, res) {
+    console.log("update profile")
     try {
         let userId = req.userId;
 
@@ -23,7 +24,7 @@ async function updateCustomerProfile(req, res) {
                 message: "All fields are required"
             });
         }
-
+        console.log(name, password, phone);
 
         const user = await userModel.findById(userId);
 
@@ -115,7 +116,7 @@ async function getCustomerProfile(req, res) {
                 message: "Unauthorized: User ID missing in token"
             });
         }
-        const user = await userModel.findById(userId).select("-password");
+        const user = await userModel.findById(userId).select("-isVerified");
         if (!user) {
             return res.status(404).json({
                 message: "User not found"
@@ -135,6 +136,7 @@ async function getCustomerProfile(req, res) {
 
 // Customer photo upload controller functions
 async function postCustomerPhoto(req, res) {
+    console.log("postcustcgvhbjk")
     try {
         let userId = req.userId;
         console.log("User ID from token:", userId);
@@ -254,7 +256,8 @@ async function addingAddress(req, res) {
                 { userId, _id: { $ne: newAddress._id } },
                 { $set: { isDefault: false } }
             );
-        }                   
+        }        
+        console.log("add address")           
         res.status(201).json({
             message: "Address added successfully",
             address: newAddress

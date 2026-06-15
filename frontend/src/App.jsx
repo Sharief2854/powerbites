@@ -9,8 +9,8 @@ import ForgotPassword from "./Pages/Common/ForgetPassword";
 import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
 import Home from "./Pages/Common/Home";
-import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
-import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
+//import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
+//import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
 import LandingPage from "./Pages/Common/LandingPage";
 import LandingPageLayout from "./Pages/Common/LandingPageLayout";
 
@@ -19,7 +19,9 @@ import UpdateProducts from "./Pages/Admin/Products/UpdateProducts";
 import AdminProducts from "./Pages/Admin/Products/AdminProducts";
 import ProtectedRoutes from "./Routes/ProtectedRoutes";
 import CustomerDashboard from "./Pages/Customer/Layout/CustomerDashboard";
-import CustomerProfile from "./Pages/Customer/CustomerProfile";
+import CustomerProfiles from "./Pages/Customer/CustomerProfiles";
+import CustomerEditProfile from "./Pages/Customer/CustomerEditProfile";
+import CustomerProfile from "./Pages/Customer/CustomerProfiles";
 
 
 function App() {
@@ -40,7 +42,10 @@ function App() {
         <Route path ="/auth" element={<MainAuthCard/>}/>
         <Route path ="/home" element={<Home/>}/>
         </Route>
-        <Route path ="/profile" element={<CustomerProfile/>}/>
+        <Route path ="/editprofile" element={<CustomerEditProfile/>}/>
+        <Route path ="/CustomerProfile" element={<CustomerProfiles/>}/>
+        
+        
 
 
 
@@ -52,7 +57,9 @@ function App() {
 
         <Route path ="/customer" element={<ProtectedRoutes role="customer"><CustomerDashboard/></ProtectedRoutes>}>
         <Route path="/customer/users" element={<UserDetails/>}/>
-        <Route path="/customer/profile" element={<CustomerProfile/>}/>
+        <Route path="/customer/profile" element={<CustomerProfiles/>}/>
+         <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
+         <Route path ="/customer/editprofile/:id" element={<CustomerEditProfile/>}/>
         </Route>
       </Routes>
       
