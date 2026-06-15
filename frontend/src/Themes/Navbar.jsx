@@ -26,14 +26,14 @@ const pages = [
   { name: "Login", path: "/login", icon: <LoginIcon fontSize="small" /> },
   {
     name: "Registration",
-    path: "/",
+    path: "/register",
     icon: <PersonAddAlt1Icon fontSize="small" />,
   },
 ];
 
 const settings = [
   { name: "Profile", path: "/login", icon: <PersonIcon fontSize="small" /> },
-  { name: "Account", path: "/", icon: <AccountCircleIcon fontSize="small" /> },
+  { name: "Account", path: "/register", icon: <AccountCircleIcon fontSize="small" /> },
   { name: "Contact US", path: "/about", icon: <InfoOutlinedIcon fontSize="small" /> },
   { name: "Home", path: "/", icon: <HomeIcon fontSize="small" /> },
 ];
