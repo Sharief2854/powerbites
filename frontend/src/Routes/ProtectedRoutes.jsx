@@ -11,7 +11,7 @@ export default function ProtectedRoutes({ role, children }) {
   useEffect(() => {
     if (decodeRole.role != role) {
       navigate("/login", { replace: true });
-      localStorage.clearItem("token");
+      localStorage.removeItem("token");
       return;
     }
   }, []);

@@ -46,7 +46,8 @@ app.use("/coupon",couponRouter)
 app.use("/payment",PaymentRouter)
 
 // Customer profile updating routes with authentication middleware
-app.use("/updateCustomerProfile", isCustomer,customerProfileRouter) 
+app.use("/updateCustomerProfile", isCustomer,customerProfileRouter)
+app.use("/products",tproductsRoutes) 
 
 // Global error handling middleware to catch Multer errors safely
 app.use((err, req, res, next) => {

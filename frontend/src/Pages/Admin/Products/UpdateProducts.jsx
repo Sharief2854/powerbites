@@ -1,4 +1,22 @@
-import { Box, Button, Chip, FormControl, FormControlLabel, Grid, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, SnackbarContent, Stack, Switch, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Chip,
+  FormControl,
+  FormControlLabel,
+  Grid,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  OutlinedInput,
+  Select,
+  SnackbarContent,
+  Stack,
+  Switch,
+  Typography, IconButton,
+  ImageListItem,
+  ImageListItemBar,
+} from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { PrimaryButton } from "../../../Components/Common/Buttons";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,6 +26,12 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import styled from "@emotion/styled";
+import api from "../../../api/axiosConfig";
+import { v4 as uuidv4 } from "uuid";
+import { getProducts } from "../../../Redux/Slices/ProductSlice";
+import DeleteIcon from "@mui/icons-material/Delete";
+
+
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
   clipPath: "inset(50%)",
@@ -20,40 +44,33 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 
-export function removeFile(index) {
-  setSelectedFile((prev) =>
-    prev.filter((_, i) => i !== index)
-  );
-}
-
-
 const Android12Switch = styled(Switch)(({ theme }) => ({
   padding: 8,
-  '& .MuiSwitch-track': {
+  "& .MuiSwitch-track": {
     borderRadius: 22 / 2,
-    '&::before, &::after': {
+    "&::before, &::after": {
       content: '""',
-      position: 'absolute',
-      top: '50%',
-      transform: 'translateY(-50%)',
+      position: "absolute",
+      top: "50%",
+      transform: "translateY(-50%)",
       width: 16,
       height: 16,
     },
-    '&::before': {
+    "&::before": {
       backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 24 24"><path fill="${encodeURIComponent(
         theme.palette.getContrastText(theme.palette.primary.main),
       )}" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/></svg>')`,
       left: 12,
     },
-    '&::after': {
+    "&::after": {
       backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 24 24"><path fill="${encodeURIComponent(
         theme.palette.getContrastText(theme.palette.primary.main),
       )}" d="M19,13H5V11H19V13Z" /></svg>')`,
       right: 12,
     },
   },
-  '& .MuiSwitch-thumb': {
-    boxShadow: 'none',
+  "& .MuiSwitch-thumb": {
+    boxShadow: "none",
     width: 16,
     height: 16,
     margin: 2,
@@ -62,92 +79,98 @@ const Android12Switch = styled(Switch)(({ theme }) => ({
 
 export default function UpdateProducts() {
   let allProducts = useSelector((state) => state?.product?.products);
-  let {id} = useParams()
-  let product = allProducts?.find((e)=>{return e.id == id})
-  const [productData, setProductData] = useState({
-    name: product.name,
-    description: product.description,
-    price: product.price,
-    stock: product.stock,
-    discount: product.discount,
-    isAvailable: product.isAvailable,
+  let { id } = useParams();
+  let product = allProducts?.find((e) => {
+    return e._id == id;
   });
-  
-const [selectedFile, setSelectedFile] = useState([]);
-const [existingPhotos, setExistingPhotos] = useState([]);
-  const [photos, setPhotos] = useState([])
+  console.log(product);
+
+  const [productData, setProductData] = useState({
+    name: product?.name,
+    description: product?.description,
+    price: product?.price,
+    stock: product?.stock,
+    discount: product?.discount,
+    isAvailable: product?.isAvailable,
+  });
+
+  const [selectedFile, setSelectedFile] = useState([]);
+  const [existingPhotos, setExistingPhotos] = useState([]);
+  const [photos, setPhotos] = useState([]);
   let token = localStorage.getItem("token");
-  let header = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "multipart/form-data",
-    },
-  };
+
   let dispatch = useDispatch();
+
   function handleChange(e) {
   const { name, value, files } = e.target;
 
   if (name === "photo") {
-  const files = Array.from(e.target.files);
-
-  setSelectedFile((prev) =>
-    [...prev, ...files]
-  );
-} else {
+    const uploadedFiles = Array.from(files);
+    setSelectedFile((prev) => [...prev, ...uploadedFiles]);
+  } else {
     setProductData((prev) => ({
       ...prev,
       [name]: value,
     }));
   }
 }
-function removeExisting(index) {
-  setExistingPhotos((prev) =>
-    prev.filter((_, i) => i !== index)
-  );
-}
-  async function updateProducts(e) {
-  e.preventDefault();
 
-  const formData = new FormData();
-
-  formData.append("name", productData.name);
-  formData.append("price", productData.price);
-  formData.append("description", productData.description);
-  formData.append("stock", productData.stock);
-  formData.append("discount", productData.discount);
-  formData.append("isAvailable", productData.isAvailable);
-
-  formData.append(
-    "existingPhotos",
-    JSON.stringify(existingPhotos)
-  );
-
-  selectedFile.forEach((file) => {
-    formData.append("image", file);
-  });
-
-  try {
-    let response = await axios.put(
-      `http://localhost:4500/product/updateProduct/${product._id}`,
-      formData,
-      header
-    );
-
-    dispatch(updateProduct(response.data.products));
-    enqueueSnackbar("Product updated successfully", { variant: "success" ,anchorOrigin:{vertical:'top',horizontal:'right'}});
-  } catch (error) {
-    enqueueSnackbar("Failed to update", { variant: "error" });
+  function removeFile(index) {
+    setSelectedFile((prev) => prev.filter((_, i) => i !== index));
   }
-}
+  function removeExisting(index) {
+    setExistingPhotos((prev) => prev.filter((_, i) => i !== index));
+  }
+    async function getBy(params) {
+      try {
+        let response =  await api.get(`/products/getprd/${id}`)
+        dispatch(getProducts(response.data.data));
+      } catch (error) {}
+    }
 
+  async function updateProducts(e) {
+    e.preventDefault();
+
+    const formData = new FormData();
+
+    formData.append("name", productData.name);
+    formData.append("price", productData.price);
+    formData.append("description", productData.description);
+    formData.append("stock", productData.stock);
+    formData.append("discount", productData.discount);
+    formData.append("isAvailable", productData.isAvailable);
+
+    formData.append("existingPhotos", JSON.stringify(existingPhotos));
+
+    selectedFile.forEach((file) => {
+      formData.append("file", file);
+    });
+
+    try {
+      let response = await api.put(
+        `products/updateProduct/${product._id}`,
+        formData,
+      );
+
+      if(response.status === 200){
+      dispatch(updateProduct(response.data.products));
+      enqueueSnackbar("Product updated successfully", {
+        variant: "success",
+        anchorOrigin: { vertical: "top", horizontal: "right" },
+      });}
+    } catch (error) {
+      enqueueSnackbar("Failed to update", { variant: "error" });
+    }
+  }
 
   useEffect(() => {
-  if (product) {
-    setProductData(product);
-    setExistingPhotos(product.photo || []);
-  }
-}, [product]);
-console.log(product,existingPhotos);
+    if (product) {
+      setProductData(product);
+      setExistingPhotos(product.image.map((e) => e) || []);
+      getBy();
+    }
+  }, [product]);
+  console.log(product, existingPhotos);
 
   return (
     <Box>
@@ -186,36 +209,114 @@ console.log(product,existingPhotos);
             role={undefined}
             variant="contained"
             tabIndex={-1}
+                  sx={{
+                    backgroundColor: "#3E1A89",
+                    color: "white",
+                    borderRadius: "10px",
+                    textTransform: "none",
+                    "&:hover": {
+                      backgroundColor: "#3E1A89",
+                      opacity: 0.9,
+                    },
+                  }}
             startIcon={<CloudUploadIcon />}
           >
             Upload Images
             <VisuallyHiddenInput
               type="file"
-               key="photo-input"
+              key="photo-input"
               name="photo"
               onChange={handleChange}
               multiple
             />
           </Button>
           {
-            <Stack direction={'row'}>{existingPhotos.map((img, index) => (
-  <Chip
-    key={index}
-    label={img.split("/").pop()}
-    sx={{fontSize:"9px"}}
-    onDelete={() => removeExisting(index)}
-  />
-))}
-          {selectedFile.map((file, index) => (
-  <Chip
-    key={index}
-    label={file.name}
-    sx={{fontSize:"9px"}}
-    onDelete={() => removeFile(index)}
-  />
-))}</Stack>}
+            <Stack
+              direction={"row"}
+              flexWrap="wrap"
+              gap={1}
+              sx={{
+                maxHeight: "120px",
+                overflowY: "auto",
+                py: 0.5,
+              }}
+            >
+              {existingPhotos.map((img, index) => {
+                // const previewUrl = URL.createObjectURL(img)
+                img = img.replace(/\\/g, "/").replace(/^\/+/, "")
+                      return (
+                        <ImageListItem
+                          key={`new-${index}`}
+                          sx={{
+                            minWidth: "120px",
+                            maxWidth: "120px",
+                            width: "120px",
+                            border: "1px solid #2196f3",
+                            borderRadius: "8px",
+                            overflow: "hidden", 
+                            flexShrink: 0,
+                          }}
+                        >
+                          <img
+                            src={`http://localhost:4500/${img}`}
+                            alt="Upload"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                            onLoad={() => URL.revokeObjectURL(img)}
+                          />
+                          <ImageListItemBar
+                            position="top"
+                            actionIcon={
+                              <IconButton
+                                sx={{
+                                  color: "#fff",
+                                  backgroundColor: "rgba(0,0,0,0.5)",
+                                  m: 0.5,
+                                }}
+                                size="small"
+                                onClick={() => removeFile(index)}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            }
+                          />
+                        </ImageListItem>
+                      )})}
+              {selectedFile.map((file, index) => {
+            const previewURL = URL.createObjectURL(file);
+            
+            return (
+              <ImageListItem key={uuidv4()} sx={{ border: "1px solid #2196f3", borderRadius: "8px", overflow: "hidden" }}>
+                <img
+                  src={previewURL}
+                  alt="New Img"
+                  loading="lazy"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  onLoad={() => URL.revokeObjectURL(previewURL)} 
+                />
+                <ImageListItemBar
+                  position="top"
+                  actionIcon={
+                    <IconButton
+                      sx={{ color: "rgba(255, 255, 255, 0.9)", backgroundColor: "rgba(0,0,0,0.5)", m: 0.5, "&:hover": { backgroundColor: "rgba(255,0,0,0.7)" } }}
+                      size="small"
+                      onClick={() => removeFile(index)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  }
+                  actionPosition="right"
+                />
+              </ImageListItem>
+            );
+          })}
+            </Stack>
+          }
           <Grid container spacing={2}>
-            <Grid size={{ xs: 6 }} >
+            <Grid xs={6}>
               <FormControl fullWidth margin="normal">
                 <InputLabel htmlFor="price">Price</InputLabel>
                 <OutlinedInput
@@ -231,16 +332,21 @@ console.log(product,existingPhotos);
                 />
               </FormControl>
             </Grid>
-            <Grid  xs={6}>
+            <Grid xs={6}>
               <FormControl fullWidth margin="normal">
-                <InputLabel htmlFor="category">Category</InputLabel>
+                <InputLabel>Discount</InputLabel>
                 <OutlinedInput
-                  id="discount"
-                  type="text"
+                  type="number"
+                  name="discount"
                   value={productData.discount}
                   onChange={handleChange}
-                  name="discount"
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <span style={{ color: "#3E1A89" }}>%</span>
+                    </InputAdornment>
+                  }
                   label="Discount"
+                  sx={{ borderRadius: "10px" }}
                 />
               </FormControl>
             </Grid>
