@@ -91,13 +91,13 @@ async function filterCustomers(req, res) {
     }
 }
 
-// async function getTotalCustomers(req, res) {
-//     try {
-//         const count = await userModel.countDocuments({ role: "customer" }); 
-//         res.status(200).json({ totalCustomers: count });
-//     } catch (error) {
-//         res.status(500).json({ error: "Internal Server Error" });
-//     }
-// }
+async function getTotalCustomers(req, res) {
+    try {
+        const count = await userModel.countDocuments({ role: "customer" }); 
+        res.status(200).json({ totalCustomers: count });
+    } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
 
-module.exports = { getCustomers, deletecustomer, filterCustomers};
+module.exports = { getCustomers, deletecustomer, filterCustomers, getTotalCustomers };
