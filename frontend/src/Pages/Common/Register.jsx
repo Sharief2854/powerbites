@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Button, Typography, TextField } from "@mui/material";
+import { Box, Button, Typography, TextField, CircularProgress, Snackbar, Alert } from "@mui/material";
 import {
   validateEmail,
   validatePassword,
@@ -24,8 +24,15 @@ function Register() {
     confirmPassword: "",
     phone: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
   const navigate = useNavigate();
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -64,11 +71,12 @@ function Register() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    try {
-      if (formData.password !== formData.confirmPassword) {
-        return alert("Confirm password must match the password.");
-      }
+    if (formData.password !== formData.confirmPassword) {
+      return setSnackbar({ open: true, message: "Passwords do not match. Please try again.", severity: "error" });
+    }
 
+    setLoading(true);
+    try {
       let obj = {
         name: formData.name,
         email: formData.email,
@@ -91,14 +99,18 @@ function Register() {
         confirmPassword: "",
         phone: "",
       });
-      alert(res.data.message);
-      navigate(`/verifyOtp/${localStorage.getItem("userId")}`);
+      setSnackbar({ open: true, message: res.data.message || "Account created successfully! Please verify your email.", severity: "success" });
+      setTimeout(() => navigate(`/verifyOtp/${localStorage.getItem("userId")}`), 1500);
     } catch (err) {
-      console.log(err.response.data);
-      alert(err.response.data.message);
-      if (err.response.data.existingUser) {
-        navigate(`/login`)
-      }
+      console.log(err.response?.data);
+      setSnackbar({ open: true, message: err.response?.data?.message || "Registration failed. Please try again.", severity: "error" });
+      setTimeout(() => {
+        if (err.response?.data?.existingUser) {
+          navigate(`/login`);
+        }
+      }, 1500);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -208,10 +220,10 @@ function Register() {
                 type="submit"
                 fullWidth
                 variant="contained"
-                disabled={!isFormValid} // Button is safely disabled if forms contain invalid data
+                disabled={!isFormValid || loading} // Button is safely disabled if forms contain invalid data or is loading
                 sx={{ mt: 1.5, py: 1.2, fontWeight: "bold" }}
               >
-                Register
+                {loading ? <CircularProgress size={24} color="inherit" /> : "Register"}
               </PrimaryButton>
             </Box>
 
@@ -243,7 +255,16 @@ function Register() {
           </AuthCard>
         }
       />
-     
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

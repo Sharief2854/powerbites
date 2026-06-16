@@ -4,6 +4,9 @@ import {
   Button,
   Typography,
   TextField,
+  CircularProgress,
+  Snackbar,
+  Alert
 } from "@mui/material";
 import { validateOtp } from "../utils/Validation";
 import AuthCard from "./AuthCard";
@@ -13,15 +16,20 @@ import axios from "axios";
 import api from "../../api/axiosConfig";
 function ForgotVerifyOtp() {
   const [otp, setotp] = useState("");
-  const [error, setError] = useState("");
   const [verified, setVerified] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const navigate = useNavigate();
   const userId = useParams().id;
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
 
   const handleChange = (e) => {
     const value = e.target.value.replace(/\D/g, "").slice(0, 4);
     setotp(value);
-    setError("");
   };
 
 
@@ -32,28 +40,29 @@ function ForgotVerifyOtp() {
 
   const handleSubmit = async(e) => {
     e.preventDefault();
-    try{
     if (otp.length !== 4) {
-      setError("Please enter 4-digit OTP");
-      return;
-    }
-    //let otp = otp;
-    let res = await api.post(`http://localhost:4500/resetPass/verifyOtp/${userId}`,{otp});
-
-    console.log("res data :",res.data)
-
-    if (res.status !== 200) {
-      setError("Invalid OTP");
-      return;
+      return setSnackbar({ open: true, message: "Please enter a 4-digit OTP", severity: "error" });
     }
 
-    setVerified(true);
-    navigate(`/resetpassword/${userId}`);
-  }
-  catch(err){
-    console.log(err);
-    alert(err.response.data.message);
-  }
+    setLoading(true);
+    try {
+      let res = await api.post(`http://localhost:4500/resetPass/verifyOtp/${userId}`,{otp});
+      console.log("res data :",res.data)
+
+      if (res.status !== 200) {
+        setSnackbar({ open: true, message: "Invalid OTP. Please check the code and try again.", severity: "error" });
+        return;
+      }
+
+      setVerified(true);
+      setSnackbar({ open: true, message: "OTP verified! You can now reset your password.", severity: "success" });
+      setTimeout(() => navigate(`/resetpassword/${userId}`), 1500);
+    } catch(err) {
+      console.log(err);
+      setSnackbar({ open: true, message: err.response?.data?.message || "Verification failed. Please try again.", severity: "error" });
+    } finally {
+      setLoading(false);
+    }
   };
 
 
@@ -61,28 +70,29 @@ function ForgotVerifyOtp() {
   return (
    <Box
       sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh", // Complete dynamic viewport coverage
+         display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
         p: 2,
-        background: "linear-gradient(135deg, #3654F4 0%, #4A1BF1 40%, #3C1A77 100%)",
-        boxShadow: "inset 0px 4px 20px rgba(74, 27, 241, 0.3)",
+        background: 'linear-gradient(135deg, #3654F4 0%, #4A1BF1 40%, #3C1A77 100%)',
+        boxShadow: 'inset 0px 4px 20px rgba(74, 27, 241, 0.3)',
       }}
     >
       <MainAuthCard
         leftContent={
           <Box
             sx={{
-               maxWidth: 350,
-              width: "100%",
+               width: "100%",
               height: "100%", 
-              flex: 1, // Tells the box to grow and fill the parent flex container
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
               alignItems: "center",
               gap: 1.5,
+              p: 4,
+              // bgcolor: 'rgba(255, 192, 203, 0.15)', 
+               color: 'white'
             }}
           >
             <Typography variant="h4" fontWeight="bold">PowerBites</Typography>
@@ -108,7 +118,7 @@ function ForgotVerifyOtp() {
                 label="Enter OTP"
                 name="otp"
                 value={otp}
-                onChange={(e) => setOtp(e.target.value)}
+                onChange={handleChange}
                 error={!!otpError} // FIX: Changed from !!otp so it doesn't stay red continuously
                 helperText={otpError} // Displays your custom validation message
                 autoComplete="one-time-code"
@@ -120,10 +130,10 @@ function ForgotVerifyOtp() {
                 type="submit"
                 fullWidth
                 variant="contained"
-                disabled={!isFormValid} // Safe button lockout if checks fail
+                disabled={!isFormValid || loading} // Safe button lockout if checks fail
                 sx={{ mt: 3, py: 1.2, fontWeight: "bold" }}
               >
-                Verify
+                {loading ? <CircularProgress size={24} color="inherit" /> : "Verify"}
               </Button>
             </Box>
 
@@ -155,6 +165,16 @@ function ForgotVerifyOtp() {
           </AuthCard>
         }
       />
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
