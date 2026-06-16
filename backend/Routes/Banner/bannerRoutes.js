@@ -10,7 +10,7 @@ router.get("/allBanners", allBanners)
 router.delete("/deleteBanner/:id", deleteBanner)
 router.put("/updateBanner/:id", upload.array("file", 5), updateBanner)
 router.put("/bannerStatus/:id", bannerStatus)
-router.post("/setProductBanner", setProductBanner)
+router.post("/setProductBanner/:id", setProductBanner)
 
 
 

@@ -125,7 +125,9 @@ async function setQuantity(req,res){
 async function getCart(req,res){
     try{   
 
-        let cart = await cartModel.find();
+        let userId = req.userId;
+        let cart = await cartModel.find({customer:userId});
+
         if(!cart){
             return res.status(400).json({
                 message:"No items found"
@@ -135,6 +137,7 @@ async function getCart(req,res){
             message:"Items fetched successfully",
             cart
         })
+
 
      }
      catch(err){
