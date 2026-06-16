@@ -4,6 +4,7 @@ import { createSlice } from "@reduxjs/toolkit"
 const productReducer = createSlice({
     name:'product',
     initialState:{
+<<<<<<< HEAD
         products:[]
 //         products : [
 //   {
@@ -114,6 +115,9 @@ const productReducer = createSlice({
 //       "https://www.gurchini.com/cdn/shop/files/LuxuaryAssortedBrownFlowerBoxof10Pcs_acb4c3bf-b6e7-4fbf-a782-88b9ffb918a8.jpg?v=1727290658&width=2048",
 //   },
 // ]
+=======
+        products : []
+>>>>>>> 4b63e3e5e3774c32b69ed4189ce774b11ab8b08d
     },
     reducers:{
         getProducts:(state,action)=>{
@@ -123,6 +127,8 @@ const productReducer = createSlice({
             state.products = state.products.filter((product)=>product._id !== action.payload)
         },
         postProducts:(state,action)=>{
+            console.log(action.payload);
+            
             state.products= state.products.push(action.payload)
         },
         updateProduct:(state,action)=>{

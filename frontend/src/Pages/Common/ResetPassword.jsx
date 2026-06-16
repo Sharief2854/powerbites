@@ -4,6 +4,9 @@ import {
   Box,
   Button,
   Typography,
+  CircularProgress,
+  Snackbar,
+  Alert
 } from "@mui/material";
 import {
   validatePassword,
@@ -21,9 +24,15 @@ function ResetPassword() {
     password: "",
     confirmPassword: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const navigate = useNavigate();
   const userId = useParams().id
 
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -48,34 +57,32 @@ function ResetPassword() {
 
   const handleSubmit = async(event) => {
     event.preventDefault();
-    try{
+    
     if (formData.password !== formData.confirmPassword) {
-      return alert("Confirm password must match the password.");
+      return setSnackbar({ open: true, message: "Passwords do not match. Please try again.", severity: "error" });
     }
-    let password = formData.password;
-    let response = await api.post(`http://localhost:4500/resetPass/resetpassword/${userId}`,{password});
 
-    console.log("res data :",response.data)
+    setLoading(true);
+    try {
+      let password = formData.password;
+      let response = await api.post(`http://localhost:4500/resetPass/resetpassword/${userId}`,{password});
 
-    console.log("Password Update Request Payload:", formData);
-    if(response.status != 200){
-      return alert(response.data.message);
+      if (response.status != 200) {
+        return setSnackbar({ open: true, message: response.data.message || "Failed to reset password. Please try again.", severity: "error" });
+      }
+      setSnackbar({ open: true, message: "Password updated successfully! Redirecting to login...", severity: "success" });
+
+      // Clear form fields
+      setFormData({ password: "", confirmPassword: "" });
+
+      // Automatically route them back to login page upon success
+      setTimeout(() => navigate("/login"), 1500);
+    } catch(err) {
+      console.log(err.response?.data?.message);
+      setSnackbar({ open: true, message: err.response?.data?.message || "Failed to reset password. Please try again.", severity: "error" });
+    } finally {
+      setLoading(false);
     }
-    alert("Password updated successfully!");
-
-    // Clear form fields
-    setFormData({
-      password: "",
-      confirmPassword: "",
-    });
-
-    // Automatically route them back to login page upon success
-    navigate("/login");
-  }
-  catch(err){
-    console.log(err.response.data.message);
-    alert(err.response.data.message)
-  }
   };
 
 
@@ -85,7 +92,7 @@ function ResetPassword() {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: '100vh', // Complete dynamic viewport coverage
+        minHeight: '100vh',
         p: 2,
         background: 'linear-gradient(135deg, #3654F4 0%, #4A1BF1 40%, #3C1A77 100%)',
         boxShadow: 'inset 0px 4px 20px rgba(74, 27, 241, 0.3)',
@@ -95,16 +102,16 @@ function ResetPassword() {
         leftContent={
           <Box 
             sx={{
-              width: "100%",
-              height: "50%", // Inherits matched layout scale from parent component
+               width: "100%",
+              height: "100%", 
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
               alignItems: "center",
               gap: 1.5,
               p: 4,
-              bgcolor: 'rgba(255, 192, 203, 0.15)', // Uniform transparent tint style accent
-              color: 'white'
+              // bgcolor: 'rgba(255, 192, 203, 0.15)', 
+               color: 'white'
             }}
           >
             <Typography variant="h4" fontWeight="bold">PowerBites</Typography>
@@ -150,10 +157,10 @@ function ResetPassword() {
                 type="submit"
                 fullWidth
                 variant="contained"
-                disabled={!isFormValid} // Safe button lockout if checks fail
+                disabled={!isFormValid || loading} // Safe button lockout if checks fail
                 sx={{ mt: 3, py: 1.2, fontWeight: 'bold' }}
               >
-                Save Password
+                {loading ? <CircularProgress size={24} color="inherit" /> : "Save Password"}
               </Button>
             </Box>
             
@@ -185,6 +192,16 @@ function ResetPassword() {
           </AuthCard>
         } 
       />
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

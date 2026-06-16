@@ -13,8 +13,7 @@ async function allProduct(req, res) {
             })
         }
         res.status(200).json({
-            message: "Banners fetched successfully",
-             data
+            message: "Banners fetched successfully", data
         })
 
     }
@@ -30,6 +29,7 @@ async function allProduct(req, res) {
 
     try {
         let body = req.body
+        console.log( body)
         console.log(req.files, "file")
 
     //   const image= req.files.map(file => file.path)
@@ -158,13 +158,13 @@ async function updateProduct(req, res) {
 
 }
 
-async function getTotalProducts(req, res) {
-    try {
-        const count = await ProductModel.countDocuments();
-        res.status(200).json({ totalProducts: count });
-    } catch (error) {
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-}
+// async function getTotalProducts(req, res) {
+//     try {
+//         const count = await ProductModel.countDocuments();
+//         res.status(200).json({ totalProducts: count });
+//     } catch (error) {
+//         res.status(500).json({ error: "Internal Server Error" });
+//     }
+// }
 
-module.exports = { addProduct, updateProduct, deleteProduct, allProduct, getTotalProducts };
+module.exports = { addProduct, updateProduct, deleteProduct, allProduct };

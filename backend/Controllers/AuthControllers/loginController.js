@@ -16,7 +16,7 @@ const { generateAccessToken, generateRefreshToken } = require("../../Utils/Token
             })
 
         }
-                console.log(body)
+                
 
         
         if (!body.email || !body.password) {
@@ -77,6 +77,8 @@ const { generateAccessToken, generateRefreshToken } = require("../../Utils/Token
 
         let accessToken = generateAccessToken(user);
         let refreshToken = generateRefreshToken(user);
+
+        // cookie
 
 
         res.status(200).json({
