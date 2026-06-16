@@ -4,6 +4,7 @@ const ProductModel = require("../../Model/ProductModel");
 const { addProduct, updateProduct, deleteProduct, allProduct } = require("../../Controllers/ProductController/Produrcts");
 
 const router = express.Router();
+
 router.post("/addProduct", upload.array("file", 100), addProduct);
 
 router.put("/updateProduct/:id",upload.array("file", 100),updateProduct);

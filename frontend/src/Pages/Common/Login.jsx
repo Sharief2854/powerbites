@@ -55,7 +55,7 @@ function Login() {
     setFormData({ email: "", password: "" });
 
     if(decoded.role == "customer"){
-      navigate("/customer")
+      navigate("/ ")
     }
     else if(decoded.role == "admin"){
       navigate("/admin")
