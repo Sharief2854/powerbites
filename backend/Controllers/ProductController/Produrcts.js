@@ -157,13 +157,13 @@ async function updateProduct(req, res) {
 
 }
 
-// async function getTotalProducts(req, res) {
-//     try {
-//         const count = await ProductModel.countDocuments();
-//         res.status(200).json({ totalProducts: count });
-//     } catch (error) {
-//         res.status(500).json({ error: "Internal Server Error" });
-//     }
-// }
+async function getTotalProducts(req, res) {
+    try {
+        const count = await ProductModel.countDocuments();
+        res.status(200).json({ totalProducts: count });
+    } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
 
-module.exports = { addProduct, updateProduct, deleteProduct, allProduct };
+module.exports = { addProduct, updateProduct, deleteProduct, allProduct, getTotalProducts };
