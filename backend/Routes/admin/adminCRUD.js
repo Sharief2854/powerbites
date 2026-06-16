@@ -1,6 +1,6 @@
 const express = require("express");
 const userModel = require("../../Model/userModel");
-const {getCustomers,deletecustomer,filterCustomers} = require("../../Controllers/AdminControllers/AdminCustomerCont");
+const {getCustomers,deletecustomer,filterCustomers, getTotalCustomers} = require("../../Controllers/AdminControllers/AdminCustomerCont");
 
 const router = express.Router();
 
@@ -13,8 +13,8 @@ router.delete("/deletecustomer/:id", deletecustomer);
 //filter and get by alphabtes
 router.post("/filter", filterCustomers);
 
-// //getting total number of customers for admin dashboard
-// router.get("/getCustomersCount", getTotalCustomers);
+//getting total number of customers for admin dashboard
+router.get("/getCustomersCount", getTotalCustomers);
 
 
 

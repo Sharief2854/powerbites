@@ -1,4 +1,7 @@
 const express = require("express");
+const ProductCategoryModel = require("../../Model/productCategoryModel");
+const productCategoryModel = require("../../Model/productCategoryModel");
+
 
 //aading new category
 async function addCategory(req,res){
@@ -11,7 +14,7 @@ async function addCategory(req,res){
             });
         }
 
-        const existingCategory = await ProductCategoryModel.findOne({ name });
+        const existingCategory = await productCategoryModel.findOne({ name });
 
         if (existingCategory) {
             return res.status(400).json({
@@ -81,12 +84,41 @@ async function getCategory(req,res){
     }
 }
 
+//deleteCategory
 
+async function deleteCategory(req, res) {
+    try {
+        const categoryId = req.params.id;
+
+        const category = await ProductCategoryModel.findById(categoryId);
+
+        if (!category) {
+            return res.status(404).json({
+                message: "Category not found"
+            });
+        }
+
+        // soft delete
+        category.isAvailable = false;
+        await category.save();
+
+        res.status(200).json({
+            message: "Category deleted successfully (soft delete)"
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+}
 
 
 module.exports = {
     addCategory,
     updateCategory,
-    getCategory
+    getCategory,
+    deleteCategory
+
 
 }

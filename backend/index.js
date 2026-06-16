@@ -33,7 +33,7 @@ app.use("/upload", express.static("upload"));
 
 app.use("/auth",RegRouter,LoginRouter)
 app.use("/resetPass",ResetRouter)
-app.use("/auth",LoginRouter)
+// app.use("/auth",LoginRouter)
 
 // Admin routes CRUD opertions with authentication middleware
 app.use("/crudAdmin",isAdmin,adminRouter)

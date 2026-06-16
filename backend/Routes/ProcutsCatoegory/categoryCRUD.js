@@ -1,8 +1,7 @@
 const express = require("express");
-// const ProductCatogeryModel = require("../../Model/ProductCategoryModel");
-const ProductCategoryModel = require("../../Model/ProductCategoryModel");
-const { compose } = require("nodemailer/lib/xoauth2");
-const { addCategory, updateCategory, getCategory } = require("../../Controllers/CategoryController/productCategorycont");
+
+
+const { addCategory, updateCategory, getCategory, deleteCategory } = require("../../Controllers/CategoryController/productCategorycont");
 const router = express.Router();
 
 
@@ -15,6 +14,9 @@ router.put("/updateProductCategory/:id", updateCategory);
 
 //get all categories
 router.get("/allCategories", getCategory);
+
+//delete category
+router.delete("/deleteProductCategory/:id",deleteCategory);
 
 
 

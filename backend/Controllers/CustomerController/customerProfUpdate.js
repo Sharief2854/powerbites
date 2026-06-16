@@ -43,6 +43,7 @@ async function updateCustomerProfile(req, res) {
             });
         }
 
+
         if (name) {
             user.name = name;
         }
@@ -115,7 +116,7 @@ async function getCustomerProfile(req, res) {
                 message: "Unauthorized: User ID missing in token"
             });
         }
-        const user = await userModel.findById(userId).select("-isVerified ");
+        const user = await userModel.findById(userId).select("-isVerified");
         if (!user) {
             return res.status(404).json({
                 message: "User not found"
@@ -134,54 +135,99 @@ async function getCustomerProfile(req, res) {
 };
 
 // Customer photo upload controller functions
+// async function postCustomerPhoto(req, res) {
+//     console.log("postcustcgvhbjk")
+//     try {
+//         let userId = req.userId;
+//         console.log("User ID from token:", userId);
+//         if (!userId) {
+//             return res.status(401).json({
+//                 message: "Unauthorized: User ID missing in token"
+//             });
+//         }
+//         if (!req.file) {
+//             return res.status(400).json({
+//                 message: "Validation Error: Please select an image file to upload."
+//             });
+//         }
+//         console.log("File received:", req.file);
+
+//         const rawpath = req.file.path;
+
+
+//         const usefullUrl = rawpath.replace(/\\/g, "/");
+
+//         const newPhoto = new userModel
+//             ({
+//                 userId,
+//                 image: usefullUrl
+//             });
+//         await newPhoto.save();
+//         res.status(201).json({
+//             message: "Photo uploaded successfully",
+//             photo: newPhoto
+//         });
+//     } catch (error) {
+//         console.error("Error uploading photo:", error);
+//         res.status(500).json({
+//             message: "Internal server error"
+//         });
+//     }
+// };
+
+// // Customer photo update controller functions
+// async function updateCustomerPhoto(req, res) {
+//     try {
+//         let userId = req.userId;
+//         console.log("User ID from token:", userId);
+//         if (!userId) {
+//             return res.status(401).json({
+//                 message: "Unauthorized: User ID missing in token"
+//             });
+//         }
+//         if (!req.file) {
+//             return res.status(400).json({
+//                 message: "Validation Error: Please select an image file to upload."
+//             });
+//         }
+//         console.log("File received:", req.file);
+//         const rawpath = req.file.path;
+//         const usefullUrl = rawpath.replace(/\\/g, "/");
+//         const photo = await photoModel.findOne({ userId });
+//         if (!photo) {
+//             const newPhoto = new photoModel({
+//                 userId,
+//                 url: usefullUrl
+//             });
+//             await newPhoto.save();
+//             res.status(201).json({
+//                 message: "Photo updated successfully",
+//                 photo: newPhoto
+//             });
+//         } else {
+//             photo.url = usefullUrl;
+//             await photo.save();
+//             res.status(200).json({
+//                 message: "Photo updated successfully",
+//                 photo: photo
+//             });
+//         }
+//     } catch (error) {
+//         console.error("Error updating photo:", error);
+//         res.status(500).json({
+//             message: "Internal server error"
+//         });
+//     }
+// }
+
+//uploading and updating phtot
 async function postCustomerPhoto(req, res) {
-    console.log("postcustcgvhbjk")
     try {
         let userId = req.userId;
-        console.log("User ID from token:", userId);
+
         if (!userId) {
             return res.status(401).json({
                 message: "Unauthorized: User ID missing in token"
-            });
-        }
-        if (!req.file) {
-            return res.status(400).json({
-                message: "Validation Error: Please select an image file to upload."
-            });
-        }
-        console.log("File received:", req.file);
-
-        const rawpath = req.file.path;
-
-
-        const usefullUrl = rawpath.replace(/\\/g, "/");
-
-        const newPhoto = await photoModel.create
-            ({
-                userId,
-                url: usefullUrl
-            });
-        await newPhoto.save();
-        res.status(201).json({
-            message: "Photo uploaded successfully",
-            photo: newPhoto
-        });
-    } catch (error) {
-        console.error("Error uploading photo:", error);
-        res.status(500).json({
-            message: "Internal server error"
-        });
-    }
-};
-
-// Customer photo update controller functions
-async function updateCustomerPhoto(req, res) {
-    try {
-        const userId = req.userId;
-
-        if (!userId) {
-            return res.status(401).json({
-                message: "Unauthorized"
             });
         }
 
@@ -191,27 +237,83 @@ async function updateCustomerPhoto(req, res) {
             });
         }
 
-        const imageUrl = req.file.path.replace(/\\/g, "/");
+        const rawpath = req.file.path;
 
-        const photo = await photoModel.findOneAndUpdate(
-            { userId },
-            { url: imageUrl },
-            {
-                new: true,
-                upsert: true,
-                runValidators: true
-            }
+        // convert \ to /
+        const usefullPath = rawpath.replace(/\\/g, "/");
+
+        // 🔥 create full URL
+        const baseUrl = `${req.protocol}://${req.get("host")}`;
+        const imageUrl = `${baseUrl}/${usefullPath}`;
+
+        const updatedUser = await userModel.findByIdAndUpdate(
+            userId,
+            { image: imageUrl },
+            { new: true }
         );
 
-        return res.status(200).json({
-            message: "Photo updated successfully",
-            photo
+        res.status(200).json({
+            message: "Photo uploaded successfully",
+            imagePath: imageUrl,   // ✅ direct usable URL
+            user: updatedUser
         });
 
     } catch (error) {
-        console.error("Error updating photo:", error);
+        res.status(500).json({
+            message: error.message
+        });
+    }
+}
 
-        return res.status(500).json({
+//getcustomer Photo
+async function getCustomerPhoto(req, res) {
+    try {
+        let userId = req.userId;
+
+        const user = await userModel.findById(userId);
+
+        if (!user || !user.image) {
+            return res.status(404).json({
+                message: "Photo not found"
+            });
+        }
+
+        const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+        res.status(200).json({
+            message: "Photo retrieved successfully",
+            imageUrl: `${baseUrl}/${user.image}`
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+}
+
+//delete customer Photo
+async function deleteCustomerPhoto(req, res) {
+    try {
+        let userId = req.userId;
+
+        const user = await userModel.findById(userId);
+
+        if (!user || !user.image) {
+            return res.status(404).json({
+                message: "Photo not found"
+            });
+        }
+
+        user.image = "";
+        await user.save();
+
+        res.status(200).json({
+            message: "Photo deleted successfully"
+        });
+
+    } catch (error) {
+        res.status(500).json({
             message: error.message
         });
     }
@@ -221,62 +323,51 @@ async function updateCustomerPhoto(req, res) {
 async function addingAddress(req, res) {
     try {
         let userId = req.userId;
+        console.log("User ID from token:", userId);
 
-        let {
-            label,
-            street,
-            city,
-            state,
-            pincode,
-            country,
-            isDefault
-        } = req.body;
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized: User ID missing in token"
+            });
+        }
 
+        let { label, street, city, state, pincode, country } = req.body;
         if (!label || !street || !city || !state || !pincode || !country) {
             return res.status(400).json({
                 message: "All fields are required"
             });
-        }
-
+        }       
         const count = await addressModel.countDocuments({ userId });
-
-        // First address should always be default
-        if (count === 0) {
-            isDefault = true;
-        }
-
-        // If user selected "Set as Default"
-        if (isDefault) {
-            await addressModel.updateMany(
-                { userId },
-                { $set: { isDefault: false } }
-            );
-        }
-
         const newAddress = new addressModel({
             userId,
             label,
             street,
-            city,
+            city,   
             state,
             pincode,
             country,
-            isDefault: isDefault || false
+            isDefault: count === 0 ? true : false
         });
-
         await newAddress.save();
 
+        if (count > 0) {
+            await addressModel.updateMany(
+                { userId, _id: { $ne: newAddress._id } },
+                { $set: { isDefault: false } }
+            );
+        }        
+        console.log("add address")           
         res.status(201).json({
             message: "Address added successfully",
             address: newAddress
         });
-
     } catch (error) {
+        console.error("Error adding address:", error);
         res.status(500).json({
-            message: error.message
+            message: "Internal server error"
         });
-    }
-}
+    }   
+};
 
 // Customer delete address management controller functions
 async function deleteAddress(req, res) {
@@ -297,7 +388,6 @@ async function deleteAddress(req, res) {
         });
         console.log("result :",result)
         if (!result) {
-
             return res.status(404).json({
                 message: "Address not found"
             });
@@ -425,6 +515,44 @@ async function getCustomerAddressById(req, res) {
     }
 }
 
+async function setDefaultAddress(req, res) {
+    console.log("set default address")
+    try {
+        let userId = req.userId;
+        console.log("User ID from token:", userId); 
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized: User ID missing in token"
+            })
+        }
+        
+        let addressId = req.params.id;
+        console.log("Address Id:", addressId); 
+
+        let address = await addressModel.findOne({ _id: addressId, userId });
+
+        if(!address){
+           return res.status(404).json({
+                message:"Address not found"
+            })
+        }
+        address.isDefault = true;
+        await address.save();
+
+        res.status(200).json({
+            message: "Default address set successfully",
+            address: address
+        })
+        
+    }
+    catch (error) {
+        res.status(400).json({
+            message: "Internal Server Error",
+            error: error.message
+        })
+}
+}
+
 module.exports = {
     updateCustomerProfile,
     deleteCustomerProfile,
@@ -433,7 +561,9 @@ module.exports = {
     updateAddress,
     getCustomerProfile,
     postCustomerPhoto,
-    updateCustomerPhoto,
     getCustomerAddresses,
-    getCustomerAddressById
+    getCustomerAddressById,
+    setDefaultAddress,
+    getCustomerPhoto,
+    deleteCustomerPhoto
 }
