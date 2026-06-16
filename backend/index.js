@@ -20,6 +20,7 @@ const customerProfileRouter = require('./Routes/customer/customerProfile');
 const isCustomer = require('./MiddleWare/customerAuth');
 const upload = require('./config/multerConfig');
 const PaymentRouter = require('./Routes/Payments/razorpayRoutes');
+const DeveloperRouter = require('./Routes/DevepolerRoutes/Devepoler');
 // const productCategoryRouter =require("./Routes/ProcutsCatoegory/categoryCRUD")
 const ordersRouter = require('./Routes/Orders/ordersRouter');
 
@@ -52,6 +53,8 @@ app.use("/payment",PaymentRouter)
 
 // Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter)
+app.use("/developer",DeveloperRouter)
+
 // app.use("/products",ProductRouter) 
 
 // Global error handling middleware to catch Multer errors safely
