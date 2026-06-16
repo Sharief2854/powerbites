@@ -12,17 +12,13 @@ import axios from 'axios';
 import { PrimaryButton } from '../../../Components/Common/Buttons';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Grid } from '@mui/material';
+import { Grid, Stack } from '@mui/material';
 
 export default function ProductCard({product}) {
 
     let token = localStorage.getItem("token")
-    let header = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-    };
+    // let getImage =
+    // let cleanPath =  product.image.replace(/\\/g, '/').replace(/^\/+/, '')
     const navigate = useNavigate();
     let dispatch = useDispatch();
     let toggleUpdate = ()=>{
@@ -30,12 +26,13 @@ export default function ProductCard({product}) {
     }
     let handleDelete = async(params) => {
             try {
-                let response = await axios.delete(`http://localhost:4500/admin/product/deleteProduct/${product._id}`,{headers:header})
+                // let response = await api.delete(`/admin/product/deleteProduct/${product._id}`)
+                let response = await api.delete(`/products/deleteProduct/${id}`)
                 dispatch(deleteProducts(response.data.products))
                 enqueueSnackbar("Product deleted successfully", { variant: "success" });
               } catch (error) {
                 enqueueSnackbar("Failed to delete ", { variant: "error" });
-              }  
+              }
     }
   return (
     <Grid size={{ xs: 12, sm: 6 }}>
@@ -45,7 +42,7 @@ export default function ProductCard({product}) {
         <CardMedia
           component="img"
           height="140"
-          image={product.photo}
+          image={`http://localhost:4500/${product.image}`}
           alt="No Image Found"
         />
         <CardContent>
@@ -53,9 +50,17 @@ export default function ProductCard({product}) {
             {product.name}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Lizards are a widespread group of squamate reptiles, with over 6,000
-            species, ranging across all continents except Antarctica
+            {product.description}
           </Typography>
+          <Stack direction={'row'}>
+
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            ₹{product.price}
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {/* {product.discount}% */}
+          </Typography>
+          </Stack>
         </CardContent>
       </CardActionArea>
       <CardActions>
