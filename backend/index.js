@@ -19,8 +19,13 @@ const couponRouter = require('./Routes/Coupon/couponRouter');
 const customerProfileRouter = require('./Routes/customer/customerProfile');
 const isCustomer = require('./MiddleWare/customerAuth');
 const upload = require('./config/multerConfig');
+<<<<<<< HEAD
 const tproductsRoutes = require('./Routes/ProductfilteringRotes/Productfiltering');
 const developerRouter = require('./Routes/DevepolerRoutes/Devepoler');
+=======
+const PaymentRouter = require('./Routes/Payments/razorpayRoutes');
+
+>>>>>>> f79568efd9aed77c96b948ba9cb2456cd5164b34
 
 
 ConnectDB()
@@ -36,18 +41,22 @@ app.use("/resetPass",ResetRouter)
 
 // Admin routes CRUD opertions with authentication middleware
 app.use("/crudAdmin",isAdmin,adminRouter)
-app.use("/cart",CartRouter)
+app.use("/cart",isCustomer,CartRouter)
 app.use("/products",isAdmin,ProductRouter)
 app.use("/banner",bannerRouter)
 
 
 
 app.use("/coupon",couponRouter)
+app.use("/payment",PaymentRouter)
 
 // Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter)
+<<<<<<< HEAD
 app.use("/products",tproductsRoutes) 
 app.use("/developer",developerRouter)
+=======
+>>>>>>> f79568efd9aed77c96b948ba9cb2456cd5164b34
 
 // Global error handling middleware to catch Multer errors safely
 app.use((err, req, res, next) => {
