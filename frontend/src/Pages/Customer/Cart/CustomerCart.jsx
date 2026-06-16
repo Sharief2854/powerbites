@@ -7,6 +7,13 @@ import { useNavigate } from 'react-router-dom'
 import { enqueueSnackbar } from 'notistack'
 import { EditNotificationsSharp } from '@mui/icons-material'
 import { PrimaryButton } from '../../../Components/Common/Buttons'
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 
 export default function CustomerCart() {
 
@@ -17,11 +24,22 @@ export default function CustomerCart() {
   let decodeId = jwtDecode(token).id
   const [qty, setQty] = useState(1)
   const [quantity,setQuantity] = useState()
+  const [open, setOpen] = React.useState(false);
+    const theme = useTheme();
+    const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+
+    const handleClickOpen = () => {
+      setOpen(true);
+    };
+
+    const handleClose = () => {
+      setOpen(false);
+    };
 
   //get Cart Details
   async function getCart(params) {
     try {
-      let res = await api.get(`/customer/cart/getAddress/${decodeId}`)
+      let res = await api.get(`/cart/getAddress/${decodeId}`)
         dispatch(getCart(res.data.address))
     } catch (error) {
       // enqueueSnackbar('')
@@ -37,11 +55,21 @@ export default function CustomerCart() {
       // enqueueSnackbar('')
     }
   }
+  async function deleteCart(params) {
+    try {
+      let res = await api.get(`/cart/getAddress/${decodeId}`)
+        dispatch(getCart(res.data.address))
+    } catch (error) {
+      // enqueueSnackbar('')
+    }
+  }
   //get Customer Address
   async function getAddress(params) {
     try {
-      let res = await api.get(`/customer/cart/getAddress/${decodeId}`)
-        dispatch(address(res.data.address))
+      let res = await api.get("/updateCustomerProfile/getAddresses")
+        // dispatch(address(res.data.address))
+        console.log(res.data.addresses);        
+        setAddress(res.data.addresses)
     } catch (error) {
       // enqueueSnackbar('')
     }
@@ -54,6 +82,7 @@ export default function CustomerCart() {
       // enqueueSnackbar('')
     }
   }
+
 
   useEffect(() => {
     getAddress()
@@ -88,13 +117,50 @@ export default function CustomerCart() {
                   Saved Address
                 </Typography>
 
-                <IconButton onClick={changeAddress}>
+                <IconButton onClick={handleClickOpen}>
+                  {address.length > 0 ? (
+                    address.map((item) => (
+                      <Typography
+                        key={item._id}
+                        variant="body2"
+                        color="text.secondary"
+                      >
+                        {item.city}
+                      </Typography>
+                    ))
+                  ) : (null)}
                   <EditNotificationsSharp />
                 </IconButton>
               </Stack>
 
             </CardContent>
           </Card>
+         
+      <Dialog
+        fullScreen={fullScreen}
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="responsive-dialog-title"
+      >
+        <DialogTitle id="responsive-dialog-title">
+          {"Use Google's location service?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Let Google help apps determine location. This means sending anonymous
+            location data to Google, even when no apps are running.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus onClick={handleClose}>
+            Disagree
+          </Button>
+          <Button onClick={handleClose} autoFocus>
+            Agree
+          </Button>
+        </DialogActions>
+      </Dialog>
+ 
 
           <Card elevation={1}>
             <CardContent>

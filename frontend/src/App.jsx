@@ -20,7 +20,6 @@ import UpdateProducts from "./Pages/Admin/Products/UpdateProducts";
 import AdminProducts from "./Pages/Admin/Products/AdminProducts";
 import ProtectedRoutes from "./Routes/ProtectedRoutes";
 import CustomerDashboard from "./Pages/Customer/Layout/CustomerDashboard";
-import CustomerProfile from "./Pages/Customer/CustomerProfiles";
 import Overview from "./Pages/Admin/Home/AdminHome";
 import CustomerEditProfile from "./Pages/Customer/CustomerEditProfile";
 import CustomerProducts from "./Pages/Customer/CustomerProducts/CustomerProducts";
