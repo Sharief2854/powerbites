@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Box, Button, Typography, TextField, CircularProgress, Snackbar, Alert } from "@mui/material";
+import { Box, Button, Typography, TextField } from "@mui/material";
 import { validateEmail } from "../utils/Validation";
 import AuthCard from "./AuthCard";
 import MainAuthCard from "./MainAuthCard";
@@ -13,13 +13,7 @@ function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') return;
-    setSnackbar((prev) => ({ ...prev, open: false }));
-  };
 
   const handleChange = (event) => {
     setEmail(event.target.value);
@@ -32,26 +26,24 @@ function ForgotPassword() {
   const handleSubmit = async(event) => {
     event.preventDefault();
 
+    try{
     if (!isFormValid) return;
 
-    setLoading(true);
-    try {
-      console.log("Sending recovery link to:", email);
-      // TODO: Integrate your actual Password Reset API endpoint here
-      let response = await api.post("http://localhost:4500/resetPass/forgotpassword",{email});
+    console.log("Sending recovery link to:", email);
+    // TODO: Integrate your actual Password Reset API endpoint here
+    let response = await api.post("http://localhost:4500/resetPass/forgotpassword",{email});
 
-      console.log("res data :",response.data)
-      // Toggle success state to show a beautiful success confirmation
-      setIsSubmitted(true);
-      setSnackbar({ open: true, message: "A recovery OTP has been sent to your email.", severity: "success" });
+    console.log("res data :",response.data)
+    // Toggle success state to show a beautiful success confirmation
+    setIsSubmitted(true);
 
-      setTimeout(() => navigate(`/forgetverifyOtp/${response.data.user}`), 1500);
-    } catch(err) {
-      console.log(err.response?.data?.message);
-      setSnackbar({ open: true, message: err.response?.data?.message || "Failed to send OTP. Please try again.", severity: "error" });
-    } finally {
-      setLoading(false);
-    }
+    navigate(`/forgetverifyOtp/${response.data.user}`)
+
+  }
+  catch(err){
+    console.log(err.response.data.message);
+    alert(err.response.data.message);
+  }
 }
 
 
@@ -121,10 +113,10 @@ function ForgotPassword() {
                   type="submit"
                   fullWidth
                   variant="contained"
-                  disabled={!isFormValid || loading}
+                  disabled={!isFormValid}
                   sx={{ mt: 3, py: 1.2, fontWeight: 'bold' }}
                 >
-                  {loading ? <CircularProgress size={24} color="inherit" /> : "Send Recovery OTP"}
+                  Send Recovery OTP
                 </Button>
               </Box>
             ) : (
@@ -195,16 +187,6 @@ function ForgotPassword() {
           </AuthCard>
         } 
       />
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }
