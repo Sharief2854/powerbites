@@ -23,7 +23,10 @@ import CustomerDashboard from "./Pages/Customer/Layout/CustomerDashboard";
 import CustomerProfile from "./Pages/Customer/CustomerProfiles";
 import Overview from "./Pages/Admin/Home/AdminHome";
 import CustomerEditProfile from "./Pages/Customer/CustomerEditProfile";
-
+import CustomerProducts from "./Pages/Customer/CustomerProducts/CustomerProducts";
+import ProductPage from "./Pages/Customer/CustomerProducts/ProductPage";
+import CustomerCart from "./Pages/Customer/Cart/CustomerCart";
+import OrderList from "./Pages/Customer/CustomerOrder/OrderList";
 
 
 function App() {
