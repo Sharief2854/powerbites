@@ -19,8 +19,10 @@ const couponRouter = require('./Routes/Coupon/couponRouter');
 const customerProfileRouter = require('./Routes/customer/customerProfile');
 const isCustomer = require('./MiddleWare/customerAuth');
 const upload = require('./config/multerConfig');
+const PaymentRouter = require('./Routes/Payments/razorpayRoutes');
+const ordersRouter = require('./Routes/Orders/ordersRouter');
+
 const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD')
-const PaymentRouter = require('./Routes/Payments/razorpayRoutes')
 
 
 
@@ -33,13 +35,13 @@ app.use("/upload", express.static("upload"));
 
 app.use("/auth",RegRouter,LoginRouter)
 app.use("/resetPass",ResetRouter)
-// app.use("/auth",LoginRouter)
 
 // Admin routes CRUD opertions with authentication middleware
 app.use("/crudAdmin",isAdmin,adminRouter)
 app.use("/cart",isCustomer,CartRouter)
 app.use("/products",isAdmin,ProductRouter)
 app.use("/banner",bannerRouter)
+app.use("/orders",ordersRouter)
 
 app.use("/coupon",couponRouter)
 app.use("/category",isAdmin,productCategoryRouter)
