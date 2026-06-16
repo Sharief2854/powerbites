@@ -230,13 +230,13 @@ async function postCustomerPhoto(req, res) {
                 message: "Unauthorized: User ID missing in token"
             });
         }
-
         if (!req.file) {
             return res.status(400).json({
-                message: "Please upload an image"
+                message: "Validation Error: Please select an image file to upload."
             });
         }
-
+        console.log("File received:", req.file);
+    
         const rawpath = req.file.path;
 
         // convert \ to /
