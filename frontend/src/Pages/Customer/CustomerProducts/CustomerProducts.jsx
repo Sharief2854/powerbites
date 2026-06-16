@@ -1,16 +1,21 @@
-import { Box, Button, Card, CardActions, CardContent, Chip, CircularProgress, Grid, Typography } from '@mui/material'
+import { Box, Button, Card, CardActions, CardContent, Chip, CircularProgress, FormControl, FormControlLabel, Grid, MenuItem, OutlinedInput, Select, Switch, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
-import { addToCart } from '../../../Redux/Slices/CM_CartSlice'
+import { addToCart, addValue } from '../../../Redux/Slices/CM_CartSlice'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { PrimaryButton } from '../../../Components/Common/Buttons'
 import { jwtDecode } from 'jwt-decode'
+import api from '../../../api/axiosConfig'
 
 export default function CustomerProducts() {
 
 
   const [loading, setLoading] = useState(false)
   const [products, setProducts] = useState([])
+  const [searchProduct, setSearchProduct] = useState('')
+  const [range, setRange] = useState('')
+  const [isAvailableOnly, setIsAvailableOnly] = useState(false)
+
   let token = localStorage.getItem("token")
   let decodeId = jwtDecode(token).id
 
@@ -20,9 +25,8 @@ export default function CustomerProducts() {
   async function addItem(params) {
     setLoading(true)
     try {
-      let res = await api.post(`/cart/setQuantity/${decodeId}`, {
-        productId: params
-      })
+      let res = await api.post(`/cart/setQuantity/${decodeId}`, {})
+      dispatch(addToCart(res.data.data))
     } catch (error) {
     }
     finally {
@@ -35,8 +39,7 @@ export default function CustomerProducts() {
     try {
       let res = await api.get(`/products/all`)
       setProducts(res.data.data)
-      console.log(res.data.data);
-      
+      console.log(res.data.data);      
     } catch (error) {
       // enqueueSnackbar('')
     }
@@ -44,21 +47,121 @@ export default function CustomerProducts() {
       setLoading(false)
     }
   }
+  async function getCartItems(params) {
+    setLoading(true)
+    try {
+      let res = await api.get(`/cart/getCart`)
+      dispatch(addValue(res.data.data.quantity))
+      console.log(res.data.data); 
+    } catch (error) {
+      // enqueueSnackbar('')
+    }
+    finally {
+      setLoading(false)
+    }
+  }
+  
+  
+  const displayProducts = products
+  .filter((product) => {
+    const search = product.name
+      .toLowerCase()
+      .includes(searchProduct.toLowerCase());
+
+    let inStock = true;
+
+    if (isAvailableOnly) {
+      inStock =
+        product.isAvailable === true ||
+        product.isAvailable === "true" ||
+        Number(product.stock) > 0;
+    }
+
+    return search && inStock;
+  })
+  .sort((a, b) => {
+    if (range === "low") {
+      return a.price - b.price;
+    }
+
+    if (range === "high") {
+      return b.price - a.price;
+    }
+
+    return a.name.localeCompare(b.name);
+  });
+
+
 
 
   useEffect(() => {
     getProducts()
+    getCartItems()
   }, [])
   if(loading){
     return <CircularProgress color="primary"/>
   }
   return (
     <Box>
-      <Grid>
-          {products.map((item) => (
+       <Grid container spacing={2}>
+                          <Grid item size={5}>
+                            <FormControl fullWidth>
+                              <OutlinedInput
+                                id="search"
+                                placeholder="Search product"
+                                onChange={(e) => setSearchProduct(e.target.value)}
+                                sx={{
+                                  borderRadius: "12px",
+                                  backgroundColor: "white",
+                                }}
+                              />
+                            </FormControl>
+                          </Grid>
+      
+                          <Grid item size={4}>
+                            <FormControl fullWidth>
+                              <Select
+                                value={range}
+                                defaultValue=""
+                                displayEmpty
+                                placeholder="Sort by price"
+                                onChange={(e) => setRange(e.target.value)}
+                                sx={{
+                                  borderRadius: "12px",
+                                  backgroundColor: "white",
+                                }}
+                              >
+                                <MenuItem value="">--Sort--</MenuItem>
+                                <MenuItem value={"low"}>Low to High</MenuItem>
+                                <MenuItem value={"high"}>High to Low</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                          <Grid item size={3}>
+                            <FormControlLabel
+                              control={
+                                <Switch
+                                  checked={isAvailableOnly}
+                                  onChange={(e) =>
+                                    setIsAvailableOnly(e.target.checked)
+                                  }
+                                  color="secondary"
+                                />
+                              }
+                              label="In-Stock"
+                              labelPlacement="bottom"
+                              sx={{ color: "#3E1A89", ml: 1, whiteSpace: "nowrap" }}
+                            />
+                          </Grid>
+                        </Grid>
+      
+      <Grid container spacing={2}>
+          {displayProducts.map((item) =>{
+            const imagePath=item.image[0].replace(/\\/g, "/").replace(/^\/+/, "")
+            return (
     <Grid
       size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
-      key={item.id}
+      key={item._id}
       sx={{
         display: "flex",
         justifyContent: "center",
@@ -79,7 +182,7 @@ export default function CustomerProducts() {
           overflow: "hidden",
           transition: "transform 0.25s ease, box-shadow 0.25s ease",
           "&:hover": {
-            transform: "translateY(-6px)",
+            cursor: "pointer",
             boxShadow: "0 16px 30px rgba(0,0,0,0.10)",
           },
         }}
@@ -99,7 +202,7 @@ export default function CustomerProducts() {
           >
             <Box
               component="img"
-              src={item.image}
+              src={`http://localhost:4500/${imagPath}`}
               alt={item.name}
               sx={{
                 width: "100%",
@@ -212,7 +315,7 @@ export default function CustomerProducts() {
             }}
             onClick={() => addItem(item._id),dispatch(addToCart(item._id))}
           >
-            View Product
+            Add to cart
           </PrimaryButton>
           <PrimaryButton
             fullWidth
@@ -238,7 +341,7 @@ export default function CustomerProducts() {
         </CardActions>
       </Card>
     </Grid>
-  ))}
+  )})}
       </Grid>
         
     </Box>

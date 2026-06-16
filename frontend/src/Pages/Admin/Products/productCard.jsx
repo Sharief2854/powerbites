@@ -18,6 +18,7 @@ export default function ProductCard({product}) {
 
     let token = localStorage.getItem("token")
     // let getImage =
+
     // let cleanPath =  product.image.replace(/\\/g, '/').replace(/^\/+/, '')
     const navigate = useNavigate();
     let dispatch = useDispatch();
@@ -26,8 +27,8 @@ export default function ProductCard({product}) {
     }
     let handleDelete = async(params) => {
             try {
-                // let response = await api.delete(`/admin/product/deleteProduct/${product._id}`)
-                let response = await api.delete(`/products/deleteProduct/${id}`)
+                // let response = await api.delete(`/admin/product/deleteProduct/${}`)
+                let response = await api.delete(`/products/deleteProduct/${product._id}`)
                 dispatch(deleteProducts(response.data.products))
                 enqueueSnackbar("Product deleted successfully", { variant: "success" });
               } catch (error) {
@@ -35,7 +36,7 @@ export default function ProductCard({product}) {
               }
     }
   return (
-    <Grid size={{ xs: 12, sm: 6 }}>
+    <Grid size={{ xs: 12, sm: 4 }}>
     <Card sx={{ maxWidth: 345 }}>
       <SnackbarProvider/>
       <CardActionArea>

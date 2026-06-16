@@ -27,6 +27,10 @@ import { useParams } from "react-router-dom";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import styled from "@emotion/styled";
 import api from "../../../api/axiosConfig";
+import { v4 as uuidv4 } from "uuid";
+import { getProducts } from "../../../Redux/Slices/ProductSlice";
+import DeleteIcon from "@mui/icons-material/Delete";
+
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -77,18 +81,17 @@ export default function UpdateProducts() {
   let allProducts = useSelector((state) => state?.product?.products);
   let { id } = useParams();
   let product = allProducts?.find((e) => {
-    // return e._id == id;
-    return e.id == id;
+    return e._id == id;
   });
-  console.log(allProducts);
+  console.log(product);
 
   const [productData, setProductData] = useState({
-    name: product.name,
-    description: product.description,
-    price: product.price,
-    stock: product.stock,
-    discount: product.discount,
-    isAvailable: product.isAvailable,
+    name: product?.name,
+    description: product?.description,
+    price: product?.price,
+    stock: product?.stock,
+    discount: product?.discount,
+    isAvailable: product?.isAvailable,
   });
 
   const [selectedFile, setSelectedFile] = useState([]);
@@ -118,15 +121,15 @@ export default function UpdateProducts() {
   function removeExisting(index) {
     setExistingPhotos((prev) => prev.filter((_, i) => i !== index));
   }
-  async function updateProducts(e) {
-    e.preventDefault();
-
-    async function getById(params) {
+    async function getBy(params) {
       try {
-        let response = await api.get(`admin/all/${product._id}`);
+        let response =  await api.get(`/products/getprd/${id}`)
         dispatch(getProducts(response.data.data));
       } catch (error) {}
     }
+
+  async function updateProducts(e) {
+    e.preventDefault();
 
     const formData = new FormData();
 
@@ -145,7 +148,7 @@ export default function UpdateProducts() {
 
     try {
       let response = await api.put(
-        `admin/updateProduct/${product._id}`,
+        `products/updateProduct/${product._id}`,
         formData,
       );
 
@@ -163,8 +166,8 @@ export default function UpdateProducts() {
   useEffect(() => {
     if (product) {
       setProductData(product);
-      // setExistingPhotos(product.image.map((e) => e) || []);
-      // getById();
+      setExistingPhotos(product.image.map((e) => e) || []);
+      getBy();
     }
   }, [product]);
   console.log(product, existingPhotos);
@@ -206,6 +209,16 @@ export default function UpdateProducts() {
             role={undefined}
             variant="contained"
             tabIndex={-1}
+                  sx={{
+                    backgroundColor: "#3E1A89",
+                    color: "white",
+                    borderRadius: "10px",
+                    textTransform: "none",
+                    "&:hover": {
+                      backgroundColor: "#3E1A89",
+                      opacity: 0.9,
+                    },
+                  }}
             startIcon={<CloudUploadIcon />}
           >
             Upload Images
@@ -223,31 +236,66 @@ export default function UpdateProducts() {
               flexWrap="wrap"
               gap={1}
               sx={{
-                width: "100%",
                 maxHeight: "120px",
                 overflowY: "auto",
                 py: 0.5,
               }}
             >
-              {existingPhotos.map((img, index) => (
-                <Chip
-                  key={index}
-                  label={img.split("/").pop()}
-                  sx={{ fontSize: "9px" }}
-                  onDelete={() => removeExisting(index)}
-                />
-              ))}
+              {existingPhotos.map((img, index) => {
+                // const previewUrl = URL.createObjectURL(img)
+                img = img.replace(/\\/g, "/").replace(/^\/+/, "")
+                      return (
+                        <ImageListItem
+                          key={`new-${index}`}
+                          sx={{
+                            minWidth: "120px",
+                            maxWidth: "120px",
+                            width: "120px",
+                            border: "1px solid #2196f3",
+                            borderRadius: "8px",
+                            overflow: "hidden", 
+                            flexShrink: 0,
+                          }}
+                        >
+                          <img
+                            src={`http://localhost:4500/${img}`}
+                            alt="Upload"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                            onLoad={() => URL.revokeObjectURL(img)}
+                          />
+                          <ImageListItemBar
+                            position="top"
+                            actionIcon={
+                              <IconButton
+                                sx={{
+                                  color: "#fff",
+                                  backgroundColor: "rgba(0,0,0,0.5)",
+                                  m: 0.5,
+                                }}
+                                size="small"
+                                onClick={() => removeFile(index)}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            }
+                          />
+                        </ImageListItem>
+                      )})}
               {selectedFile.map((file, index) => {
-            const localPreviewUrl = URL.createObjectURL(file);
+            const previewURL = URL.createObjectURL(file);
             
             return (
               <ImageListItem key={uuidv4()} sx={{ border: "1px solid #2196f3", borderRadius: "8px", overflow: "hidden" }}>
                 <img
-                  src={localPreviewUrl}
+                  src={previewURL}
                   alt="New Img"
                   loading="lazy"
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  onLoad={() => URL.revokeObjectURL(localPreviewUrl)} 
+                  onLoad={() => URL.revokeObjectURL(previewURL)} 
                 />
                 <ImageListItemBar
                   position="top"

@@ -18,6 +18,7 @@ import {
   ImageListItem,
   ImageListItemBar,
   IconButton,
+  Modal,
 } from "@mui/material";
 import axios from "axios";
 import { enqueueSnackbar, SnackbarContent, SnackbarProvider } from "notistack";
@@ -37,7 +38,70 @@ import { v4 as uuidv4 } from "uuid";
 import { Chip } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import api from "../../../api/axiosConfig";
+import Checkbox from '@mui/material/Checkbox';
 
+const BpIcon = styled('span')(({ theme }) => ({
+  borderRadius: 3,
+  width: 16,
+  height: 16,
+  boxShadow: 'inset 0 0 0 1px rgba(16,22,26,.2), inset 0 -1px 0 rgba(16,22,26,.1)',
+  backgroundColor: '#f5f8fa',
+  backgroundImage: 'linear-gradient(180deg,hsla(0,0%,100%,.8),hsla(0,0%,100%,0))',
+  '.Mui-focusVisible &': {
+    outline: '2px auto rgba(19,124,189,.6)',
+    outlineOffset: 2,
+  },
+  'input:hover ~ &': {
+    backgroundColor: '#ebf1f5',
+    ...theme.applyStyles('dark', {
+      backgroundColor: '#30404d',
+    }),
+  },
+  'input:disabled ~ &': {
+    boxShadow: 'none',
+    background: 'rgba(206,217,224,.5)',
+    ...theme.applyStyles('dark', {
+      background: 'rgba(57,75,89,.5)',
+    }),
+  },
+  ...theme.applyStyles('dark', {
+    boxShadow: '0 0 0 1px rgb(16 22 26 / 40%)',
+    backgroundColor: '#394b59',
+    backgroundImage: 'linear-gradient(180deg,hsla(0,0%,100%,.05),hsla(0,0%,100%,0))',
+  }),
+}));
+
+const BpCheckedIcon = styled(BpIcon)({
+  backgroundColor: '#137cbd',
+  backgroundImage: 'linear-gradient(180deg,hsla(0,0%,100%,.1),hsla(0,0%,100%,0))',
+  '&::before': {
+    display: 'block',
+    width: 16,
+    height: 16,
+    backgroundImage:
+      "url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath" +
+      " fill-rule='evenodd' clip-rule='evenodd' d='M12 5c-.28 0-.53.11-.71.29L7 9.59l-2.29-2.3a1.003 " +
+      "1.003 0 00-1.42 1.42l3 3c.18.18.43.29.71.29s.53-.11.71-.29l5-5A1.003 1.003 0 0012 5z' fill='%23fff'/%3E%3C/svg%3E\")",
+    content: '""',
+  },
+  'input:hover ~ &': {
+    backgroundColor: '#106ba3',
+  },
+});
+
+function BpCheckbox(props) {
+  return (
+    <Checkbox
+      sx={{ '&:hover': { bgcolor: 'transparent' } }}
+      disableRipple
+      color="default"
+      checkedIcon={<BpCheckedIcon />}
+      icon={<BpIcon />}
+      slotProps={{ input: { 'aria-label': 'Checkbox demo' } }}
+      {...props}
+    />
+  );
+}
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
   clipPath: "inset(50%)",
@@ -91,14 +155,17 @@ export default function AdminProducts() {
     isAvailable: true,
     discount: 0,
   });
+  const [open, setOpen] = React.useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
   const [range, setRange] = useState("");
   const [isAvailableOnly, setIsAvailableOnly] = useState(false);
   const [photo, setPhoto] = useState([]);
   const [menuItem, setMenuItem] = useState([]);
   const [searchProduct, setSearchProduct] = useState("");
   const [loading, setLoading] = useState(false);
-  const [add,setAdd]=useState(false)
-
+  const [add, setAdd] = useState(false);
 
   let getData = useSelector((state) => state.product.products);
   function removeFile(index) {
@@ -106,31 +173,28 @@ export default function AdminProducts() {
   }
 
   async function getCategoryItems(params) {
-    setLoading(true)
+    setLoading(true);
     try {
-      let res = await api.get(`products/category`)
-      setMenuItem(res.data.data)
+      let res = await api.get(`products/category`);
+      setMenuItem(res.data.data);
     } catch (error) {
-      
-    }finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   }
 
-  console.log(getData);
-  
   let displayProducts = getData
     ?.filter((product) => {
       const matchesSearch = product.name
         .toLowerCase()
         .includes(searchProduct.toLowerCase());
       let matchesPrice = true;
-      
+
       if (range !== "" && range !== 0) {
         matchesPrice =
           product.price >= Number(range) - 1000 &&
           product.price < Number(range);
-      } 
+      }
       let matchesAvailability = true;
       if (isAvailableOnly) {
         matchesAvailability =
@@ -147,14 +211,14 @@ export default function AdminProducts() {
       }
       return a.name.localeCompare(b.name);
     });
-    if(isAvailableOnly){
-    let filteredProducts= displayProducts.filter((i,ind)=>{
-      if(i.isAvailable){
-        return true
+  if (isAvailableOnly) {
+    let filteredProducts = displayProducts.filter((i, ind) => {
+      if (i.isAvailable) {
+        return true;
       }
-      return false
-    })
-    displayProducts= filteredProducts
+      return false;
+    });
+    displayProducts = filteredProducts;
   }
 
   let dispatch = useDispatch();
@@ -172,10 +236,8 @@ export default function AdminProducts() {
     }
   }
   function removeFile(index) {
-  setPhoto((prev) =>
-    prev.filter((_, i) => i !== index)
-  );
-}
+    setPhoto((prev) => prev.filter((_, i) => i !== index));
+  }
 
   const handlePost = async (e) => {
     e.preventDefault();
@@ -190,7 +252,7 @@ export default function AdminProducts() {
     submissionData.append("stock", productData.stock);
 
     photo.forEach((file) => {
-      submissionData.append("image", file);
+      submissionData.append("file", file);
     });
     submissionData.forEach((value, key) => {
       console.log(key, value);
@@ -200,20 +262,16 @@ export default function AdminProducts() {
     }
 
     try {
-      let response = await api.post(
-        "/products/addProduct",
-        submissionData
-      );
+      let response = await api.post("/products/addProduct", submissionData);
       console.log(response.data);
-      
+
       dispatch(postProducts(productData));
       enqueueSnackbar("Product added successfully", { variant: "success" });
     } catch (error) {
       console.log(error.message);
       enqueueSnackbar("Failed to add product", { variant: "error" });
-    }
-    finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -232,9 +290,11 @@ export default function AdminProducts() {
     allData();
     getCategoryItems();
   }, []);
-  if (loading) {
-    return <CircularProgress color="primary" />;
-  }
+  // if (loading) {
+
+  //   <CircularProgress color="primary" />;
+  //   return;
+  // }
 
   return (
     <Box
@@ -243,6 +303,8 @@ export default function AdminProducts() {
         padding: "20px",
         backgroundColor: "white",
         borderRadius: "16px",
+        position: "relative",
+        width: "100%",
         boxShadow: "0 8px 25px rgba(62,26,137,0.08)",
       }}
     >
@@ -260,18 +322,17 @@ export default function AdminProducts() {
       >
         Product
       </Typography>
-      <Box
-      sx={{position:'absolute', top:0,right:0}}>
-        <PrimaryButton onClick={setAdd(true)}>Add Product</PrimaryButton>
+      <Box sx={{ position: "absolute", top: 0, right: 0,margin: "20px"}}>
+        <PrimaryButton onClick={handleOpen}>Add Product</PrimaryButton>
       </Box>
 
       <Grid
         container
-        sx={{ transition: "0.4s" ,minWidth:0}}
+        sx={{ transition: "0.4s", minWidth: 0 }}
         direction={{ xs: "column-reverse", md: "row" }}
         spacing={4}
       >
-        <Grid item size={{ sm: 12, md: 7 }}>
+        <Grid item size={{ sm: 12 }}>
           <div>
             <Grid container spacing={3}>
               <Grid item size={12}>
@@ -336,10 +397,20 @@ export default function AdminProducts() {
                 <Grid container spacing={2}>
                   {displayProducts && displayProducts.length > 0 ? (
                     displayProducts.map((product) => (
-                        <ProductCard product={product} />
+                      <ProductCard product={product} />
                     ))
                   ) : (
-                    <Typography variant="body1" color="initial" align="center" sx={{ mt: 2,fontWeight:'20px',width:'100%', textAlign:'center' }}>
+                    <Typography
+                      variant="body1"
+                      color="initial"
+                      align="center"
+                      sx={{
+                        mt: 2,
+                        fontWeight: "20px",
+                        width: "100%",
+                        textAlign: "center",
+                      }}
+                    >
                       Empty data
                     </Typography>
                   )}
@@ -349,242 +420,286 @@ export default function AdminProducts() {
           </div>
         </Grid>
         {
-add?(<Grid item size={{ sm: 12, md: 5 }} sx={{ minWidth: 0, maxWidth: { md: "41.66%" }, width: "100%" }}>
-  
-  <Stack
-    component="form"
-    onSubmit={handlePost}
-    spacing={2.5}
-    sx={{
-      backgroundColor: "white",
-      padding: "25px",
-      width: "100%",          
-      maxWidth: "100%",       
-      boxSizing: "border-box",
-      borderRadius: "16px",
-      border: "1px solid #3E1A89",
-    }}
-  >
-    <Typography variant="h6" sx={{ color: "#3E1A89", fontWeight: 600 }}>
-      Add Product
-    </Typography>
-
-    <FormControl fullWidth>
-      <InputLabel>Product Name</InputLabel>
-      <OutlinedInput
-        name="name"
-        label="Product Name"
-        onChange={handleChange}
-        sx={{ borderRadius: "10px" }}
-      />
-    </FormControl>
-
-    <FormControl fullWidth>
-      <InputLabel>Description</InputLabel>
-      <OutlinedInput
-        multiline
-        rows={4}
-        name="description"
-        label="Description"
-        onChange={handleChange}
-        sx={{ borderRadius: "10px" }}
-      />
-    </FormControl>
-
-    <Button
-      component="label"
-      variant="contained"
-      startIcon={<CloudUploadIcon />}
-      sx={{
-        backgroundColor: "#3E1A89",
-        color: "white",
-        borderRadius: "10px",
-        textTransform: "none",
-        "&:hover": {
-          backgroundColor: "#3E1A89",
-          opacity: 0.9,
-        },
-      }}
-    >
-      Upload Images
-      <VisuallyHiddenInput
-        type="file"
-        name="photo"
-        onChange={handleChange}
-        multiple
-      />
-    </Button>
-
-    <Box sx={{ width: "100%", minWidth: 0, maxWidth: "100%", display: "block", overflow: "hidden" }}>
-      <Stack
-        direction="row"
-        flexWrap="nowrap"    
-        gap={1}
-        sx={{
-          width: "80%",
-          height: "115px",   
-          maxHeight: "145px",
-          overflowX: "scroll", 
-          overflowY: "hidden", 
-          py: 0.5,
-
-          "&::-webkit-scrollbar": {
-            height: "8px",
-            display: "block !important",
-          },
-          "&::-webkit-scrollbar-track": {
-            backgroundColor: "#f1f1f1",
-            borderRadius: "4px",
-          },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor: "#3E1A89",
-            borderRadius: "4px",
-          },
-          scrollbarWidth: "thin",
-        }}
-      >
-        {photo.map((file, index) => {
-          const previewUrl = URL.createObjectURL(file);
-
-          return (
-            <ImageListItem
-              key={`new-${index}`} 
-              sx={{ 
-                minWidth: "120px",   
-                maxWidth: "120px", 
-                width: "120px",
-                height: "120px", 
-                border: "1px solid #2196f3", 
-                borderRadius: "8px", 
-                overflow: "hidden", // Crucial: Replaced inner overflowX with hidden
-                flexShrink: 0       // Essential to prevent flexbox from crushing images flat
+          <Modal
+            keepMounted
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="keep-mounted-modal-add-product"
+            aria-describedby="keep-mounted-modal-add-product"
+          >
+            <Grid
+              item
+              size={{ sm: 12}}
+              sx={{
+                width: "100%",
+                height:"80%",
+                position: "absolute",
+                  overflowY: "auto", 
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: 400,
+                bgcolor: "background.paper",
+                border: "2px solid #000",
+                boxShadow: 24,
+                p: 4,
               }}
             >
-              <img
-                src={previewUrl}
-                alt="New Upload"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                onLoad={() => URL.revokeObjectURL(previewUrl)}
-              />
-              <ImageListItemBar
-                position="top"
-                actionIcon={
-                  <IconButton
-                    sx={{ color: "#fff", backgroundColor: "rgba(0,0,0,0.5)", m: 0.5 }}
-                    size="small"
-                    onClick={() => removeFile(index)}
+              <Stack
+                component="form"
+                onSubmit={handlePost}
+                spacing={2.5}
+                sx={{
+                  backgroundColor: "white",
+                  padding: "25px",
+                  width: "100%",
+                  maxWidth: "100%",       
+                  boxShadow: "0 8px 25px rgba(62,26,137,0.08)",
+                  boxSizing: "border-box",
+                  border: "1px solid #3E1A89",
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: "#3E1A89", fontWeight: 600 }}
+                >
+                  Add Product
+                </Typography>
+
+                <FormControl fullWidth>
+                  <InputLabel>Product Name</InputLabel>
+                  <OutlinedInput
+                    name="name"
+                    label="Product Name"
+                    onChange={handleChange}
+                    sx={{ borderRadius: "10px" }}
+                  />
+                </FormControl>
+
+                <FormControl fullWidth>
+                  <InputLabel>Description</InputLabel>
+                  <OutlinedInput
+                    multiline
+                    rows={4}
+                    name="description"
+                    label="Description"
+                    onChange={handleChange}
+                    sx={{ borderRadius: "10px" }}
+                  />
+                </FormControl>
+
+                <Button
+                  component="label"
+                  variant="contained"
+                  startIcon={<CloudUploadIcon />}
+                  sx={{
+                    backgroundColor: "#3E1A89",
+                    color: "white",
+                    borderRadius: "10px",
+                    textTransform: "none",
+                    "&:hover": {
+                      backgroundColor: "#3E1A89",
+                      opacity: 0.9,
+                    },
+                  }}
+                >
+                  Upload Images
+                  <VisuallyHiddenInput
+                    type="file"
+                    name="photo"
+                    onChange={handleChange}
+                    multiple
+                  />
+                </Button>
+
+                <Box
+                  sx={{
+                    width: "100%",
+                    minWidth: 0,
+                    maxWidth: "100%",
+                    display: "block",
+                    overflow: "hidden",
+                  }}
+                >
+                  <Stack
+                    direction="row"
+                    flexWrap="nowrap"
+                    gap={1}
+                    sx={{
+                      width: "80%",
+                      overflowX: "auto",
+                      overflowY: "hidden",
+                      py: 0.5,
+
+                      "&::-webkit-scrollbar": {
+                        height: "8px",
+                        display: "block !important",
+                      },
+                      "&::-webkit-scrollbar-track": {
+                        backgroundColor: "#f1f1f1",
+                        borderRadius: "4px",
+                      },
+                      "&::-webkit-scrollbar-thumb": {
+                        backgroundColor: "#3E1A89",
+                        borderRadius: "4px",
+                      },
+                      scrollbarWidth: "thin",
+                    }}
                   >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                }
-              />
-            </ImageListItem>
-          );
-        })}
-      </Stack>
-    </Box>
+                    {photo.map((file, index) => {
+                      const previewUrl = URL.createObjectURL(file);
 
-            <Grid container spacing={2} >
-              <Grid item xs={6} size={5}>
-                <FormControl fullWidth>
-                  <InputLabel>Price</InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    name="price"
-                    onChange={handleChange}
-                    startAdornment={
-                      <InputAdornment position="start">
-                        <span style={{ color: "#3E1A89" }}>₹</span>
-                      </InputAdornment>
-                    }
-                    label="Price"
-                    sx={{ borderRadius: "10px" }}
-                  />
-                </FormControl>
-              </Grid>
-              <Grid item xs={6} size={5}>
-                <FormControl fullWidth>
-                  <InputLabel>Discount</InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    name="discount"
-                    
-                    onChange={handleChange}
-                    startAdornment={
-                      <InputAdornment position="end">
-                        <span style={{ color: "#3E1A89" }}>%</span>
-                      </InputAdornment>
-                    }
-                    label="Discount"
-                    sx={{ borderRadius: "10px" }}
-                  />
-                </FormControl>
-              </Grid>
+                      return (
+                        <ImageListItem
+                          key={`new-${index}`}
+                          sx={{
+                            minWidth: "120px",
+                            maxWidth: "120px",
+                            width: "120px",
+                            border: "1px solid #2196f3",
+                            borderRadius: "8px",
+                            overflow: "hidden", 
+                            flexShrink: 0,
+                          }}
+                        >
+                          <img
+                            src={previewUrl}
+                            alt="New Upload"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                            onLoad={() => URL.revokeObjectURL(previewUrl)}
+                          />
+                          <ImageListItemBar
+                            position="top"
+                            actionIcon={
+                              <IconButton
+                                sx={{
+                                  color: "#fff",
+                                  backgroundColor: "rgba(0,0,0,0.5)",
+                                  m: 0.5,
+                                }}
+                                size="small"
+                                onClick={() => removeFile(index)}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            }
+                          />
+                        </ImageListItem>
+                      );
+                    })}
+                  </Stack>
+                </Box>
 
-              <Grid item xs={6} size={7}>
-                <FormControlLabel
-                  label="Stock Available"
-                  sx={{ color: "#3E1A89", mt: 1 }}
-                  control={
-                    <Android12Switch
-                      checked={productData.isAvailable}
-                      onChange={() =>
-                        setProductData({
-                          ...productData,
-                          isAvailable: !productData.isAvailable,
-                        })
+                <Grid container spacing={2}>
+                  <Grid item xs={6} size={5}>
+                    <FormControl fullWidth>
+                      <InputLabel>Price</InputLabel>
+                      <OutlinedInput
+                        type="number"
+                        name="price"
+                        onChange={handleChange}
+                        startAdornment={
+                          <InputAdornment position="start">
+                            <span style={{ color: "#3E1A89" }}>₹</span>
+                          </InputAdornment>
+                        }
+                        label="Price"
+                        sx={{ borderRadius: "10px" }}
+                      />
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={6} size={5}>
+                    <FormControl fullWidth>
+                      <InputLabel>Discount</InputLabel>
+                      <OutlinedInput
+                        type="number"
+                        name="discount"
+                        onChange={handleChange}
+                        startAdornment={
+                          <InputAdornment position="end">
+                            <span style={{ color: "#3E1A89" }}>%</span>
+                          </InputAdornment>
+                        }
+                        label="Discount"
+                        sx={{ borderRadius: "10px" }}
+                      />
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={6} size={7}>
+                    <FormControlLabel
+                      label="Stock Available"
+                      sx={{ color: "#3E1A89", mt: 1 }}
+                      control={
+                        <Android12Switch
+                          checked={productData.isAvailable}
+                          onChange={() =>
+                            setProductData({
+                              ...productData,
+                              isAvailable: !productData.isAvailable,
+                            })
+                          }
+                        />
                       }
                     />
-                  }
-                />
-              </Grid>
+                  </Grid>
+                </Grid>
+
+                {/* <FormControl fullWidth>
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    name="category"
+                    onChange={handleChange}
+                    sx={{ borderRadius: "10px" }}
+                  >
+                    {menuItem.map((item) => (
+                      <MenuItem key={item} value={item}>
+                        {item}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl> */}
+                <FormControl fullWidth>
+                  <InputLabel>Stock</InputLabel>
+                  <OutlinedInput
+                    type="number"
+                    name="stock"
+                    onChange={handleChange}
+                    label="Stock"
+                    sx={{ borderRadius: "10px" }}
+                  />
+                </FormControl>
+                <Stack direction={'row'}>
+                  
+      <BpCheckbox  onChange={() =>true} label="Send email"/><Typography variant="body1" color="initial">Send update to customers</Typography>
+
+                </Stack>
+
+                <PrimaryButton
+                  type="submit"
+                  sx={{
+                    backgroundColor: "#3E1A89",
+                    color: "white",
+                    borderRadius: "10px",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    "&:hover": {
+                      backgroundColor: "#3E1A89",
+                      opacity: 0.9,
+                    },
+                  }}
+                >
+                  Add Product
+                </PrimaryButton>
+              </Stack>
             </Grid>
-
-            <FormControl fullWidth>
-              <InputLabel>Category</InputLabel>
-              <Select
-                name="category"
-                onChange={handleChange}
-                sx={{ borderRadius: "10px" }}
-              >
-                {menuItem.map((item) => (
-                  <MenuItem key={item} value={item}>
-                    {item}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>            
-          <FormControl fullWidth>
-              <InputLabel>Stock</InputLabel>
-              <OutlinedInput
-                type="number"
-                name="stock"
-                onChange={handleChange}
-                label="Stock"
-                sx={{ borderRadius: "10px" }}
-              />
-            </FormControl>
-
-            <PrimaryButton
-              type="submit"
-              sx={{
-                backgroundColor: "#3E1A89",
-                color: "white",
-                borderRadius: "10px",
-                textTransform: "none",
-                fontWeight: 600,
-                "&:hover": {
-                  backgroundColor: "#3E1A89",
-                  opacity: 0.9,
-                },
-              }}
-            >
-              Add Product
-            </PrimaryButton>
-          </Stack>
-        </Grid>):
-        null}
-        </Grid>
+          </Modal>
+        }
+      </Grid>
     </Box>
   );
 }
