@@ -23,10 +23,7 @@ import CustomerDashboard from "./Pages/Customer/Layout/CustomerDashboard";
 import CustomerProfile from "./Pages/Customer/CustomerProfiles";
 import Overview from "./Pages/Admin/Home/AdminHome";
 import CustomerEditProfile from "./Pages/Customer/CustomerEditProfile";
-import CustomerProducts from "./Pages/Customer/CustomerProducts/CustomerProducts";
-import ProductPage from "./Pages/Customer/CustomerProducts/ProductPage";
-import CustomerCart from "./Pages/Customer/Cart/CustomerCart";
-import OrderList from "./Pages/Customer/CustomerOrder/OrderList";
+
 
 
 function App() {
@@ -64,6 +61,7 @@ function App() {
         <Route path="/customer/cart/:id" element={<CustomerCart/>}/>
          <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
          <Route path ="/customer/editprofile/:id" element={<CustomerEditProfile/>}/>
+         <Route path ="/customer/orderlist" element={<OrderList/>}/>
         </Route>
 
       </Routes>

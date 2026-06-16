@@ -7,6 +7,7 @@ export default function CustomerDashboard() {
     <div>CustomerDashboard</div>
     <Link to="/customer/profile">CustomerProfile</Link><br></br>
     <Link to="/customer/editprofile">CustomerEditProfile</Link>
+    <Link to="/customer/orderlist">CustomerOrderList</Link><br></br>
     <Outlet/>
     </div>
   )
