@@ -156,7 +156,7 @@ async function postCustomerPhoto(req, res) {
 
         const usefullUrl = rawpath.replace(/\\/g, "/");
 
-        const newPhoto = await photoModel.create
+        const newPhoto = new photoModel
             ({
                 userId,
                 url: usefullUrl
@@ -177,42 +177,44 @@ async function postCustomerPhoto(req, res) {
 // Customer photo update controller functions
 async function updateCustomerPhoto(req, res) {
     try {
-        const userId = req.userId;
-
+        let userId = req.userId;
+        console.log("User ID from token:", userId);
         if (!userId) {
             return res.status(401).json({
-                message: "Unauthorized"
+                message: "Unauthorized: User ID missing in token"
             });
         }
-
         if (!req.file) {
             return res.status(400).json({
-                message: "Please upload an image"
+                message: "Validation Error: Please select an image file to upload."
             });
         }
-
-        const imageUrl = req.file.path.replace(/\\/g, "/");
-
-        const photo = await photoModel.findOneAndUpdate(
-            { userId },
-            { url: imageUrl },
-            {
-                new: true,
-                upsert: true,
-                runValidators: true
-            }
-        );
-
-        return res.status(200).json({
-            message: "Photo updated successfully",
-            photo
-        });
-
+        console.log("File received:", req.file);
+        const rawpath = req.file.path;
+        const usefullUrl = rawpath.replace(/\\/g, "/");
+        const photo = await photoModel.findOne({ userId });
+        if (!photo) {
+            const newPhoto = new photoModel({
+                userId,
+                url: usefullUrl
+            });
+            await newPhoto.save();
+            res.status(201).json({
+                message: "Photo updated successfully",
+                photo: newPhoto
+            });
+        } else {
+            photo.url = usefullUrl;
+            await photo.save();
+            res.status(200).json({
+                message: "Photo updated successfully",
+                photo: photo
+            });
+        }
     } catch (error) {
         console.error("Error updating photo:", error);
-
-        return res.status(500).json({
-            message: error.message
+        res.status(500).json({
+            message: "Internal server error"
         });
     }
 }
