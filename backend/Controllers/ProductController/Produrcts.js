@@ -29,7 +29,8 @@ async function allProduct(req, res) {
 
     try {
         let body = req.body
-        console.log(req.file, "file")
+        console.log( body)
+        console.log(req.files, "file")
 
     //   const image= req.files.map(file => file.path)
     //     let Product = await ProductModel.create(body)
