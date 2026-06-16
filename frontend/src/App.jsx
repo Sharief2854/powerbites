@@ -22,6 +22,7 @@ import CustomerDashboard from "./Pages/Customer/Layout/CustomerDashboard";
 import CustomerProfiles from "./Pages/Customer/CustomerProfiles";
 import CustomerEditProfile from "./Pages/Customer/CustomerEditProfile";
 import CustomerProfile from "./Pages/Customer/CustomerProfiles";
+import OrderList from "./Pages/Customer/CustomerOrder/OrderList";
 
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
         <Route path="/customer/profile" element={<CustomerProfiles/>}/>
          <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
          <Route path ="/customer/editprofile/:id" element={<CustomerEditProfile/>}/>
+         <Route path ="/customer/orderlist" element={<OrderList/>}/>
         </Route>
       </Routes>
       

@@ -159,6 +159,20 @@ function Login() {
                 autoComplete="current-password"
                 margin="normal"
               />
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#4A1BF1",
+                  display:'flex',
+                  justifyContent:'flex-end',
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  "&:hover": { textDecoration: "underline" },
+                }}
+                onClick={() => navigate("/forget")} // Assuming forget route name
+              >
+                Forget Password
+              </Typography>
 
               <Button
                 type="submit"
@@ -174,25 +188,14 @@ function Login() {
             <Box
               sx={{
                 display: "flex",
-                justifyContent: "space-between",
+                
                 alignItems: "center",
-                //gap: "8px",
+                gap: "8px",
                 mt: 3,
               }}
             >
-              <Typography
-                variant="body2"
-                sx={{
-                  color: "#4A1BF1",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  "&:hover": { textDecoration: "underline" },
-                }}
-                onClick={() => navigate("/forget")} // Assuming forget route name
-              >
-                Forget Password
-              </Typography>
-              <Box>
+              
+              
               <Typography variant="body2" color="text.secondary">
                 Don't have an account?
               </Typography>
@@ -208,7 +211,7 @@ function Login() {
               >
                 Sign Up
               </Typography>
-              </Box>
+            
               
             </Box>
           </AuthCard>
