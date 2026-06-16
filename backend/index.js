@@ -13,10 +13,13 @@ const CartRouter = require('./Routes/Cart/cartRouter');
 const bannerRouter = require('./Routes/Banner/bannerRoutes');
 const multer = require('multer');
 
+const couponRouter = require('./Routes/Coupon/couponRouter');
+
 
 const customerProfileRouter = require('./Routes/customer/customerProfile');
 const isCustomer = require('./MiddleWare/customerAuth');
 const upload = require('./config/multerConfig');
+const tproductsRoutes = require('./Routes/ProductfilteringRotes/Productfiltering');
 
 
 ConnectDB()
@@ -34,10 +37,15 @@ app.use("/resetPass",ResetRouter)
 app.use("/crudAdmin",isAdmin,adminRouter)
 app.use("/cart",CartRouter)
 app.use("/products",isAdmin,ProductRouter)
-app.use("/banner",isAdmin,bannerRouter)
+app.use("/banner",bannerRouter)
+
+
+
+app.use("/coupon",couponRouter)
 
 // Customer profile updating routes with authentication middleware
-app.use("/updateCustomerProfile", isCustomer,customerProfileRouter) 
+app.use("/updateCustomerProfile", isCustomer,customerProfileRouter)
+app.use("/products",tproductsRoutes) 
 
 // Global error handling middleware to catch Multer errors safely
 app.use((err, req, res, next) => {
