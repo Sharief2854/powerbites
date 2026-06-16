@@ -1,7 +1,7 @@
 const express = require("express");
 const upload = require('../../config/multerConfig');
 const ProductModel = require("../../Model/ProductModel");
-const { addProduct, updateProduct, deleteProduct, allProduct } = require("../../Controllers/ProductController/Produrcts");
+const { addProduct, updateProduct, deleteProduct, allProduct, getTotalProducts } = require("../../Controllers/ProductController/Produrcts");
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ router.delete("/deleteProduct/:id", deleteProduct);
 router.get("/all", allProduct);
 
 //geting total number of products for admin dashboard
-// router.get("/totalProducts", getTotalProducts);
+router.get("/totalProducts", getTotalProducts);
 
 
 
