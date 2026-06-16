@@ -13,7 +13,8 @@ async function allProduct(req, res) {
             })
         }
         res.status(200).json({
-            message: "Banners fetched successfully", data
+            message: "Banners fetched successfully",
+             data
         })
 
     }
@@ -29,7 +30,7 @@ async function allProduct(req, res) {
 
     try {
         let body = req.body
-        console.log(req.file, "file")
+        console.log(req.files, "file")
 
     //   const image= req.files.map(file => file.path)
     //     let Product = await ProductModel.create(body)
