@@ -427,44 +427,6 @@ async function getCustomerAddressById(req, res) {
     }
 }
 
-async function setDefaultAddress(req, res) {
-    console.log("set default address")
-    try {
-        let userId = req.userId;
-        console.log("User ID from token:", userId); 
-        if (!userId) {
-            return res.status(401).json({
-                message: "Unauthorized: User ID missing in token"
-            })
-        }
-        
-        let addressId = req.params.id;
-        console.log("Address Id:", addressId); 
-
-        let address = await addressModel.findOne({ _id: addressId, userId });
-
-        if(!address){
-           return res.status(404).json({
-                message:"Address not found"
-            })
-        }
-        address.isDefault = true;
-        await address.save();
-
-        res.status(200).json({
-            message: "Default address set successfully",
-            address: address
-        })
-        
-    }
-    catch (error) {
-        res.status(400).json({
-            message: "Internal Server Error",
-            error: error.message
-        })
-}
-}
-
 module.exports = {
     updateCustomerProfile,
     deleteCustomerProfile,
@@ -475,6 +437,5 @@ module.exports = {
     postCustomerPhoto,
     updateCustomerPhoto,
     getCustomerAddresses,
-    getCustomerAddressById,
-    setDefaultAddress,
+    getCustomerAddressById
 }

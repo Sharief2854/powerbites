@@ -64,7 +64,6 @@ function App() {
         <Route path="/customer/cart/:id" element={<CustomerCart/>}/>
          <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
          <Route path ="/customer/editprofile/:id" element={<CustomerEditProfile/>}/>
-         <Route path ="/customer/orderlist" element={<OrderList/>}/>
         </Route>
 
       </Routes>
