@@ -16,7 +16,7 @@ const { generateAccessToken, generateRefreshToken } = require("../../Utils/Token
             })
 
         }
-                console.log(body)
+                
 
         
         if (!body.email || !body.password) {

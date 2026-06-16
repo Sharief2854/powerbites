@@ -64,7 +64,7 @@ async function allBanners(req, res) {
 
 async function setProductBanner(req, res) {
     try{
-        const productId = req.params.productId;
+        const productId = req.params.Id;
         const body = req.body;
         if(!body){
             return res.status(400).json({
