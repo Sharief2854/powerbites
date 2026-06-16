@@ -20,6 +20,7 @@ const customerProfileRouter = require('./Routes/customer/customerProfile');
 const isCustomer = require('./MiddleWare/customerAuth');
 const upload = require('./config/multerConfig');
 const PaymentRouter = require('./Routes/Payments/razorpayRoutes');
+// const productCategoryRouter =require("./Routes/ProcutsCatoegory/categoryCRUD")
 const ordersRouter = require('./Routes/Orders/ordersRouter');
 
 const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD')
@@ -39,8 +40,10 @@ app.use("/resetPass",ResetRouter)
 // Admin routes CRUD opertions with authentication middleware
 app.use("/crudAdmin",isAdmin,adminRouter)
 app.use("/cart",isCustomer,CartRouter)
-app.use("/products",isAdmin,ProductRouter)
+app.use("/products",ProductRouter)
 app.use("/banner",bannerRouter)
+
+// app.use("/category",productCategoryRouter)
 app.use("/orders",ordersRouter)
 
 app.use("/coupon",couponRouter)

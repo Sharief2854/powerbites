@@ -1,8 +1,6 @@
 const express = require("express");
 const ProductModel = require("../../Model/ProductModel");
 
-
-
 async function allProduct(req, res) {
     try {
 
@@ -29,7 +27,7 @@ async function allProduct(req, res) {
 
     try {
         let body = req.body
-        console.log(req.file, "file")
+        console.log(req.files, "files")
 
     //   const image= req.files.map(file => file.path)
     //     let Product = await ProductModel.create(body)
@@ -42,11 +40,7 @@ async function allProduct(req, res) {
 
         const ProductData = {...body,image: imagePaths };
         const Product = await ProductModel.create(ProductData);
-                if(!Product){
-                    return res.status(400).json({
-                        message:"Something went wrong while creating the Products."
-                    })
-                }
+              
 
         if (!Product) {
             return
@@ -54,7 +48,10 @@ async function allProduct(req, res) {
                 message: "product not found"
             })
         }
-        res.send(Product)
+        res.send({
+            message: "product added successfully",
+            Product
+        })
 
     }
     catch (err) {
@@ -68,37 +65,7 @@ async function allProduct(req, res) {
 
 
 
-// async function updateProduct(req, res) {
-//     try {
-//         let id = req.params.id
-//        const ProductData = { ...req.body };
 
-//         if (req.files && req.files.length > 0) {
-//             const imagePaths = req.files.map(file => file.path);
-//             updateData.image = imagePaths;
-//         }
-
-//         let Products = await ProductModel.findByIdAndUpdate(id, ProductData, { new: true, runValidators: true });
-
-//         if(!Products){
-//             return res.status(404).json({
-//                 message:"Products not found"
-//             })
-//         }
-//         res.status(200).json({
-//             data: Products,
-//             message: "product updated successfully"
-//         })
-//     }
-
-        
-//     catch (err) {
-//         res.status(500).json({
-//             message: "server problem"
-//         })
-//     }
-
-// }
 async function updateProduct(req, res) {
     try {
         const id = req.params.id;
