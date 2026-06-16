@@ -1,8 +1,8 @@
-import { Box, Card, CardContent,IconButton, CardMedia, Grid, MenuItem, Select, Stack, Typography, Button } from '@mui/material'
+import { Box, Card, CardContent,IconButton, CardMedia, Grid, MenuItem, Select, Stack, Typography, Button, Checkbox } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import api from '../../../api/axiosConfig'
 import { jwtDecode } from 'jwt-decode'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { enqueueSnackbar } from 'notistack'
 import { EditNotificationsSharp } from '@mui/icons-material'
@@ -14,19 +14,26 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
+import EditIcon from '@mui/icons-material/Edit';
+import { addToCart, getItems } from '../../../Redux/Slices/CM_CartSlice';
+import PaymentButton from '../Payments/PaymentButton'
 
 export default function CustomerCart() {
 
+
+  const cartItems = useSelector((state) => state.cart.cart);
+  const quantity = useSelector((state) => state.cart.quantity);
 
   let token = localStorage.getItem("token")
   const dispatch = useDispatch()
   const navigate = useNavigate()
   let decodeId = jwtDecode(token).id
   const [qty, setQty] = useState(1)
-  const [quantity,setQuantity] = useState()
+  const [addresses,setAddress] = useState([])
   const [open, setOpen] = React.useState(false);
+  const [updateAddress,setUpdateAddress] = useState(null)
     const theme = useTheme();
-    const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+    const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
     const handleClickOpen = () => {
       setOpen(true);
@@ -39,56 +46,85 @@ export default function CustomerCart() {
   //get Cart Details
   async function getCart(params) {
     try {
-      let res = await api.get(`/cart/getAddress/${decodeId}`)
-        dispatch(getCart(res.data.address))
+      let res = await api.get(`/cart/getCart`)
+        dispatch(getItems(res.data.cart))
+        
     } catch (error) {
-      // enqueueSnackbar('')
+      
     }
   }
+
   
   //update quantity
-  async function handleChange(params) {
-    try {
-      let res = await api.get(`/customer/cart/getAddress/${decodeId}`)
-        dispatch(getCart(res.data.address))
-    } catch (error) {
-      // enqueueSnackbar('')
-    }
+  async function handleChange(cartId, quantity) {
+  try {
+    const res = await api.post(
+      `/cart/setQuantity/${cartId}`,
+      { quantity }
+    );
+
+    dispatch(addToCart(res.data.data));
+  } catch (error) {
+    console.log(error);
   }
+}
+
+
   async function deleteCart(params) {
     try {
       let res = await api.get(`/cart/getAddress/${decodeId}`)
         dispatch(getCart(res.data.address))
     } catch (error) {
-      // enqueueSnackbar('')
+      enqueueSnackbar('failed to delete item',{variant:'error'})
     }
   }
   //get Customer Address
-  async function getAddress(params) {
-    try {
-      let res = await api.get("/updateCustomerProfile/getAddresses")
-        // dispatch(address(res.data.address))
-        console.log(res.data.addresses);        
-        setAddress(res.data.addresses)
-    } catch (error) {
-      // enqueueSnackbar('')
-    }
-  }
+  
+  async function getAddress() {
+  try {
+    const res = await api.get("/updateCustomerProfile/getAddresses");
+
+    const addressList = res.data.addresses;
+
+    setAddress(addressList);
+
+    const defaultAddress =
+      addressList.find(item => item.isDefault) || addressList[0];
+
+    setUpdateAddress(defaultAddress);
+  } catch (error) {}
+}
+
   async function changeAddress(params) {
     try {
       let res = await api.put(`/customer/cart/getAddress/${decodeId}`)
         dispatch(address(res.data.address))
     } catch (error) {
-      // enqueueSnackbar('')
+      enqueueSnackbar('failed to update address',{variant:'error'})
     }
   }
+  async function orderPayment(params) {
+    
+  }
+  let address=
+  updateAddress && Object.keys(updateAddress).length
+    ? updateAddress
+    : addresses?.[0];
+  console.log(cartItems);
 
+useEffect(() => {
+  getAddress();
+  getCart();
+}, []);
 
-  useEffect(() => {
-    getAddress()
-    getCart()
-  
-  }, [])
+useEffect(() => {
+  if (addresses.length && !updateAddress) {
+    const defaultAddress =
+      addresses.find(item => item.isDefault) || addresses[0];
+
+    setUpdateAddress(defaultAddress);
+  }
+}, [addresses]);
   
   return (
   <Box sx={{ p: 3 }}>
@@ -97,19 +133,14 @@ export default function CustomerCart() {
       color="text.primary"
       sx={{ mb: 3, fontWeight: 600 }}
     >
-      Cart
+      My Cart
     </Typography>
 
     <Grid container spacing={17}>
-      <Grid item xs={12} md={9}>
+      <Grid item size={8}>
         <Stack spacing={2}>
           <Card elevation={1}>
             <CardContent>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
                 <Typography
                   variant="h6"
                   color="text.primary"
@@ -117,19 +148,19 @@ export default function CustomerCart() {
                   Saved Address
                 </Typography>
 
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+              >
                 <IconButton onClick={handleClickOpen}>
-                  {address.length > 0 ? (
-                    address.map((item) => (
-                      <Typography
-                        key={item._id}
-                        variant="body2"
-                        color="text.secondary"
-                      >
-                        {item.city}
-                      </Typography>
-                    ))
-                  ) : (null)}
-                  <EditNotificationsSharp />
+                  {address? (
+                       <Typography variant="body2" color="text.secondary" key={address._id}>
+  {updateAddress &&
+    `${updateAddress.street}, ${updateAddress.city}, ${updateAddress.state}, ${updateAddress.country}, ${updateAddress.pincode}`}
+</Typography> 
+                  ) : ('')}
+                  <EditIcon />
                 </IconButton>
               </Stack>
 
@@ -137,108 +168,89 @@ export default function CustomerCart() {
           </Card>
          
       <Dialog
-        fullScreen={fullScreen}
+        fullScreen={fullScreen} 
         open={open}
         onClose={handleClose}
         aria-labelledby="responsive-dialog-title"
       >
         <DialogTitle id="responsive-dialog-title">
-          {"Use Google's location service?"}
         </DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Let Google help apps determine location. This means sending anonymous
-            location data to Google, even when no apps are running.
-          </DialogContentText>
+          {addresses?.map((item) => (
+  <Box key={item._id}>
+    <Checkbox
+      checked={updateAddress?._id === item._id}
+      onChange={() => setUpdateAddress(item)}
+    />
+
+    <DialogContentText>
+      {item.street}, {item.city}, {item.state}, {item.pincode}
+    </DialogContentText>
+  </Box>
+))}
         </DialogContent>
         <DialogActions>
           <Button autoFocus onClick={handleClose}>
-            Disagree
-          </Button>
-          <Button onClick={handleClose} autoFocus>
-            Agree
+            Close
           </Button>
         </DialogActions>
       </Dialog>
- 
+ {cartItems?.map((item) => (
+  <Card key={item._id} elevation={1}>
+    <CardContent>
+      <Grid container spacing={2} alignItems="center">
+        <Grid item xs={12} sm={3}>
+          <CardMedia
+            component="img"
+            image={item.image}
+            alt={item.productName}
+            sx={{
+              height: 120,
+              borderRadius: 1,
+              bgcolor: "background.default",
+            }}
+          />
+        </Grid>
 
-          <Card elevation={1}>
-            <CardContent>
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12} sm={3}>
-                  <CardMedia
-                    component="img"
-                    image=""
-                    alt="No Image Found"
-                    sx={{
-                      height: 120,
-                      borderRadius: 1,
-                      bgcolor: "background.default",
-                    }}
-                  />
-                </Grid>
+        <Grid item xs={12} sm={6}>
+          <Stack spacing={1}>
+            <Typography variant="subtitle1">
+              {item.productName}
+            </Typography>
 
-                <Grid item xs={12} sm={6}>
-                  <Stack spacing={1}>
-                    <Typography
-                      variant="subtitle1"
-                      color="text.primary"
-                    >
-                      Product Name
-                    </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {item.description}
+            </Typography>
 
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                    >
-                      Product details
-                    </Typography>
+            <Select
+              size="small"
+              value={item.quantity}
+              onChange={(e) =>
+                handleChange(item._id, e.target.value)
+              }
+              sx={{ width: 100 }}
+            >
+              {[1, 2, 3, 4, 5].map((qty) => (
+                <MenuItem key={qty} value={qty}>
+                  {qty}
+                </MenuItem>
+              ))}
+            </Select>
+          </Stack>
+        </Grid>
 
-                    <Select
-                      size="small"
-                      value={qty}
-                      onChange={handleChange}
-                      sx={{ width: 100 }}
-                    >
-                      {[1, 2, 3, 4, 5].map((item) => (
-                        <MenuItem key={item} value={item}>
-                          {item}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </Stack>
-                </Grid>
-
-                <Grid item xs={12} sm={2}>
-                  <Typography
-                    variant="h6"
-                    color="text.primary"
-                    textAlign={{ xs: "left", sm: "right" }}
-                  >
-                    ₹
-                  </Typography>
-                </Grid>
-              </Grid>
-
-              <Stack
-                direction="row"
-                spacing={2}
-                sx={{
-                  mt: 2,
-                  pt: 2,
-                  borderTop: 1,
-                  borderColor: "divider",
-                }}
-              >
-                <PrimaryButton variant='contained' color="primary">Save for Later</PrimaryButton>
-                <PrimaryButton variant='contained' color="error">Delete</PrimaryButton>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Stack>
+        <Grid item xs={12} sm={2}>
+          <Typography variant="h6">
+            ₹{item.price}
+          </Typography>
+        </Grid>
+      </Grid>
+    </CardContent>
+  </Card>
+))}</Stack>
       </Grid>
 
-      <Grid item xs={12} md={3}>
+      <Grid item size={4}>
         <Card elevation={1}>
           <CardContent>
             <Typography
@@ -304,12 +316,7 @@ export default function CustomerCart() {
               </Box>
             </Stack>
 
-            <PrimaryButton
-              fullWidth
-              sx={{ mt: 3 }}
-            >
-              Check Out
-            </PrimaryButton>
+              <PaymentButton />
           </CardContent>
         </Card>
       </Grid>

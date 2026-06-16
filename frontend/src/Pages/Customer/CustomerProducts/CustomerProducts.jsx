@@ -6,6 +6,25 @@ import { useNavigate } from 'react-router-dom'
 import { PrimaryButton } from '../../../Components/Common/Buttons'
 import { jwtDecode } from 'jwt-decode'
 import api from '../../../api/axiosConfig'
+import { useTheme } from '@mui/material/styles';
+import InputLabel from '@mui/material/InputLabel';
+
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  slotProps: {
+    paper: {
+      style: {
+        maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+        width: 250,
+      },
+    },
+  },
+};
+
+const names = ['item1'
+];
 
 export default function CustomerProducts() {
 
@@ -15,6 +34,26 @@ export default function CustomerProducts() {
   const [searchProduct, setSearchProduct] = useState('')
   const [range, setRange] = useState('')
   const [isAvailableOnly, setIsAvailableOnly] = useState(false)
+
+function getStyles(name, category, theme) {
+  return {
+    fontWeight: category.includes(name)
+      ? theme.typography.fontWeightMedium
+      : theme.typography.fontWeightRegular,
+  };
+}
+
+  const theme = useTheme();
+  const [category, setCategory] = React.useState([]);
+
+  const handleChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setCategory(
+      typeof value === 'string' ? value.split(',') : value,
+    );
+  };
 
   let token = localStorage.getItem("token")
   let decodeId = jwtDecode(token).id
@@ -66,7 +105,7 @@ export default function CustomerProducts() {
   .filter((product) => {
     const search = product.name
       .toLowerCase()
-      .includes(searchProduct.toLowerCase());
+      .startsWith(searchProduct.toLowerCase());
 
     let inStock = true;
 
@@ -105,7 +144,7 @@ export default function CustomerProducts() {
     <Box>
        <Grid container spacing={2}>
                           <Grid item size={5}>
-                            <FormControl fullWidth>
+                            {/* {<FormControl fullWidth>
                               <OutlinedInput
                                 id="search"
                                 placeholder="Search product"
@@ -115,7 +154,38 @@ export default function CustomerProducts() {
                                   backgroundColor: "white",
                                 }}
                               />
-                            </FormControl>
+                            </FormControl>} */}
+
+      <FormControl sx={{ m: 1, width: 300 }}>
+        <InputLabel id="demo-multiple-chip-label">Category</InputLabel>
+        <Select
+          labelId="demo-multiple-chip-label"
+          id="demo-multiple-chip"
+          multiple
+          value={personName}
+          onChange={handleChange}
+          input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
+          renderValue={(selected) => (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {selected.map((value) => (
+                <Chip key={value} label={value} />
+              ))}
+            </Box>
+          )}
+          MenuProps={MenuProps}
+        >
+          {names.map((name) => (
+            <MenuItem
+              key={name}
+              value={name}
+              style={getStyles(name, personName, theme)}
+            >
+              {name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    
                           </Grid>
       
                           <Grid item size={4}>
@@ -202,7 +272,7 @@ export default function CustomerProducts() {
           >
             <Box
               component="img"
-              src={`http://localhost:4500/${imagPath}`}
+              src={`http://localhost:4500/${imagePath}`}
               alt={item.name}
               sx={{
                 width: "100%",
