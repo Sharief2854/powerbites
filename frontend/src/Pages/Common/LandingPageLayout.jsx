@@ -5,7 +5,6 @@ import ResponsiveAppBar from '../../Themes/Navbar'
 export default function LandingPageLayout() {
   return (
     <div>
-        <ResponsiveAppBar/>
         <Outlet/>
     </div>
   )

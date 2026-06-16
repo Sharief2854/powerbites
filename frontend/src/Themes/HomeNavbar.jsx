@@ -20,13 +20,15 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import HomeIcon from "@mui/icons-material/Home";
 import PersonIcon from "@mui/icons-material/Person";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import { Link } from "react-router-dom";
+import { data, Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Badge } from "@mui/material";
 
 const pages = [
-  { name: "Login", path: "/login", icon: <LoginIcon fontSize="small" /> },
-  {
-    name: "Registration",path: "/register",icon: <PersonAddAlt1Icon fontSize="small" />,
-  },
+  { name: "Products", path: "/products", icon: <RestaurantMenuIcon fontSize="small" /> },
+  { name: "Orders", path: "/orders", icon: <InfoOutlinedIcon fontSize="small" /> },
+  { name: "Cart", path: "/cart", icon: <HomeIcon fontSize="small" /> },
+
 ];
 
 
@@ -34,6 +36,10 @@ const pages = [
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
+
+  const dispatach = useDispatch()
+
+  // const quantity = useSelector((state) => state.cart.cartValue)
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -54,7 +60,16 @@ function ResponsiveAppBar() {
   const handleLogoRefresh = () => {
     window.location.href = "/";
   };
-  
+
+  const getCart = async () => {
+    try {
+      const res = await api.get("/cart/getCart")
+      dispatach(addValue(res.data.cart.quantity))
+    }
+    catch (err) {
+      console.log(err)
+    }
+  }
 
   return (
     <AppBar
@@ -153,9 +168,17 @@ function ResponsiveAppBar() {
                     alignItems: "center",
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 36, color: "primary.main" }}>
-                    {page.icon}
-                  </ListItemIcon>
+
+                  {/* <Badge
+                    badgeContent={unreadNotificationsCount}
+                    color="secondary"
+                    max={maxVisibleNotifications}
+                  > */}
+                    <ListItemIcon sx={{ minWidth: 36, color: "primary.main" }}>
+                      {page.icon}
+                    </ListItemIcon>
+
+                  {/* </Badge> */}
 
                   <ListItemText
                     disableTypography

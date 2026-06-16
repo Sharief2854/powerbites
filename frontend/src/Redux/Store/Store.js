@@ -8,7 +8,7 @@ const store = configureStore({
         product: productReducer,
         user: userReducer,
         editprofile: CustomerEditProfile,
-
+        
     }
 })
 

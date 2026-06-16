@@ -16,6 +16,7 @@ import MainAuthCard from "./MainAuthCard";
 import { PrimaryButton } from "../../Components/Common/Buttons";
 import api from "../../api/axiosConfig";
 
+
 function Register() {
   const [formData, setFormData] = useState({
     name: "",

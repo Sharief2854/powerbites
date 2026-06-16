@@ -1,9 +1,16 @@
 import React from 'react'
+import HomeNavbar from "../../Themes/HomeNavbar";
+import Banner from "../../Themes/Banner";
+import Footer from "../../Themes/Footer";
+import ProductsHome from "../../Pages/Customer/Products/ProductsHome";
 
 function Home() {
   return (
     <div>
-      <h1>welcome to home pages </h1>
+      <HomeNavbar/>
+       <Banner/>
+      <ProductsHome/>
+      <Footer/>
     </div>
   )
 }

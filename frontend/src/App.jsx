@@ -9,8 +9,8 @@ import ForgotPassword from "./Pages/Common/ForgetPassword";
 import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
 import Home from "./Pages/Common/Home";
-//import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
-//import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
+import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
+import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
 import LandingPage from "./Pages/Common/LandingPage";
 import LandingPageLayout from "./Pages/Common/LandingPageLayout";
 
@@ -32,7 +32,6 @@ function App() {
       <Routes>
         <Route path ="/" element={<LandingPageLayout/>}>
         <Route index element={<LandingPage/>}/>
-        <Route path ="/home" element={<LandingPage/>}/>
         <Route path ="/register" element={<Register/>}/>
         <Route path ="/verifyOtp/:id" element={<VerifyOtp/>}/>
         <Route path ="/login" element={<Login/>}/>
