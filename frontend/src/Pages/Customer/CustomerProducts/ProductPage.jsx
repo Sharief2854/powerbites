@@ -1,4 +1,4 @@
-import { Box, CardMedia, Grid, Typography } from '@mui/material'
+import { Box, CardMedia, Grid, Stack, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import api from '../../../api/axiosConfig'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -52,6 +52,8 @@ export default function ProductPage() {
           setLoading(false)
         }
       }
+      console.log(product);
+      
     useEffect(() => {
         getProduct()
     }, [])
@@ -70,7 +72,9 @@ export default function ProductPage() {
 
         <Grid container spacing={2}>
             <Grid  xs={12} md={6}>
-                  <PrimaryButton onClick={addItem}>`${'Add'}` to Cart</PrimaryButton></Grid>
+                  <PrimaryButton onClick={addItem}>Add
+                    {/* `${'Add'}` */}
+                     to Cart</PrimaryButton></Grid>
             <Grid  xs={12} md={6}>
                 <PrimaryButton onClick={checkOutPage}>Buy Now</PrimaryButton>
                 </Grid>
