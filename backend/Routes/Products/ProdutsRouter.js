@@ -10,7 +10,7 @@ router.post("/addProduct",isAdmin, upload.array("file", 100), addProduct);
 
 router.put("/updateProduct/:id",isAdmin,upload.array("file", 100),updateProduct);
 router.delete("/deleteProduct/:id", isAdmin,deleteProduct);
-router.get("/all", allProduct);
+router.get("/all", allProduct); 
 
 
 module.exports = router;
