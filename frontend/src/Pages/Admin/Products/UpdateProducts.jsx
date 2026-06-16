@@ -13,7 +13,9 @@ import {
   SnackbarContent,
   Stack,
   Switch,
-  Typography,
+  Typography, IconButton,
+  ImageListItem,
+  ImageListItemBar,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { PrimaryButton } from "../../../Components/Common/Buttons";
@@ -95,19 +97,21 @@ export default function UpdateProducts() {
   let token = localStorage.getItem("token");
 
   let dispatch = useDispatch();
-  function handleChange(e) {
-    const { name, value, files } = e.target;
 
-    if (name === "photo") {
-      const files = Array.from(e.target.files);
-      setSelectedFile((prev) => [...prev,...existingPhotos, ...files]);
-    } else {
-      setProductData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+  function handleChange(e) {
+  const { name, value, files } = e.target;
+
+  if (name === "photo") {
+    const uploadedFiles = Array.from(files);
+    setSelectedFile((prev) => [...prev, ...uploadedFiles]);
+  } else {
+    setProductData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   }
+}
+
   function removeFile(index) {
     setSelectedFile((prev) => prev.filter((_, i) => i !== index));
   }
@@ -233,22 +237,38 @@ export default function UpdateProducts() {
                   onDelete={() => removeExisting(index)}
                 />
               ))}
-              {selectedFile.map((file, index) => (
-                <Chip
-                  key={index}
-                  label={file.name}
-                  sx={{ fontSize: "9px" }}
-                  onDelete={() => removeFile(index)}
+              {selectedFile.map((file, index) => {
+            const localPreviewUrl = URL.createObjectURL(file);
+            
+            return (
+              <ImageListItem key={uuidv4()} sx={{ border: "1px solid #2196f3", borderRadius: "8px", overflow: "hidden" }}>
+                <img
+                  src={localPreviewUrl}
+                  alt="New Img"
+                  loading="lazy"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  onLoad={() => URL.revokeObjectURL(localPreviewUrl)} 
                 />
-              ))}
+                <ImageListItemBar
+                  position="top"
+                  actionIcon={
+                    <IconButton
+                      sx={{ color: "rgba(255, 255, 255, 0.9)", backgroundColor: "rgba(0,0,0,0.5)", m: 0.5, "&:hover": { backgroundColor: "rgba(255,0,0,0.7)" } }}
+                      size="small"
+                      onClick={() => removeFile(index)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  }
+                  actionPosition="right"
+                />
+              </ImageListItem>
+            );
+          })}
             </Stack>
           }
           <Grid container spacing={2}>
-<<<<<<< HEAD
             <Grid xs={6}>
-=======
-            <Grid size={{ xs: 6 }} >
->>>>>>> 7e4f853f106b0662a32b1183722c859c81c31b33
               <FormControl fullWidth margin="normal">
                 <InputLabel htmlFor="price">Price</InputLabel>
                 <OutlinedInput

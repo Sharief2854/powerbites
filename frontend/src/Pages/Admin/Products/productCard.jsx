@@ -27,7 +27,7 @@ export default function ProductCard({product}) {
     let handleDelete = async(params) => {
             try {
                 // let response = await api.delete(`/admin/product/deleteProduct/${product._id}`)
-                let response = await api.delete(`/admin/product/deleteProduct/${id}`)
+                let response = await api.delete(`/products/deleteProduct/${id}`)
                 dispatch(deleteProducts(response.data.products))
                 enqueueSnackbar("Product deleted successfully", { variant: "success" });
               } catch (error) {

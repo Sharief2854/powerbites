@@ -9,34 +9,22 @@ import ForgotPassword from "./Pages/Common/ForgetPassword";
 import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
 import Home from "./Pages/Common/Home";
-<<<<<<< HEAD
+
 import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
-=======
-//import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
-//import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
->>>>>>> 7e4f853f106b0662a32b1183722c859c81c31b33
+
 import LandingPage from "./Pages/Common/LandingPage";
 import LandingPageLayout from "./Pages/Common/LandingPageLayout";
-
 import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
-import Products from "./Pages/Admin/Products/AdminProducts";
 import UpdateProducts from "./Pages/Admin/Products/UpdateProducts";
-<<<<<<< HEAD
 import AdminProducts from "./Pages/Admin/Products/AdminProducts";
 import ProtectedRoutes from "./Routes/ProtectedRoutes";
 import CustomerDashboard from "./Pages/Customer/Layout/CustomerDashboard";
-import CustomerProfile from "./Pages/Customer/CustomerProfile";
-import Overview from "./Pages/Admin/Home/AdminHome";
-=======
-import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
-import AdminProducts from "./Pages/Admin/Products/AdminProducts";
-import ProtectedRoutes from "./Routes/ProtectedRoutes";
-import CustomerDashboard from "./Pages/Customer/Layout/CustomerDashboard";
-import CustomerProfiles from "./Pages/Customer/CustomerProfiles";
-import CustomerEditProfile from "./Pages/Customer/CustomerEditProfile";
 import CustomerProfile from "./Pages/Customer/CustomerProfiles";
->>>>>>> 7e4f853f106b0662a32b1183722c859c81c31b33
-
+import Overview from "./Pages/Admin/Home/AdminHome";
+import CustomerEditProfile from "./Pages/Customer/CustomerEditProfile";
+import CustomerProducts from "./Pages/Customer/CustomerProducts/CustomerProducts";
+import ProductPage from "./Pages/Customer/CustomerProducts/ProductPage";
+import CustomerCart from "./Pages/Customer/Cart/CustomerCart";
 
 function App() {
 
@@ -56,17 +44,8 @@ function App() {
         <Route path ="/auth" element={<MainAuthCard/>}/>
         <Route path ="/home" element={<Home/>}/>
         </Route>
-<<<<<<< HEAD
-=======
-        <Route path ="/editprofile" element={<CustomerEditProfile/>}/>
-        <Route path ="/CustomerProfile" element={<CustomerProfiles/>}/>
-        
-        
-
->>>>>>> 7e4f853f106b0662a32b1183722c859c81c31b33
 
         <Route path ="/admin" element={<ProtectedRoutes role="admin"><DashboardLayout/></ProtectedRoutes>}>
-
         <Route index element={<Overview/>}/>
         <Route path ="/admin/overview" element={<Overview/>}/>
         <Route path ="/admin/customers" element={<UserDetails/>}/>
@@ -76,10 +55,14 @@ function App() {
 
         <Route path ="/customer" element={<ProtectedRoutes role="customer"><CustomerDashboard/></ProtectedRoutes>}>
         <Route path="/customer/users" element={<UserDetails/>}/>
-        <Route path="/customer/profile" element={<CustomerProfiles/>}/>
+        <Route path="/customer/profile" element={<CustomerProfile/>}/>
+        <Route path="/customer/products" element={<CustomerProducts/>}/>
+        <Route path="/customer/productpage/:id" element={<ProductPage/>}/>
+        <Route path="/customer/cart/:id" element={<CustomerCart/>}/>
          <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
          <Route path ="/customer/editprofile/:id" element={<CustomerEditProfile/>}/>
         </Route>
+
       </Routes>
             
       </BrowserRouter>
@@ -88,3 +71,5 @@ function App() {
 }
 
 export default App
+
+
