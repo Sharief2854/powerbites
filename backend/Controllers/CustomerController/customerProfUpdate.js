@@ -43,6 +43,7 @@ async function updateCustomerProfile(req, res) {
             });
         }
 
+
         if (name) {
             user.name = name;
         }
@@ -115,7 +116,7 @@ async function getCustomerProfile(req, res) {
                 message: "Unauthorized: User ID missing in token"
             });
         }
-        const user = await userModel.findById(userId).select("-isVerified ");
+        const user = await userModel.findById(userId).select("-isVerified");
         if (!user) {
             return res.status(404).json({
                 message: "User not found"
@@ -156,7 +157,7 @@ async function postCustomerPhoto(req, res) {
 
         const usefullUrl = rawpath.replace(/\\/g, "/");
 
-        const newPhoto = await photoModel.create
+        const newPhoto = new photoModel
             ({
                 userId,
                 url: usefullUrl
@@ -177,42 +178,44 @@ async function postCustomerPhoto(req, res) {
 // Customer photo update controller functions
 async function updateCustomerPhoto(req, res) {
     try {
-        const userId = req.userId;
-
+        let userId = req.userId;
+        console.log("User ID from token:", userId);
         if (!userId) {
             return res.status(401).json({
-                message: "Unauthorized"
+                message: "Unauthorized: User ID missing in token"
             });
         }
-
         if (!req.file) {
             return res.status(400).json({
-                message: "Please upload an image"
+                message: "Validation Error: Please select an image file to upload."
             });
         }
-
-        const imageUrl = req.file.path.replace(/\\/g, "/");
-
-        const photo = await photoModel.findOneAndUpdate(
-            { userId },
-            { url: imageUrl },
-            {
-                new: true,
-                upsert: true,
-                runValidators: true
-            }
-        );
-
-        return res.status(200).json({
-            message: "Photo updated successfully",
-            photo
-        });
-
+        console.log("File received:", req.file);
+        const rawpath = req.file.path;
+        const usefullUrl = rawpath.replace(/\\/g, "/");
+        const photo = await photoModel.findOne({ userId });
+        if (!photo) {
+            const newPhoto = new photoModel({
+                userId,
+                url: usefullUrl
+            });
+            await newPhoto.save();
+            res.status(201).json({
+                message: "Photo updated successfully",
+                photo: newPhoto
+            });
+        } else {
+            photo.url = usefullUrl;
+            await photo.save();
+            res.status(200).json({
+                message: "Photo updated successfully",
+                photo: photo
+            });
+        }
     } catch (error) {
         console.error("Error updating photo:", error);
-
-        return res.status(500).json({
-            message: error.message
+        res.status(500).json({
+            message: "Internal server error"
         });
     }
 }
@@ -221,62 +224,51 @@ async function updateCustomerPhoto(req, res) {
 async function addingAddress(req, res) {
     try {
         let userId = req.userId;
+        console.log("User ID from token:", userId);
 
-        let {
-            label,
-            street,
-            city,
-            state,
-            pincode,
-            country,
-            isDefault
-        } = req.body;
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized: User ID missing in token"
+            });
+        }
 
+        let { label, street, city, state, pincode, country } = req.body;
         if (!label || !street || !city || !state || !pincode || !country) {
             return res.status(400).json({
                 message: "All fields are required"
             });
-        }
-
+        }       
         const count = await addressModel.countDocuments({ userId });
-
-        // First address should always be default
-        if (count === 0) {
-            isDefault = true;
-        }
-
-        // If user selected "Set as Default"
-        if (isDefault) {
-            await addressModel.updateMany(
-                { userId },
-                { $set: { isDefault: false } }
-            );
-        }
-
         const newAddress = new addressModel({
             userId,
             label,
             street,
-            city,
+            city,   
             state,
             pincode,
             country,
-            isDefault: isDefault || false
+            isDefault: count === 0 ? true : false
         });
-
         await newAddress.save();
 
+        if (count > 0) {
+            await addressModel.updateMany(
+                { userId, _id: { $ne: newAddress._id } },
+                { $set: { isDefault: false } }
+            );
+        }        
+        console.log("add address")           
         res.status(201).json({
             message: "Address added successfully",
             address: newAddress
         });
-
     } catch (error) {
+        console.error("Error adding address:", error);
         res.status(500).json({
-            message: error.message
+            message: "Internal server error"
         });
-    }
-}
+    }   
+};
 
 // Customer delete address management controller functions
 async function deleteAddress(req, res) {
@@ -297,7 +289,6 @@ async function deleteAddress(req, res) {
         });
         console.log("result :",result)
         if (!result) {
-
             return res.status(404).json({
                 message: "Address not found"
             });
