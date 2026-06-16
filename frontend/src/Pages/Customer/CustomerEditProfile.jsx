@@ -267,12 +267,12 @@ function CustomerEditProfile() {
               <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="City" name="city" value={addressForm.city} onChange={handleAddressChange} /></Grid>
               <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Pincode" name="pincode" value={addressForm.pincode} onChange={handleAddressChange} /></Grid>
 
-              <Grid size={{ xs: 12 }}>
+              {/* <Grid size={{ xs: 12 }}>
                 <FormControlLabel
                   control={<Checkbox checked={addressForm.isDefault} onChange={handleDefaultChange} color="primary" />}
                   label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}><StarIcon sx={{ color: '#facc15' }} /> Set as Default Address</Box>}
                 />
-              </Grid>
+              </Grid> */}
             </Grid>
 
             <Box sx={{ mt: 4, display: "flex", gap: 2, justifyContent: "flex-end" }}>

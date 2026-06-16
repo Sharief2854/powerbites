@@ -51,50 +51,50 @@
 //     fileInputRef.current.click();
 //   };
 
-//   const handleFileChange = async (e) => {
-//     const file = e.target.files[0];
-//     if (!file) return;
+  // const handleFileChange = async (e) => {
+  //   const file = e.target.files[0];
+  //   if (!file) return;
 
-//     const uploadData = new FormData();
-//     uploadData.append("file", file);
+  //   const uploadData = new FormData();
+  //   uploadData.append("file", file);
 
-//     try {
-//       const token = localStorage.getItem("token");
-//       let id = "6a2a987342fbcdfda0a5c5b0"; // Fallback ID
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     let id = "6a2a987342fbcdfda0a5c5b0"; // Fallback ID
 
-//       if (token) {
-//         const decoded = jwtDecode(token);
-//         id = decoded.id || id;
-//       }
+  //     if (token) {
+  //       const decoded = jwtDecode(token);
+  //       id = decoded.id || id;
+  //     }
 
-//       const response = await api.post(
-//         `/updateCustomerProfile/uploadPhoto/${id}`,
-//         uploadData,
-//       );
+  //     const response = await api.post(
+  //       `/updateCustomerProfile/uploadPhoto/${id}`,
+  //       uploadData,
+  //     );
 
-//       const imagePath =
-//         response.data?.photo?.url ||
-//         response.data?.url ||
-//         response.data?.photo ||
-//         response.data?.path ||
-//         response.data?.photo?.path;
+  //     const imagePath =
+  //       response.data?.photo?.url ||
+  //       response.data?.url ||
+  //       response.data?.photo ||
+  //       response.data?.path ||
+  //       response.data?.photo?.path;
 
-//       if (imagePath) {
-//         const cleanPath = imagePath
-//           ? imagePath.replace(/\\/g, "/").replace(/^\/+/, "")
-//           : "";
-//         const finalImageUrl = cleanPath
-//           ? `http://localhost:4500/${cleanPath}`
-//           : "";
-//         setImage(finalImageUrl);
+  //     if (imagePath) {
+  //       const cleanPath = imagePath
+  //         ? imagePath.replace(/\\/g, "/").replace(/^\/+/, "")
+  //         : "";
+  //       const finalImageUrl = cleanPath
+  //         ? `http://localhost:4500/${cleanPath}`
+  //         : "";
+  //       setImage(finalImageUrl);
 
-//         // Update Redux store with the new photo URL alongside existing data
-//         // dispatch(getEditProfile({ ...editProfile, image: finalImageUrl }));
-//       }
-//     } catch (error) {
-//       console.error("Image upload failed:", error);
-//     }
-//   };
+  //       // Update Redux store with the new photo URL alongside existing data
+  //       // dispatch(getEditProfile({ ...editProfile, image: finalImageUrl }));
+  //     }
+  //   } catch (error) {
+  //     console.error("Image upload failed:", error);
+  //   }
+  // };
 
 //   async function geteditProfile() {
 //     try {
@@ -489,6 +489,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../../api/axiosConfig";
 import { deleteeditaddress, geteditaddress, getEditProfile } from "../../Redux/Slices/CM_ProfileSlice";
 import CustomerCard from "./CustomerCard";
+import { jwtDecode } from "jwt-decode";
 
 function CustomerProfile({ onBack }) {
   const dispatch = useDispatch();
@@ -508,6 +509,54 @@ const [confirmDelete, setConfirmDelete] = useState({
 });
 
   const { name, email, phone } = editProfile;
+
+
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const uploadData = new FormData();
+    uploadData.append("file", file);
+
+    try {
+      const token = localStorage.getItem("token");
+      let id = "6a2a987342fbcdfda0a5c5b0"; // Fallback ID
+
+      if (token) {
+        const decoded = jwtDecode(token);
+        id = decoded.id || id;
+      }
+
+      const response = await api.post(
+        `/updateCustomerProfile/uploadPhoto/${id}`,
+        uploadData,
+      );
+
+      const imagePath =
+        response.data?.photo?.url ||
+        response.data?.url ||
+        response.data?.photo ||
+        response.data?.path ||
+        response.data?.photo?.path;
+
+      if (imagePath) {
+        const cleanPath = imagePath
+          ? imagePath.replace(/\\/g, "/").replace(/^\/+/, "")
+          : "";
+        const finalImageUrl = cleanPath
+          ? `http://localhost:4500/${cleanPath}`
+          : "";
+        setImage(finalImageUrl);
+
+        // Update Redux store with the new photo URL alongside existing data
+        // dispatch(getEditProfile({ ...editProfile, image: finalImageUrl }));
+      }
+    } catch (error) {
+      console.error("Image upload failed:", error);
+    }
+  };
+
 
   const fetchData = async () => {
     setLoading(true);
@@ -573,7 +622,7 @@ const [confirmDelete, setConfirmDelete] = useState({
               <IconButton onClick={() => fileInputRef.current?.click()} sx={{ position: "absolute", bottom: -4, right: -4, bgcolor: "#673ab7", color: "white" }} size="small">
                 <EditIcon fontSize="small" />
               </IconButton>
-              <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={() => { /* upload logic */ }} />
+              <input type="file" ref={fileInputRef} hidden accept="image/*"  onChange={handleFileChange} />
             </Box>
             <Box>
               <Typography variant="h5" fontWeight={700}>{name}</Typography>
