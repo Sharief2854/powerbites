@@ -529,14 +529,14 @@ const [confirmDelete, setConfirmDelete] = useState({
         id = decoded.id || id;
       }
 
-      const response = await api.post(
-        `/updateCustomerProfile/uploadPhoto/${id}`,
+      const response = await api.put(
+        `/updateCustomerProfile/updateProfile/${id}`,
         uploadData,
       );
       
       const imagePath =
         response.data?.photo?.url ||
-        response.data?.url ||
+        response.data?.user.image ||
         response.data?.photo ||
         response.data?.path ||
         response.data?.photo?.path;
@@ -571,12 +571,12 @@ const [confirmDelete, setConfirmDelete] = useState({
         id = decoded.id || id;
       }
 
-      let response = await api.get(`/updateCustomerProfile/getPhoto/${id}}`);
+      let response = await api.get(`/updateCustomerProfile/getProfile/${id}}`);
       console.log("getphoto",response.data);
 
     const imagePath =
         response.data?.photo?.url ||
-        response.data?.url ||
+        response.data?.user.image ||
         response.data?.photo ||
         response.data?.path ||
         response.data?.photo?.path;
