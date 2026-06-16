@@ -4,6 +4,9 @@ import {
   Button,
   Typography,
   TextField,
+  CircularProgress,
+  Snackbar,
+  Alert
 } from "@mui/material";
 import { validateOtp } from "../utils/Validation";
 import AuthCard from "./AuthCard";
@@ -24,7 +27,8 @@ function VerifyOtp() {
 
   const handleSubmit = async(event) => {
     event.preventDefault();
-    try{
+    setLoading(true);
+    try {
     // console.log("Entered otp:", otp, "type:", typeof otp);
     // console.log("Expected verOtp:", verOtp, "type:", typeof verOtp);
 
@@ -32,22 +36,23 @@ function VerifyOtp() {
     
     console.log("res data :",res.data)
     if (res.data.message !== "OTP verified successfully") {
-      alert("OTP does not match. Please try again.");
+      setSnackbar({ open: true, message: "Invalid OTP. Please check the code and try again.", severity: "error" });
       return;
     }
     console.log("OTP verification successful!");
-    alert("Verification successful!");
+    setSnackbar({ open: true, message: "Account verified successfully! Redirecting to login...", severity: "success" });
     
     // Clear form field
     setOtp("");
 
     // Route them smoothly back to the login page upon success
-    navigate("/login");
-  }
-  catch(err){
-    console.log(err.response.data.message);
-    alert(err.response.data.message);
-  }
+    setTimeout(() => navigate("/login"), 1500);
+    } catch(err) {
+      console.log(err.response?.data?.message);
+      setSnackbar({ open: true, message: err.response?.data?.message || "Verification failed. Please try again.", severity: "error" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(()=>{
@@ -118,10 +123,10 @@ function VerifyOtp() {
                 type="submit"
                 fullWidth
                 variant="contained"
-                disabled={!isFormValid} // Safe button lockout if checks fail
+                disabled={!isFormValid || loading} // Safe button lockout if checks fail
                 sx={{ mt: 3, py: 1.2, fontWeight: "bold" }}
               >
-                Verify
+                {loading ? <CircularProgress size={24} color="inherit" /> : "Verify"}
               </Button>
             </Box>
 
@@ -153,6 +158,16 @@ function VerifyOtp() {
           </AuthCard>
         }
       />
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
