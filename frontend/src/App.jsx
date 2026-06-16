@@ -26,7 +26,6 @@ import CustomerEditProfile from "./Pages/Customer/CustomerEditProfile";
 import CustomerProducts from "./Pages/Customer/CustomerProducts/CustomerProducts";
 import ProductPage from "./Pages/Customer/CustomerProducts/ProductPage";
 import CustomerCart from "./Pages/Customer/Cart/CustomerCart";
-import CustomerProfile from "./Pages/Customer/CustomerProfiles";
 import OrderList from "./Pages/Customer/CustomerOrder/OrderList";
 
 
