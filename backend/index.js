@@ -19,7 +19,9 @@ const couponRouter = require('./Routes/Coupon/couponRouter');
 const customerProfileRouter = require('./Routes/customer/customerProfile');
 const isCustomer = require('./MiddleWare/customerAuth');
 const upload = require('./config/multerConfig');
-const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD')
+const PaymentRouter = require('./Routes/Payments/razorpayRoutes');
+
+
 
 ConnectDB()
 
@@ -34,13 +36,14 @@ app.use("/resetPass",ResetRouter)
 
 // Admin routes CRUD opertions with authentication middleware
 app.use("/crudAdmin",isAdmin,adminRouter)
-app.use("/cart",CartRouter)
+app.use("/cart",isCustomer,CartRouter)
 app.use("/products",isAdmin,ProductRouter)
 app.use("/banner",bannerRouter)
 
 
 
 app.use("/coupon",couponRouter)
+app.use("/payment",PaymentRouter)
 
 // Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter) 

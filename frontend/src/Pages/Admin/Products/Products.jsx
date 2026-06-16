@@ -32,6 +32,7 @@ import ProductCard from "./productCard";
 import { v4 as uuidv4 } from 'uuid';
 import {Chip} from '@mui/material'
 import { removeFile } from "./UpdateProducts";
+import api from "../../../api/axiosConfig";
 
 
 const VisuallyHiddenInput = styled("input")({
@@ -173,7 +174,9 @@ export default function Products() {
 
   async function allData() {
     try {
-      let response = await axios.get("http://localhost:4500/admin/product/all", header);
+      let response = await api.get("/admin/product/all", header);
+      console.log(response.data);
+      
       dispatch(getProducts(response.data.products));
     } catch (error) {      
       console.error("Fetch error:", error);
