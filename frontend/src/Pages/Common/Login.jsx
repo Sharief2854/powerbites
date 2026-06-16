@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Button, Typography, TextField, CircularProgress, Snackbar, Alert } from "@mui/material";
+import { Box, Button, Typography, TextField } from "@mui/material";
 import { validateEmail, validatePassword, PasswordField } from "../utils/Validation";
 import AuthCard from "./AuthCard";
 import MainAuthCard from "./MainAuthCard";
@@ -14,14 +14,6 @@ function Login() {
     email: "",
     password: "",
   });
-
-  const [loading, setLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
-
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') return;
-    setSnackbar((prev) => ({ ...prev, open: false }));
-  };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -45,12 +37,11 @@ function Login() {
   const handleSubmit = async(event) => {
     event.preventDefault();
     
+    try{
     if (!isFormValid) return;
 
-    setLoading(true);
-    try {
-      console.log("Logging in with:", formData);
-      // TODO: Integrate your actual API Authentication call here
+    console.log("Logging in with:", formData);
+    // TODO: Integrate your actual API Authentication call here
     let response = await api.post("/auth/login",formData);
 
     console.log("res data :",response.data)
@@ -63,45 +54,37 @@ function Login() {
     // Dynamic reset after an API handshake (or keep for convenience)
     setFormData({ email: "", password: "" });
 
-<<<<<<< HEAD
     if(decoded.role == "customer"){
       navigate("/home")
+
+    if(decoded.role == "customer"){
+      navigate("/")
+
     }
     else if(decoded.role == "admin"){
       navigate("/admin")
     }
     
-=======
-    setSnackbar({ open: true, message: "Login successful! Welcome back.", severity: "success" });
-
-    setTimeout(() => {
-      if(decoded.role === "customer"){
-        navigate("/customer");
-      } else if(decoded.role === "admin"){
-        navigate("/admin");
-      }
-    }, 1500);
->>>>>>> 4b63e3e5e3774c32b69ed4189ce774b11ab8b08d
 
   }
+}
   catch(err){
-    console.log("data ",err.response?.data); 
-    console.log("error ",err); 
-    if(err.response?.data?.isVerified === false){
-      setSnackbar({ open: true, message: err.response?.data?.message || "Please verify your account before logging in.", severity: "error" });
-      setTimeout(() => navigate(`/verifyOtp/${err.response?.data?.user}`), 1500);
+    console.log("data ",err.response.data); 
+    console.log("error ",err.response); 
+    if(err.response.data.isVerified === false){
+      alert(err.response.data.message);
+      navigate(`/verifyOtp/${err.response.data.user}`);
     }
-    else if(err.response?.data?.isUser === true){
-      setSnackbar({ open: true, message: err.response?.data?.message || "Account not found. Please register.", severity: "error" });
-      setTimeout(() => navigate("/register"), 1500);
+    else if(err.response.data.isUser === true){
+      alert(err.response.data.message);
+      navigate("/resgister");
     }
     else{
-      setSnackbar({ open: true, message: err.response?.data?.message || "Login failed. Please check your credentials and try again.", severity: "error" });
+      alert(err.response.data.message); 
     }
     
-  } finally {
-    setLoading(false);
   }
+
 }
 
   return (
@@ -169,12 +152,31 @@ function Login() {
                 autoComplete="current-password"
                 margin="normal"
               />
+
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={!isFormValid}
+                sx={{ mt: 3, py: 1.2, fontWeight: 'bold' }}
+              >
+                Sign In
+              </Button>
+            </Box>
+            
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                //gap: "8px",
+                mt: 3,
+              }}
+            >
               <Typography
                 variant="body2"
                 sx={{
                   color: "#4A1BF1",
-                  display:'flex',
-                  justifyContent:'flex-end',
                   fontWeight: "bold",
                   cursor: "pointer",
                   "&:hover": { textDecoration: "underline" },
@@ -183,29 +185,7 @@ function Login() {
               >
                 Forget Password
               </Typography>
-
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                disabled={!isFormValid || loading}
-                sx={{ mt: 3, py: 1.2, fontWeight: 'bold' }}
-              >
-                {loading ? <CircularProgress size={24} color="inherit" /> : "Sign In"}
-              </Button>
-            </Box>
-            
-            <Box
-              sx={{
-                display: "flex",
-                
-                alignItems: "center",
-                gap: "8px",
-                mt: 3,
-              }}
-            >
-              
-              
+              <Box>
               <Typography variant="body2" color="text.secondary">
                 Don't have an account?
               </Typography>
@@ -221,22 +201,12 @@ function Login() {
               >
                 Sign Up
               </Typography>
-            
+              </Box>
               
             </Box>
           </AuthCard>
         } 
       />
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

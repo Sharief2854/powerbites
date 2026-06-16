@@ -9,13 +9,8 @@ import ForgotPassword from "./Pages/Common/ForgetPassword";
 import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
 import Home from "./Pages/Common/Home";
-<<<<<<< HEAD
-import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
-import UserDetails from "./Pages/Admin/UsersOperations/UserDetails";
-=======
 
 import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
->>>>>>> 4b63e3e5e3774c32b69ed4189ce774b11ab8b08d
 import LandingPage from "./Pages/Common/LandingPage";
 import LandingPageLayout from "./Pages/Common/LandingPageLayout";
 
@@ -31,9 +26,6 @@ import CustomerEditProfile from "./Pages/Customer/CustomerEditProfile";
 import CustomerProducts from "./Pages/Customer/CustomerProducts/CustomerProducts";
 import ProductPage from "./Pages/Customer/CustomerProducts/ProductPage";
 import CustomerCart from "./Pages/Customer/Cart/CustomerCart";
-import CustomerProfile from "./Pages/Customer/CustomerProfiles";
-import OrderList from "./Pages/Customer/CustomerOrder/OrderList";
-
 
 function App() {
 
@@ -69,7 +61,6 @@ function App() {
         <Route path="/customer/cart/:id" element={<CustomerCart/>}/>
          <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
          <Route path ="/customer/editprofile/:id" element={<CustomerEditProfile/>}/>
-         <Route path ="/customer/orderlist" element={<OrderList/>}/>
         </Route>
 
       </Routes>

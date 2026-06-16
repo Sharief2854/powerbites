@@ -19,7 +19,8 @@ const couponRouter = require('./Routes/Coupon/couponRouter');
 const customerProfileRouter = require('./Routes/customer/customerProfile');
 const isCustomer = require('./MiddleWare/customerAuth');
 const upload = require('./config/multerConfig');
-const tproductsRoutes = require('./Routes/ProductfilteringRotes/Productfiltering');
+const PaymentRouter = require('./Routes/Payments/razorpayRoutes');
+
 
 
 ConnectDB()
@@ -42,9 +43,7 @@ app.use("/banner",bannerRouter)
 
 
 app.use("/coupon",couponRouter)
-app.use("/cart",CartRouter)
-app.use("/products",ProductRouter)
-app.use("/banner",isAdmin,bannerRouter)
+app.use("/payment",PaymentRouter)
 
 // Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter)

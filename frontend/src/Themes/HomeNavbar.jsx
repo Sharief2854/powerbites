@@ -25,7 +25,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Badge } from "@mui/material";
 
 const pages = [
-  { name: "Products", path: "/products", icon: <RestaurantMenuIcon fontSize="small" /> },
+  { name: "Products", path: "/customer/products", icon: <RestaurantMenuIcon fontSize="small" /> },
   { name: "Orders", path: "/orders", icon: <InfoOutlinedIcon fontSize="small" /> },
   { name: "Cart", path: "/cart", icon: <HomeIcon fontSize="small" /> },
 

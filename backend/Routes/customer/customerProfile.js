@@ -2,7 +2,7 @@ const express = require("express");
 const userModel = require("../../Model/userModel");
 const isCustomer = require("../../MiddleWare/customerAuth");
 const addressModel = require("../../Model/addressModel");
-const {updateCustomerProfile,deleteCustomerProfile,addingAddress,deleteAddress,updateAddress, getCustomerProfile, postCustomerPhoto, updateCustomerPhoto, getCustomerAddresses, getCustomerAddressById, setDefaultAddress} = require("../../Controllers/CustomerController/customerProfUpdate");
+const {updateCustomerProfile,deleteCustomerProfile,addingAddress,deleteAddress,updateAddress, getCustomerProfile, postCustomerPhoto, updateCustomerPhoto, getCustomerAddresses, getCustomerAddressById} = require("../../Controllers/CustomerController/customerProfUpdate");
 const photoModel = require("../../Model/photoModel");
 const upload = require("../../config/multerConfig");
 
@@ -38,8 +38,6 @@ router.get("/getAddresses", getCustomerAddresses);
 
 //geting customer address by address id for profile page
 router.get("/getAddress/:id", getCustomerAddressById);
-
-router.get("/setDefaultAddress/:id", setDefaultAddress);
 
 
 
