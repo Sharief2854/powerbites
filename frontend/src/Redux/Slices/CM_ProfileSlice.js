@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   editprofile: [],
   editaddress: [],
+  photo:[],
 };
 
 const CustomerEditProfile = createSlice({
@@ -50,6 +51,15 @@ const CustomerEditProfile = createSlice({
         return item;
       });
     },
+    getCustomerPhoto: (state, action) => {
+      state.photo = action.payload;
+    },
+    deleteCustomerPhoto: (state, action) => {
+      state.photo = state.photo.filter((item) => item._id !== action.payload);
+    },
+    postCustomerPhoto: (state, action) => {
+      state.photo = [...state.photo, action.payload];
+    },
   },
 });
 export const {
@@ -61,5 +71,8 @@ export const {
   deleteeditaddress,
   posteditaddress,
   updateeditaddress,
+  getCustomerPhoto,
+  deleteCustomerPhoto,
+  postCustomerPhoto,
 } = CustomerEditProfile.actions;
 export default CustomerEditProfile.reducer;

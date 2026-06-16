@@ -487,7 +487,7 @@ import StarIcon from "@mui/icons-material/Star";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axiosConfig";
-import { deleteeditaddress, geteditaddress, getEditProfile } from "../../Redux/Slices/CM_ProfileSlice";
+import { deleteeditaddress, geteditaddress, getEditProfile, postCustomerPhoto } from "../../Redux/Slices/CM_ProfileSlice";
 import CustomerCard from "./CustomerCard";
 import { jwtDecode } from "jwt-decode";
 
@@ -498,6 +498,7 @@ function CustomerProfile({ onBack }) {
 
   const editProfile = useSelector((state) => state.editprofile.editprofile || {});
   const editAddress = useSelector((state) => state.editprofile.editaddress || []);
+  const customerPhoto = useSelector((state) => state.editprofile.photo || []);
 
   const [image, setImage] = useState("");
   const [message, setMessage] = useState(null);
@@ -532,7 +533,7 @@ const [confirmDelete, setConfirmDelete] = useState({
         `/updateCustomerProfile/uploadPhoto/${id}`,
         uploadData,
       );
-
+      
       const imagePath =
         response.data?.photo?.url ||
         response.data?.url ||
@@ -544,9 +545,10 @@ const [confirmDelete, setConfirmDelete] = useState({
         const cleanPath = imagePath
           ? imagePath.replace(/\\/g, "/").replace(/^\/+/, "")
           : "";
-        const finalImageUrl = cleanPath
+          const finalImageUrl = cleanPath
           ? `http://localhost:4500/${cleanPath}`
           : "";
+        dispatch(postCustomerPhoto(finalImageUrl));
         setImage(finalImageUrl);
 
         // Update Redux store with the new photo URL alongside existing data
@@ -557,6 +559,46 @@ const [confirmDelete, setConfirmDelete] = useState({
     }
   };
 
+  async function getCustomerPhoto() {
+
+    try {
+
+       const token = localStorage.getItem("token");
+      let id = "6a2a987342fbcdfda0a5c5b0"; // Fallback ID
+
+      if (token) {
+        const decoded = jwtDecode(token);
+        id = decoded.id || id;
+      }
+
+      let response = await api.get(`/updateCustomerProfile/getPhoto/${id}}`);
+      console.log("getphoto",response.data);
+
+    const imagePath =
+        response.data?.photo?.url ||
+        response.data?.url ||
+        response.data?.photo ||
+        response.data?.path ||
+        response.data?.photo?.path;
+
+      if (imagePath) {
+        const cleanPath = imagePath
+          ? imagePath.replace(/\\/g, "/").replace(/^\/+/, "")
+          : "";
+          const finalImageUrl = cleanPath
+          ? `http://localhost:4500/${cleanPath}`
+          : "";
+        dispatch(getCustomerPhoto(finalImageUrl));
+        setImage(finalImageUrl);
+      }
+
+      
+    } catch (err) {
+      console.log("error :",err.response.data.message);
+      
+    }
+    
+  }
 
   const fetchData = async () => {
     setLoading(true);
@@ -603,7 +645,10 @@ const [confirmDelete, setConfirmDelete] = useState({
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { 
+    fetchData(); 
+    getCustomerPhoto();
+  }, []);
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>;
 
@@ -616,7 +661,7 @@ const [confirmDelete, setConfirmDelete] = useState({
           {/* Header */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 3, mb: 5 }}>
             <Box sx={{ position: "relative" }}>
-              <Avatar src={image} sx={{ width: 90, height: 90, bgcolor: "#673ab7", fontSize: "2.2rem", border: "4px solid white" }}>
+              <Avatar src={image||customerPhoto} sx={{ width: 90, height: 90, bgcolor: "#673ab7", fontSize: "2.2rem", border: "4px solid white" }}>
                 {name?.charAt(0)?.toUpperCase() || "U"}
               </Avatar>
               <IconButton onClick={() => fileInputRef.current?.click()} sx={{ position: "absolute", bottom: -4, right: -4, bgcolor: "#673ab7", color: "white" }} size="small">

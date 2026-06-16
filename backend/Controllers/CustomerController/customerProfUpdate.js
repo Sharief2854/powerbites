@@ -220,6 +220,34 @@ async function updateCustomerPhoto(req, res) {
     }
 }
 
+//get photos
+async function getCustomerPhoto(req, res) {
+    try {
+        let userId = req.userId;
+        console.log("User ID from token:", userId);
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized: User ID missing in token"
+            });
+        }
+        const photo = await photoModel.findOne({ userId });
+        if (!photo) {
+            return res.status(404).json({
+                message: "Photo not found"
+            });
+        }
+        res.status(200).json({
+            message: "Photo retrieved successfully",
+            photo: photo
+        });
+    } catch (error) {
+        console.error("Error fetching photo:", error);
+        res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+};
+
 // Customer adding address management controller functions
 async function addingAddress(req, res) {
     try {
@@ -390,6 +418,8 @@ async function getCustomerAddresses (req, res) {
 //get customer address by address id controller function
 async function getCustomerAddressById(req, res) {
     try {   
+
+        console.log("getphotos")
         let userId = req.userId;
         console.log("User ID from token:", userId); 
         if (!userId) {
@@ -466,4 +496,5 @@ module.exports = {
     getCustomerAddresses,
     getCustomerAddressById,
     setDefaultAddress,
+    getCustomerPhoto
 }
