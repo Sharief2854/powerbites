@@ -26,6 +26,7 @@ import CustomerProducts from "./Pages/Customer/CustomerProducts/CustomerProducts
 import ProductPage from "./Pages/Customer/CustomerProducts/ProductPage";
 import CustomerCart from "./Pages/Customer/Cart/CustomerCart";
 import OrderList from "./Pages/Customer/CustomerOrder/OrderList";
+import CustomerProfile from "./Pages/Customer/CustomerProfiles";
 
 
 function App() {
