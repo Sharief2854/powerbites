@@ -24,11 +24,18 @@ const PaymentRouter = require('./Routes/Payments/razorpayRoutes');
 
 
 ConnectDB()
-
+// app.post("/upload",)
 const app = express()
 app.use(cors())
 app.use(express.json())
-app.use("/upload", express.static("upload"));
+// app.use("/upload", express.static("upload"));
+const path = require("path");
+
+app.use("/upload", express.static(path.join(__dirname, "upload"))
+);
+app.get("/test", (req, res) => {
+  res.send("Server working");
+});
 
 app.use("/auth",RegRouter,LoginRouter)
 app.use("/resetPass",ResetRouter)

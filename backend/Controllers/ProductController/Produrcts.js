@@ -1,10 +1,11 @@
 const express = require("express");
 const ProductModel = require("../../Model/ProductModel");
+const sendProductNotification = require("../../Utils/sendProductNotification");
 
 async function allProduct(req, res) {
     try {
 
-     const data = await ProductModel.find();
+        const data = await ProductModel.find();
         if (!data) {
             return res.status(400).json({
                 message: "No Products found"
@@ -21,50 +22,70 @@ async function allProduct(req, res) {
         })
 
     }
-
 }
- async function addProduct(req, res) {
 
+
+
+async function addProduct(req, res) {
     try {
-        let body = req.body
-        console.log(req.files, "files")
+        const body = req.body;
 
-    //   const image= req.files.map(file => file.path)
-    //     let Product = await ProductModel.create(body)
+        console.log(req.files, "files");
+        console.log(req.body, "aaa")
 
-     if (!req.files || req.files.length === 0) {
-            return res.status(400).json({ message: "Product image is required." });
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({
+                message: "Product image is required."
+            });
         }
+        //         const imagePaths = req.files.map(file =>
+        //     `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
+        // );
+        
 
-      const imagePaths = req.files.map(file => file.path);
+        const imagePaths = req.files.map(file =>
+            `${req.protocol}://${req.get("host")}/${file.path}`
+        );
 
-        const ProductData = {...body,image: imagePaths };
+        console.log("Image Paths:", imagePaths);
+
+        // const ProductData = {
+        //     ...body,
+        //     image: imagePaths
+        // };
+        const ProductData = {
+            name: req.body.name,
+            description: req.body.description,
+            price: req.body.price,
+            stock: req.body.stock,
+            image: imagePaths
+        };
+
+        console.log(ProductData);
         const Product = await ProductModel.create(ProductData);
-              
 
         if (!Product) {
-            return
-            res.status(400).json({
-                message: "product not found"
-            })
+            return res.status(400).json({
+                message: "Something went wrong while creating product"
+            });
         }
-        res.send({
-            message: "product added successfully",
+
+        // Send email notification
+        await sendProductNotification(Product);
+
+        return res.status(201).json({
+            message: "Product added successfully",
             Product
-        })
+        });
 
+    } catch (err) {
+        console.log(err);
+
+        return res.status(500).json({
+            message: err.message
+        });
     }
-    catch (err) {
-        res.status(500).json({
-            message: "server problem"
-        })
-    }
-
-
 }
-
-
-
 
 async function updateProduct(req, res) {
     try {
@@ -76,7 +97,7 @@ async function updateProduct(req, res) {
             ProductData.image = imagePaths;
         }
 
-        const product = await ProductModel.findByIdAndUpdate(id, ProductData,{new: true,}
+        const product = await ProductModel.findByIdAndUpdate(id, ProductData, { new: true, }
         );
 
         if (!product) {
@@ -91,7 +112,7 @@ async function updateProduct(req, res) {
         });
 
     }
-    
+
     catch (err) {
         return res.status(500).json({
             message: "Error updating product",
@@ -100,7 +121,7 @@ async function updateProduct(req, res) {
     }
 }
 
- async function deleteProduct(req, res) {
+async function deleteProduct(req, res) {
 
     try {
         let id = req.params.id
