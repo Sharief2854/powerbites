@@ -256,7 +256,7 @@ function CustomerEditProfile() {
         payload,
       );
       console.log("Server response data:", res.data);
-      dispatch(getEditProfile(res.data.user));
+      dispatch(updateEditProfile({id:userId,data :res.data.user}));
       console.log("Profile updated successfully!");
       setMessage({ text: "Profile updated successfully!", type: "success" });
       setTimeout(() => navigate("/customer/profile"), 1500);
