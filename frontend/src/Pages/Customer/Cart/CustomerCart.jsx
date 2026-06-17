@@ -1,4 +1,4 @@
-import { Box, Card, CardContent,IconButton, CardMedia, Grid, MenuItem, Select, Stack, Typography, Button, Checkbox } from '@mui/material'
+import { Box, Card, CardContent,IconButton, CardMedia, Grid, MenuItem, Select, Stack, Typography, Button, Checkbox, Skeleton } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import api from '../../../api/axiosConfig'
 import { jwtDecode } from 'jwt-decode'
@@ -97,6 +97,14 @@ export default function CustomerCart() {
     setUpdateAddress(defaultAddress);
   } catch (error) {}
 }
+async function addAddresses(params) {
+  response = await api.post(
+          `/updateCustomerProfile/addAddress/${userId}`,
+          {
+            
+          },
+        );
+}
 
   async function changeAddress(params) {
     try {
@@ -129,6 +137,9 @@ useEffect(() => {
     
   }
 }, [addresses]);
+if (loading) {
+  Skeleton.count = 4
+}
   
   return (
   <Box sx={{ p: 3 }}>

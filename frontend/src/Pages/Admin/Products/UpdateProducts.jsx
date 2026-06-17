@@ -77,18 +77,17 @@ export default function UpdateProducts() {
   let allProducts = useSelector((state) => state?.product?.products);
   let { id } = useParams();
   let product = allProducts?.find((e) => {
-    // return e._id == id;
-    return e.id == id;
+    return e._id == id;
   });
   console.log(allProducts);
 
   const [productData, setProductData] = useState({
-    name: product.name,
-    description: product.description,
-    price: product.price,
-    stock: product.stock,
-    discount: product.discount,
-    isAvailable: product.isAvailable,
+    name: product?.name,
+    description: product?.description,
+    price: product?.price,
+    stock: product?.stock,
+    discount: product?.discount,
+    isAvailable: product?.isAvailable,
   });
 
   const [selectedFile, setSelectedFile] = useState([]);
@@ -203,7 +202,6 @@ export default function UpdateProducts() {
           </FormControl>
           <Button
             component="label"
-            role={undefined}
             variant="contained"
             tabIndex={-1}
             startIcon={<CloudUploadIcon />}

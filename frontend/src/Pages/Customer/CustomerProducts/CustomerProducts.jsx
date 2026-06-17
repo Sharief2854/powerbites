@@ -1,4 +1,4 @@
-import { Box, Button, Card, CardActions, CardContent, Chip, CircularProgress, FormControl, FormControlLabel, Grid, MenuItem, OutlinedInput, Select, Switch, Typography } from '@mui/material'
+import { Alert, Backdrop, Box, Button, Card, CardActions, CardContent, Chip, CircularProgress, FormControl, FormControlLabel, Grid, MenuItem, OutlinedInput, Select, Switch, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { addToCart, addValue } from '../../../Redux/Slices/CM_CartSlice'
 import { useDispatch } from 'react-redux'
@@ -34,13 +34,14 @@ export default function CustomerProducts() {
   const [searchProduct, setSearchProduct] = useState('')
   const [range, setRange] = useState('')
   const [isAvailableOnly, setIsAvailableOnly] = useState(false)
+  const [selected, setSelected] = useState([]);
+  const [cartBtn, setCartBtn] = useState(false)
+  const [category, setCategory] = React.useState([]);
 
   const theme = useTheme();
-  const [category, setCategory] = React.useState([]);
 function getStyles(name, category, theme) {
   return {
     fontWeight: 'medium'
-      // : theme.typography.fontWeightRegular,
   };
 }
 
@@ -51,7 +52,7 @@ function getStyles(name, category, theme) {
     } = event;
     setCategory(
       typeof value === 'string' ? value.split(',') : value,
-    );
+    )
   };
 
   let token = localStorage.getItem("token")
@@ -61,10 +62,16 @@ function getStyles(name, category, theme) {
   const navigate = useNavigate()
 
   async function addItem(params) {
+    setCartBtn(true)
     setLoading(true)
     try {
-      let res = await api.post(`/cart/setQuantity/${decodeId}`, {})
+      let res = await api.post(`/cart/setCart`, {})
+      console.log(res.data);
+      
       dispatch(addToCart(res.data.data))
+      if(res.status === 200){
+        <Alert severity="success">Item added Succesfully</Alert>
+      }
     } catch (error) {
     }
     finally {
@@ -102,14 +109,18 @@ function getStyles(name, category, theme) {
     setLoading(true)
     try {
       let res = await api.get(`/cart/getCart`)
-      dispatch(addValue(res.data.data.quantity))
-      console.log(res.data.data); 
+      dispatch(addValue(res.data.quantity))
+      console.log(res.data.data);
     } catch (error) {
       // enqueueSnackbar('')
     }
     finally {
       setLoading(false)
     }
+  }
+  function cartButton(params) {
+    cartBtn?navigate(`/customer/productpage/${item._id}`):
+               addItem()
   }
   
   
@@ -150,7 +161,11 @@ function getStyles(name, category, theme) {
     getCartItems()
   }, [])
   if(loading){
-    return <CircularProgress color="primary"/>
+    <Backdrop
+  sx={{ color: '#fff', zIndex: 1 }}
+  open={loading}
+><CircularProgress color="primary"/></Backdrop>
+return
   }
   return (
     <Box>
@@ -170,20 +185,18 @@ function getStyles(name, category, theme) {
 
       <FormControl sx={{ m: 1, width: 300 }}>
         <InputLabel id="demo-multiple-chip-label">Category</InputLabel>
-        {/* <Select
-          labelId="demo-multiple-chip-label"
+        <Select
           id="demo-multiple-chip"
-          multiple
-          // value={selected}
+          value={selected}
           onChange={handleChange}
-          // input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
-          // renderValue={(selected) => (
-          //   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-          //     {selected.map((value) => (
-          //       <Chip key={value} label={value} />
-          //     ))}
-          //   </Box>
-          // )}
+          input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
+          renderValue={(selected) => (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {selected.map((value) => (
+                <Chip key={value} label={value} />
+              ))}
+            </Box>
+          )}
           MenuProps={MenuProps}
         >
           {names.map((name) => (
@@ -195,12 +208,12 @@ function getStyles(name, category, theme) {
               {name}
             </MenuItem>
           ))}
-        </Select> */}
+        </Select>
       </FormControl>
     
                           </Grid>
       
-                          <Grid item size={4}>
+                          <Grid size={4}>
                             <FormControl fullWidth>
                               <Select
                                 value={range}
@@ -219,7 +232,7 @@ function getStyles(name, category, theme) {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid item size={3}>
+                          <Grid size={3}>
                             <FormControlLabel
                               control={
                                 <Switch
@@ -280,6 +293,7 @@ function getStyles(name, category, theme) {
               overflow: "hidden",
               backgroundColor: "#f8f8f8",
             }}
+            onClick={() => navigate(`/customer/productpage/${item._id}`)}
           >
             <Box
               component="img"
@@ -319,6 +333,7 @@ function getStyles(name, category, theme) {
             display: "flex",
             flexDirection: "column",
           }}
+            onClick={() => navigate(`/customer/productpage/${item._id}`)}
         >
           <Typography
             sx={{
@@ -355,7 +370,6 @@ function getStyles(name, category, theme) {
           <Box sx={{ mt: 2, textAlign: "center" }}>
             <Typography
               sx={{
-                textDecoration: "line-through",
                 color: "#9ca3af",
                 fontSize: "0.9rem",
               }}
@@ -363,7 +377,7 @@ function getStyles(name, category, theme) {
               ₹{item.price}
             </Typography>
 
-            <Typography
+            {/* <Typography
               sx={{
                 fontSize: "1.4rem",
                 fontWeight: 800,
@@ -372,7 +386,7 @@ function getStyles(name, category, theme) {
               }}
             >
               ₹{item.offerPrice}
-            </Typography>
+            </Typography> */}
           </Box>
         </CardContent>
 
@@ -380,8 +394,9 @@ function getStyles(name, category, theme) {
           <PrimaryButton
             fullWidth
             variant="contained"
+            onClick={cartButton}
             sx={{
-              backgroundColor: "#111827",
+              backgroundColor: "primary",
               color: "#fff",
               borderRadius: 3,
               py: 1.1,
@@ -396,13 +411,13 @@ function getStyles(name, category, theme) {
             }}
           
           >
-            Add to cart
+            {cartBtn?"Go to Cart":'Add to cart'}
           </PrimaryButton>
           <PrimaryButton
             fullWidth
             variant="contained"
             sx={{
-              backgroundColor: "#111827",
+              backgroundColor: "primary",
               color: "#fff",
               borderRadius: 3,
               py: 1.1,

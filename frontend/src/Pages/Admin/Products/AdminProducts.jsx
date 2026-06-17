@@ -44,6 +44,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Chip } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import api from "../../../api/axiosConfig";
+import CloseIcon from "@mui/icons-material/Close";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -94,7 +95,7 @@ export default function AdminProducts() {
   const product = useSelector((state) => state.product.products);
 
   console.log(product);
-  
+
   const [loading, setLoading] = useState(false);
 
   const [openModal, setOpenModal] = useState(false);
@@ -120,9 +121,6 @@ export default function AdminProducts() {
   const [maxPrice, setMaxPrice] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [inStockOnly, setInStockOnly] = useState(false);
-  const [photo, setPhoto] = useState([]);
-
-
 
   const openAddProductModal = () => {
     setOpenModal(true);
@@ -177,9 +175,10 @@ export default function AdminProducts() {
     try {
       setLoading(true);
 
-      const response = await api.get("/products/category");
+      const response = await api.get("/category/allCategories");
 
       setCategories(response.data.categories || []);
+      console.log(response.data.categories);
     } catch (error) {
       console.log(error);
     } finally {
@@ -190,9 +189,9 @@ export default function AdminProducts() {
   const getProductsData = async () => {
     try {
       setLoading(true);
-      
+
       const response = await api.get("/products/all");
-      console.log(response.data.data)
+      console.log(response.data.data);
 
       dispatch(getProducts(response.data.data));
     } catch (error) {
@@ -201,13 +200,16 @@ export default function AdminProducts() {
       setLoading(false);
     }
   };
+  const formData = new FormData();
+
+  formData.forEach((i) => {
+    console.log(i.value);
+  });
 
   const handlePost = async () => {
     e.preventDefault();
     try {
       setLoading(true);
-
-      const formData = new FormData();
 
       formData.append("name", productData.name);
 
@@ -228,12 +230,6 @@ export default function AdminProducts() {
       });
       formData.append("sendUpdates", productData.sendUpdates);
 
-      formData.forEach((i)=>{
-
-        console.log(i);
-      })
-      
-
       const response = await api.post("/products/addProduct", formData);
 
       dispatch(postProducts(response.data.product));
@@ -245,7 +241,7 @@ export default function AdminProducts() {
     }
   };
 
-  const displayProducts = useMemo(() =>{
+  const displayProducts = useMemo(() => {
     let filtered = [...(product || [])];
 
     if (search.trim()) {
@@ -306,9 +302,16 @@ export default function AdminProducts() {
     }
 
     return filtered;
-  },[product, search, selectedCategory, inStockOnly, minPrice, maxPrice, sortBy]);
+  }, [
+    product,
+    search,
+    selectedCategory,
+    inStockOnly,
+    minPrice,
+    maxPrice,
+    sortBy,
+  ]);
   console.log(displayProducts);
-  
 
   useEffect(() => {
     getProductsData();
@@ -316,10 +319,7 @@ export default function AdminProducts() {
   }, []);
   if (loading) {
     return (
-      <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={loading}
-      >
+      <Backdrop sx={{ color: "#fff", zIndex: 1 }} open={loading}>
         <CircularProgress color="primary" />
       </Backdrop>
     );
@@ -352,7 +352,9 @@ export default function AdminProducts() {
         Product
       </Typography>
       <Box sx={{ position: "absolute", top: 0, right: 0 }}>
-        <PrimaryButton onClick={openAddProductModal} sx={{margin:'20px'}}>Add Product</PrimaryButton>
+        <PrimaryButton onClick={openAddProductModal} sx={{ margin: "20px" }}>
+          Add Product
+        </PrimaryButton>
       </Box>
 
       <Grid
@@ -361,12 +363,12 @@ export default function AdminProducts() {
         direction={{ xs: "column-reverse", md: "row" }}
         spacing={4}
       >
-        <Grid item size={{ sm: 12, md: 7 }}>
+        <Grid size={{ sm: 12, md: 12 }}>
           <div>
             <Grid container spacing={3}>
-              <Grid item size={12}>
+              <Grid size={12}>
                 <Grid container spacing={2}>
-                  <Grid item xs={12} md={3}>
+                  <Grid size={{ xs: 12, md: 3 }}>
                     <OutlinedInput
                       fullWidth
                       placeholder="Search Product"
@@ -375,7 +377,7 @@ export default function AdminProducts() {
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={2}>
+                  <Grid size={{ xs: 12, md: 2 }}>
                     <FormControl fullWidth>
                       <InputLabel>Category</InputLabel>
 
@@ -395,7 +397,7 @@ export default function AdminProducts() {
                     </FormControl>
                   </Grid>
 
-                  <Grid item xs={12} md={2}>
+                  <Grid size={{ xs: 12, md: 2 }}>
                     <TextField
                       fullWidth
                       type="number"
@@ -405,7 +407,7 @@ export default function AdminProducts() {
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={2}>
+                  <Grid size={{ xs: 12, md: 2 }}>
                     <TextField
                       fullWidth
                       type="number"
@@ -415,10 +417,9 @@ export default function AdminProducts() {
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={2}>
+                  <Grid size={{ xs: 12, md: 2 }}>
                     <FormControl fullWidth>
                       <InputLabel>Sort</InputLabel>
-
                       <Select
                         value={sortBy}
                         label="Sort"
@@ -439,7 +440,7 @@ export default function AdminProducts() {
                     </FormControl>
                   </Grid>
 
-                  <Grid item xs={12} md={1}>
+                  <Grid size={{ xs: 12, md: 2 }}>
                     <FormControlLabel
                       control={
                         <Switch
@@ -451,7 +452,7 @@ export default function AdminProducts() {
                     />
                   </Grid>
 
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12, md: 2 }}>
                     <Button
                       variant="outlined"
                       color="secondary"
@@ -465,7 +466,7 @@ export default function AdminProducts() {
             </Grid>
           </div>
 
-          <Grid item size={12}>
+          <Grid size={12}>
             <Grid container spacing={2}>
               {displayProducts?.length > 0 ? (
                 displayProducts.map((product) => (
@@ -493,44 +494,61 @@ export default function AdminProducts() {
         maxWidth="md"
         fullWidth
       >
+        <IconButton
+          color="primary"
+          sx={{ position: "absolute", top: 0, right: 0, m: 1 }}
+          onClick={closeAddProductModal}
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+
         <DialogTitle sx={{ color: "#3E1A89", fontWeight: 600 }}>
           Add Product
         </DialogTitle>
 
         <DialogContent dividers>
           <Stack
-            
-        component={'form'}
-        onSubmit={handlePost}
-          spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              fullWidth
-              label="Product Name"
-              name="name"
-              value={productData.name}
-              onChange={handleChange}
-              sx={{ borderRadius: "10px" }}
-            />
-
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              label="Description"
-              name="description"
-              value={productData.description}
-              onChange={handleChange}
-              sx={{ borderRadius: "10px" }}
-            />
+            component={"form"}
+            onSubmit={handlePost}
+            spacing={2}
+            sx={{ p: 2, height: "60%", overflowY: "auto" }}
+          >
+            <FormControl fullWidth>
+              <InputLabel htmlFor="name">Product Name</InputLabel>
+              <OutlinedInput
+                id="name"
+                label="Product Name"
+                type="text"
+                placeholder="Product Name"
+                value={productData.name}
+                onChange={handleChange}
+                name="name"
+                sx={{ borderRadius: "10px" }}
+              />
+            </FormControl>
+            <FormControl fullWidth margin="normal">
+              <InputLabel htmlFor="description">Description</InputLabel>
+              <OutlinedInput
+                id="description"
+                type="text"
+                value={productData.description}
+                onChange={handleChange}
+                name="description"
+                label="Description"
+                multiline
+                rows={4}
+                sx={{ borderRadius: "10px" }}
+              />
+            </FormControl>
 
             <FormControl fullWidth>
               <InputLabel>Category</InputLabel>
-
               <Select
                 name="category"
                 value={productData.category}
                 label="Category"
                 onChange={handleChange}
+                sx={{ borderRadius: "10px" }}
               >
                 {categories.map((item) => (
                   <MenuItem key={item._id} value={item._id}>
@@ -541,43 +559,50 @@ export default function AdminProducts() {
             </FormControl>
 
             <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Price"
-                  type="number"
-                  name="price"
-                  value={productData.price}
-                  onChange={handleChange}
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <span style={{ color: "#3E1A89" }}>₹</span>
-                    </InputAdornment>
-                  }
-                  label="Price"
-                  sx={{ borderRadius: "10px" }}
-                />
+              <Grid size={{ xs: 12, md: 4 }}>
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>Price</InputLabel>
+                  <OutlinedInput
+                    fullWidth
+                    label="Price"
+                    type="number"
+                    name="price"
+                    value={productData.price}
+                    onChange={handleChange}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <span style={{ color: "#3E1A89" }}>₹</span>
+                      </InputAdornment>
+                    }
+                    label="Price"
+                    sx={{ borderRadius: "10px" }}
+                  />
+                </FormControl>
               </Grid>
 
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Discount"
-                  type="number"
-                  name="discount"
-                  value={productData.discount}
-                  onChange={handleChange}
-                  startAdornment={
-                    <InputAdornment position="end">
-                      <span style={{ color: "#3E1A89" }}>%</span>
-                    </InputAdornment>
-                  }
-                  sx={{ borderRadius: "10px" }}
-                />
+              <Grid size={{ xs: 12, md: 3 }}>
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>Discount</InputLabel>
+                  <OutlinedInput
+                    type="number"
+                    name="discount"
+                    value={productData.discount}
+                    onChange={handleChange}
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <span style={{ color: "#3E1A89" }}>%</span>
+                      </InputAdornment>
+                    }
+                    label="Discount"
+                    sx={{ borderRadius: "10px" }}
+                  />
+                </FormControl>
               </Grid>
             </Grid>
 
-            <TextField
+            <FormControl >
+              <FormLabel>Stock</FormLabel>
+            <OutlinedInput
               fullWidth
               label="Stock"
               type="number"
@@ -586,6 +611,8 @@ export default function AdminProducts() {
               onChange={handleChange}
               sx={{ borderRadius: "10px" }}
             />
+            </FormControl>
+
 
             <FormControlLabel
               label="Available"
@@ -628,113 +655,116 @@ export default function AdminProducts() {
             </Button>
 
             {photos.length > 0 && (
-              <Stack
-                direction="row"
-                flexwrap="nowrap"
-                spacing={1}
-                gap={1}
+              <Box
                 sx={{
-                  width: "80%",
-                  height: "115px",
-                  maxHeight: "145px",
-                  overflowX: "scroll",
-                  overflowY: "hidden",
-                  py: 0.5,
-                  "&::-webkit-scrollbar": {
-                    height: "8px",
-                    display: "block !important",
-                  },
-                  "&::-webkit-scrollbar-track": {
-                    backgroundColor: "#f1f1f1",
-                    borderRadius: "4px",
-                  },
-                  "&::-webkit-scrollbar-thumb": {
-                    backgroundColor: "#3E1A89",
-                    borderRadius: "4px",
-                  },
-                  scrollbarWidth: "thin",
+                  width: "100%",
+                  minWidth: 0,
+                  maxWidth: "100%",
+                  display: "block",
+                  overflow: "hidden",
                 }}
               >
-                {photo.map((file, index) => {
-                  console.log(file);
-                  
-                  const previewUrl = URL.createObjectURL(file);
+                <Stack
+                  direction="row"
+                  flexWrap="nowrap"
+                  gap={1}
+                  sx={{
+                    width: "80%",
+                    height: "115px",
+                    maxHeight: "145px",
+                    overflowX: "scroll",
+                    overflowY: "hidden",
+                    py: 0.5,
 
-                  return (
-                    <ImageListItem
-                      key={`new-${index}`}
-                      sx={{
-                        minWidth: "120px",
-                        maxWidth: "120px",
-                        width: "120px",
-                        height: "120px",
-                        border: "1px solid #2196f3",
-                        borderRadius: "8px",
-                        overflow: "hidden",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <img
-                        src={previewUrl}
-                        alt="New Upload"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
+                    "&::-webkit-scrollbar": {
+                      height: "8px",
+                      display: "block !important",
+                    },
+                    "&::-webkit-scrollbar-track": {
+                      backgroundColor: "#f1f1f1",
+                      borderRadius: "4px",
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                      backgroundColor: "#3E1A89",
+                      borderRadius: "4px",
+                    },
+                    scrollbarWidth: "thin",
+                  }}
+                >
+                  {photos.map((file, index) => {
+                    const previewUrl = URL.createObjectURL(file);
+
+                    return (
+                      <ImageListItem
+                        key={`new-${index}`}
+                        sx={{
+                          minWidth: "120px",
+                          maxWidth: "120px",
+                          width: "120px",
+                          height: "120px",
+                          border: "1px solid #2196f3",
+                          borderRadius: "8px",
+                          overflow: "hidden",
+                          flexShrink: 0,
                         }}
-                        onLoad={() => URL.revokeObjectURL(previewUrl)}
-                      />
-                      <ImageListItemBar
-                        position="top"
-                        actionIcon={
-                          <IconButton
-                            sx={{
-                              color: "#fff",
-                              backgroundColor: "rgba(0,0,0,0.5)",
-                              m: 0.5,
-                            }}
-                            size="small"
-                            onClick={() => removeFile(index)}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        }
-                      />
-                    </ImageListItem>
-                  );
-                })}
-              </Stack>
-            )};
+                      >
+                        <img
+                          src={previewUrl}
+                          alt="New Upload"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                          onLoad={() => URL.revokeObjectURL(previewUrl)}
+                        />
+                        <ImageListItemBar
+                          position="top"
+                          actionIcon={
+                            <IconButton
+                              sx={{
+                                color: "#fff",
+                                backgroundColor: "rgba(0,0,0,0.5)",
+                                m: 0.5,
+                              }}
+                              size="small"
+                              onClick={() => removeFile(index)}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          }
+                        />
+                      </ImageListItem>
+                    );
+                  })}
+                </Stack>
+              </Box>
+            )}
             <DialogActions>
-          <FormControlLabel
-            control={<Checkbox name="sendUpdates" onChange={handleChange} />}
-            label="Send updates to Customers"
-          />
-          <Button color="error" onClick={closeAddProductModal}>
-            Cancel
-          </Button>
-
-          <PrimaryButton
-            type="submit"
-            sx={{
-              backgroundColor: "#3E1A89",
-              color: "white",
-              borderRadius: "10px",
-              textTransform: "none",
-              fontWeight: 600,
-              "&:hover": {
-                backgroundColor: "#3E1A89",
-                opacity: 0.9,
-              },
-            }}
-          >
-            Add Product
-          </PrimaryButton>
-        </DialogActions>
+              <FormControlLabel
+                control={
+                  <Checkbox name="sendUpdates" onChange={handleChange} />
+                }
+                label="Send updates to Customers"
+              />
+              <PrimaryButton
+                type="submit"
+                sx={{
+                  backgroundColor: "#3E1A89",
+                  color: "white",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  "&:hover": {
+                    backgroundColor: "#3E1A89",
+                    opacity: 0.9,
+                  },
+                }}
+              >
+                Add Product
+              </PrimaryButton>
+            </DialogActions>
           </Stack>
         </DialogContent>
-
-        
       </Dialog>
     </Box>
   );

@@ -34,7 +34,7 @@ export default function ProductCard({product}) {
               }
     }
   return (
-    <Grid size={{ xs: 12, sm: 6 }}>
+    <Grid size={{ xs: 12, sm: 4 }}>
     <Card sx={{ maxWidth: 345 }}>
       <SnackbarProvider/>
       <CardActionArea>

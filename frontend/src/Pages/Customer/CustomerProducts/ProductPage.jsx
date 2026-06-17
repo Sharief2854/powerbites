@@ -309,52 +309,7 @@ const handleDecrease = () => {
 
             <Divider />
 
-            {/* <Box>
-              <Typography mb={1} fontWeight={600}>
-                Quantity
-              </Typography>
-
-              <Box
-                sx={{
-                  width: "fit-content",
-                  border: 1,
-                  borderColor: "divider",
-                  borderRadius: 2,
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <IconButton
-                  size="small"
-                  disabled={quantity <= 1}
-                  onClick={() => {
-                    setQuantity((prev) => prev - 1);
-                    quantity > 1 && setCartQuantity(quantity - 1);
-                  }}
-                >
-                  <Remove />
-                </IconButton>
-
-                <Typography
-                  sx={{
-                    px: 3,
-                    fontWeight: 600,
-                  }}
-                >
-                  {quantity}
-                </Typography>
-
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    setQuantity((prev) => prev + 1);
-                    setCartQuantity(quantity + 1);
-                  }}
-                >
-                  <Add />
-                </IconButton>
-              </Box>
-            </Box> */}
+            
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               
