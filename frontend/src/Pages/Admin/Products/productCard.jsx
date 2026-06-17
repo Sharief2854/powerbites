@@ -18,15 +18,14 @@ export default function ProductCard({product}) {
 
     let token = localStorage.getItem("token")
     // let getImage =
-    // let cleanPath =  product.image.replace(/\\/g, '/').replace(/^\/+/, '')
+    // let cleanPath =  product?.image?.replace(/\\/g, '/').replace(/^\/+/, '')
     const navigate = useNavigate();
     let dispatch = useDispatch();
     let toggleUpdate = ()=>{
-      navigate(`updateProduct/${product._id}`)
+      navigate(`updateProduct/${product?._id}`)
     }
     let handleDelete = async(params) => {
             try {
-                // let response = await api.delete(`/admin/product/deleteProduct/${product._id}`)
                 let response = await api.delete(`/products/deleteProduct/${id}`)
                 dispatch(deleteProducts(response.data.products))
                 enqueueSnackbar("Product deleted successfully", { variant: "success" });
@@ -42,7 +41,7 @@ export default function ProductCard({product}) {
         <CardMedia
           component="img"
           height="140"
-          image={`http://localhost:4500/${product.image}`}
+          image={`http://localhost:4500/${product?.image}}`}
           alt="No Image Found"
         />
         <CardContent>
