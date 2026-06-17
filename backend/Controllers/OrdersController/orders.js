@@ -1,27 +1,27 @@
 const ordersModel = require("../../Model/orderModel");
 
-async function getOrders(req,res){
-    try{
+async function getOrders(req, res) {
+    try {
 
-        let orders = await ordersModel.find({customer:req.userId});
+        let orders = await ordersModel.find({ customer: req.userId });
 
-        if(!orders){
+        if (!orders) {
             return res.status(400).json({
-                message:"No orders found"
+                message: "No orders found"
             })
 
         }
 
         res.status(200).json({
-            message:"Orders fetched successfully",
+            message: "Orders fetched successfully",
             orders
         })
 
     }
-    catch(err){
+    catch (err) {
         res.status(500).json({
-            message:"Internal Server Error",
-            error:err.message
+            message: "Internal Server Error",
+            error: err.message
         })
 
     }
@@ -30,6 +30,14 @@ async function getOrders(req,res){
 async function getAllOrders(req, res) {
     try {
         let orders = await ordersModel.find().populate("customer", "name email");
+
+        if (!orders) {
+            return res.status(400).json({
+                message: "No orders found"
+            })
+        }
+
+
         res.status(200).json({
             message: "All orders fetched successfully",
             orders
@@ -45,15 +53,15 @@ async function getAllOrders(req, res) {
 
 async function updateOrderStatus(req, res) {
     try {
-        let orderId = req.params.id; 
+        let orderId = req.params.id;
         let { status } = req.body;
-        
+
         let updatedOrder = await ordersModel.findByIdAndUpdate(orderId, { orderStatus: status }, { new: true });
-        
+
         if (!updatedOrder) {
             return res.status(404).json({ message: "Order not found" });
         }
-        
+
         res.status(200).json({ message: "Order status updated", updatedOrder });
     } catch (err) {
         res.status(500).json({
@@ -63,4 +71,31 @@ async function updateOrderStatus(req, res) {
     }
 }
 
-module.exports = { getOrders, getAllOrders, updateOrderStatus };
+async function deleteOrder(req, res) {
+    try {
+        let orderId = req.params.id
+
+        let deletedOrder = await ordersModel.findByIdAndDelete(orderId)
+        if (!deletedOrder) {
+            return res.status(404).json({
+                message: "Order not found"
+            })
+
+        }
+
+        res.status(200).json({
+            message: "Order deleted successfully",
+            deletedOrder
+        })
+
+
+    } catch (err) {
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: err.message
+
+        })
+    }
+}
+
+module.exports = { getOrders, getAllOrders, updateOrderStatus, deleteOrder };

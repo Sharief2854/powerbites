@@ -13,11 +13,13 @@ async function setCart(req,res){
             })
         };
 
-        let total = body.quantity * body.price;
-        body.total = total;
+        // let total = body.quantity * body.price;
+        // body.total = total;
+
+       
 
 
-        let existingItem = await cartModel.findOneAndUpdate({product:body.product,customer:body.customer}, { $inc: { quantity: body.quantity } ,total:total}, { returnDocument: 'after' })
+        let existingItem = await cartModel.findOneAndUpdate({product:body.product,customer:body.customer}, { $inc: { quantity: body.quantity } }, { returnDocument: 'after' })
 
         if(existingItem){
             return res.status(200).json({
@@ -95,7 +97,8 @@ async function setQuantity(req,res){
                 message:"Item deleted successfully"
             })
         }
-        let product = await cartModel.findById(cartId);
+        let product = await cartModel.findById(cartId).populate("product");
+
         if(!product){
             return res.status(400).json({
                 message:"Item not found"

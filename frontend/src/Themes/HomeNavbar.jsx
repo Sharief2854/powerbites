@@ -13,27 +13,46 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import Badge from "@mui/material/Badge";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
-import LoginIcon from "@mui/icons-material/Login";
-import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import HomeIcon from "@mui/icons-material/Home";
-import PersonIcon from "@mui/icons-material/Person";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import { Link } from "react-router-dom";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import LogoutIcon from "@mui/icons-material/Logout";
+import PersonIcon from "@mui/icons-material/Person";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const pages = [
-  { name: "Login", path: "/login", icon: <LoginIcon fontSize="small" /> },
   {
-    name: "Registration",path: "/register",icon: <PersonAddAlt1Icon fontSize="small" />,
+    name: "Products",
+    path: "/customer/products",
+    icon: <RestaurantMenuIcon fontSize="small" />,
+  },
+  {
+    name: "Orders",
+    path: "/orders",
+    icon: <InfoOutlinedIcon fontSize="small" />,
+  },
+  {
+    name: "Cart",
+    path: "/customer/cart/:id",
+    icon: <ShoppingCartIcon fontSize="small" />,
+  },
+  {
+    name: "Home",
+    path: "/customer",
+    icon: <HomeIcon fontSize="small" />,
   },
 ];
-
-
 
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
+
+  const navigate = useNavigate();
+  const cartValue = useSelector((state) => state.cart.cartValue || 0);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -52,9 +71,21 @@ function ResponsiveAppBar() {
   };
 
   const handleLogoRefresh = () => {
-    window.location.href = "/";
+    navigate("/customer");
   };
-  
+
+  const handleProfile = () => {
+    handleCloseUserMenu();
+    navigate("/customer/profile");
+  };
+
+  const handleLogout = () => {
+    handleCloseUserMenu();
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.clear();
+    navigate("/login");
+  };
 
   return (
     <AppBar
@@ -154,7 +185,13 @@ function ResponsiveAppBar() {
                   }}
                 >
                   <ListItemIcon sx={{ minWidth: 36, color: "primary.main" }}>
-                    {page.icon}
+                    {page.name === "Cart" ? (
+                      <Badge badgeContent={cartValue} color="error">
+                        <ShoppingCartIcon fontSize="small" />
+                      </Badge>
+                    ) : (
+                      page.icon
+                    )}
                   </ListItemIcon>
 
                   <ListItemText
@@ -173,6 +210,20 @@ function ResponsiveAppBar() {
                   />
                 </MenuItem>
               ))}
+
+              <MenuItem onClick={handleProfile}>
+                <ListItemIcon sx={{ minWidth: 36, color: "primary.main" }}>
+                  <PersonIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Profile" />
+              </MenuItem>
+
+              <MenuItem onClick={handleLogout}>
+                <ListItemIcon sx={{ minWidth: 36, color: "error.main" }}>
+                  <LogoutIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Logout" />
+              </MenuItem>
             </Menu>
           </Box>
 
@@ -210,6 +261,7 @@ function ResponsiveAppBar() {
               flexGrow: 1,
               display: { xs: "none", md: "flex" },
               justifyContent: "right",
+              alignItems: "center",
               gap: 1,
             }}
           >
@@ -219,7 +271,15 @@ function ResponsiveAppBar() {
                 component={Link}
                 to={page.path}
                 onClick={handleCloseNavMenu}
-                startIcon={page.icon}
+                startIcon={
+                  page.name === "Cart" ? (
+                    <Badge badgeContent={cartValue} color="error">
+                      <ShoppingCartIcon fontSize="small" />
+                    </Badge>
+                  ) : (
+                    page.icon
+                  )
+                }
                 sx={{
                   my: 2,
                   color: "primary.contrastText",
@@ -240,6 +300,51 @@ function ResponsiveAppBar() {
                 {page.name}
               </Button>
             ))}
+
+            <Tooltip title="Open settings">
+              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0.5, ml: 1 }}>
+                <Avatar
+                  sx={{
+                    bgcolor: "secondary.main",
+                    width: 36,
+                    height: 36,
+                  }}
+                >
+                  <AccountCircleIcon />
+                </Avatar>
+              </IconButton>
+            </Tooltip>
+
+            <Menu
+              sx={{ mt: "45px" }}
+              id="menu-user"
+              anchorEl={anchorElUser}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}
+            >
+              <MenuItem onClick={handleProfile}>
+                <ListItemIcon>
+                  <PersonIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Profile</ListItemText>
+              </MenuItem>
+
+              <MenuItem onClick={handleLogout}>
+                <ListItemIcon>
+                  <LogoutIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Logout</ListItemText>
+              </MenuItem>
+            </Menu>
           </Box>
         </Toolbar>
       </Container>

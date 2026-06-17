@@ -8,7 +8,7 @@ import VerifyOtp from "./Pages/Common/VerifyOtp"
 import ForgotPassword from "./Pages/Common/ForgetPassword";
 import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
-import Home from "./Pages/Common/Home";
+import Home from "./Pages/Customer/Layout/Home";
 
 import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
 import LandingPage from "./Pages/Common/LandingPage";
@@ -37,7 +37,6 @@ function App() {
       <Routes>
         <Route path ="/" element={<LandingPageLayout/>}>
         <Route index element={<LandingPage/>}/>
-        <Route path ="/home" element={<LandingPage/>}/>
         <Route path ="/register" element={<Register/>}/>
         <Route path ="/verifyOtp/:id" element={<VerifyOtp/>}/>
         <Route path ="/login" element={<Login/>}/>
@@ -45,7 +44,6 @@ function App() {
         <Route path ="/resetpassword/:id" element={<ResetPassword/>}/>
         <Route path ="/forgetverifyOtp/:id" element={<ForgotVerifyOtp/>}/>
         <Route path ="/auth" element={<MainAuthCard/>}/>
-        <Route path ="/home" element={<Home/>}/>
         </Route>
 
         <Route path ="/admin" element={<ProtectedRoutes role="admin"><DashboardLayout/></ProtectedRoutes>}>
@@ -57,6 +55,8 @@ function App() {
         </Route>
 
         <Route path ="/customer" element={<ProtectedRoutes role="customer"><CustomerDashboard/></ProtectedRoutes>}>
+        <Route index element={<Home/>}/>
+         <Route path ="/customer/home" element={<Home/>}/>
         <Route path="/customer/users" element={<UserDetails/>}/>
         <Route path="/customer/profile" element={<CustomerProfile/>}/>
         <Route path="/customer/products" element={<CustomerProducts/>}/>

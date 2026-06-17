@@ -1,15 +1,14 @@
 import React from 'react'
-import { Link, Outlet } from 'react-router-dom'
+import HomeNavbar from "../../../Themes/HomeNavbar"
+import { Outlet } from 'react-router-dom';
 
-export default function CustomerDashboard() {
+function CustomerDashboard() {
   return (
     <div>
-    <div>CustomerDashboard</div>
-    <Link to="/customer/profile">CustomerProfile</Link><br></br>
-    <Link to="/customer/editprofile">CustomerEditProfile</Link><br></br>
-    <Link to="/customer/orderlist">OrderList</Link>
-    
-    <Outlet/>
+      <HomeNavbar/>
+      <Outlet/>
     </div>
   )
 }
+
+export default CustomerDashboard
