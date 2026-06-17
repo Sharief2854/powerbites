@@ -394,7 +394,7 @@ function getStyles(name, category, theme) {
                 boxShadow: "none",
               },
             }}
-            onClick={() => addItem(item._id),dispatch(addToCart(item._id))}
+          
           >
             Add to cart
           </PrimaryButton>
