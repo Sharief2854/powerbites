@@ -11,17 +11,12 @@ const ordersSchema= new mongoose.Schema({
     ref:"users",
     required:true
    },
-   product:{
-    type:[mongoose.Schema.Types.ObjectId],
-    ref:"Product",
-    required:true,
-    
-    
-   },
+  
    
-    details:[{
-        name:{
-            type:String,
+    products:[{
+        product:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Product",
             required:true
         },
         price:{
@@ -53,8 +48,13 @@ const ordersSchema= new mongoose.Schema({
         required:true
     },
     coupon:{
-        type:String,
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"cuopon"
         
+    },
+    final_price:{
+        type:Number,
+        required:true
     },
    orderStatus:{
     type:String,

@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 
 
 
-const cuoponSchema = new mongoose.Schema({
+const couponSchema = new mongoose.Schema({
     code: {
         type: String,
         required: true
@@ -16,7 +16,7 @@ const cuoponSchema = new mongoose.Schema({
     },
     min_order_value: {
         type: Number,
-        required: true
+        default: 0
     },
     
     title: {
@@ -32,12 +32,20 @@ const cuoponSchema = new mongoose.Schema({
         
     },
     discount: {
-        type: String,
+        type: Number,
         required: true
     },
     max_discount: {
         type: Number,
-        required: true
+        validate: {
+            validator: function(value) {
+                if (value == null) return true; // Valid if no max_discount is provided
+                // Retrieve discount during document save OR query update
+                const discountVal = this.discount || (this.get && this.get('discount'));
+                return !!discountVal && discountVal !== "0" && discountVal !== "";
+            },
+            message: "Max discount can only be applied when there is a valid discount."
+        }
     },
     status:{
         type:String,
@@ -62,5 +70,5 @@ const cuoponSchema = new mongoose.Schema({
 )
 
 
-const cuoponModel = mongoose.model("cuopon", cuoponSchema)
-module.exports = cuoponModel  
+const couponModel = mongoose.model("coupon", couponSchema)
+module.exports = couponModel  
