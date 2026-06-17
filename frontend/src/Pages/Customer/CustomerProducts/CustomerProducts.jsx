@@ -35,16 +35,15 @@ export default function CustomerProducts() {
   const [range, setRange] = useState('')
   const [isAvailableOnly, setIsAvailableOnly] = useState(false)
 
+  const theme = useTheme();
+  const [category, setCategory] = React.useState([]);
 function getStyles(name, category, theme) {
   return {
-    fontWeight: category.includes(name)
-      ? theme.typography.fontWeightMedium
-      : theme.typography.fontWeightRegular,
+    fontWeight: 'medium'
+      // : theme.typography.fontWeightRegular,
   };
 }
 
-  const theme = useTheme();
-  const [category, setCategory] = React.useState([]);
 
   const handleChange = (event) => {
     const {
@@ -79,6 +78,19 @@ function getStyles(name, category, theme) {
       let res = await api.get(`/products/all`)
       setProducts(res.data.data)
       console.log(res.data.data);      
+    } catch (error) {
+      // enqueueSnackbar('')
+    }
+    finally {
+      setLoading(false)
+    }
+  }
+  async function getCategory(params) {
+    setLoading(true)
+    try {
+      let res = await api.get(`/category/allCategories`)
+      setCategory(res.data.categories)
+      console.log(res.data.categories);      
     } catch (error) {
       // enqueueSnackbar('')
     }
@@ -158,32 +170,32 @@ function getStyles(name, category, theme) {
 
       <FormControl sx={{ m: 1, width: 300 }}>
         <InputLabel id="demo-multiple-chip-label">Category</InputLabel>
-        <Select
+        {/* <Select
           labelId="demo-multiple-chip-label"
           id="demo-multiple-chip"
           multiple
-          value={personName}
+          // value={selected}
           onChange={handleChange}
-          input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
-          renderValue={(selected) => (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {selected.map((value) => (
-                <Chip key={value} label={value} />
-              ))}
-            </Box>
-          )}
+          // input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
+          // renderValue={(selected) => (
+          //   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+          //     {selected.map((value) => (
+          //       <Chip key={value} label={value} />
+          //     ))}
+          //   </Box>
+          // )}
           MenuProps={MenuProps}
         >
           {names.map((name) => (
             <MenuItem
               key={name}
               value={name}
-              style={getStyles(name, personName, theme)}
+              style={getStyles(name, theme)}
             >
               {name}
             </MenuItem>
           ))}
-        </Select>
+        </Select> */}
       </FormControl>
     
                           </Grid>
@@ -257,7 +269,6 @@ function getStyles(name, category, theme) {
           },
         }}
         
-            onClick={() => navigate(`/customer/productpage/${item._id}`)}
       >
         <Box sx={{ position: "relative", px: 2, pt: 2 }}>
           <Box
@@ -283,7 +294,7 @@ function getStyles(name, category, theme) {
             />
           </Box>
 
-          <Chip
+          {/* <Chip
             // label="10% OFF"
             size="small"
             sx={{
@@ -296,7 +307,7 @@ function getStyles(name, category, theme) {
               borderRadius: 2,
               boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
             }}
-          />
+          /> */}
         </Box>
 
         <CardContent

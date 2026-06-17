@@ -18,10 +18,17 @@ import {
   ImageListItem,
   ImageListItemBar,
   IconButton,
+  CircularProgress,
+  Backdrop,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Checkbox,
 } from "@mui/material";
 import axios from "axios";
 import { enqueueSnackbar, SnackbarContent, SnackbarProvider } from "notistack";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { styled } from "@mui/material/styles";
 import Button from "@mui/material/Button";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -83,157 +90,239 @@ const Android12Switch = styled(Switch)(({ theme }) => ({
 }));
 
 export default function AdminProducts() {
+  const dispatch = useDispatch();
+  const product = useSelector((state) => state.product.products);
+
+  console.log(product);
+  
+  const [loading, setLoading] = useState(false);
+
+  const [openModal, setOpenModal] = useState(false);
+
+  const [categories, setCategories] = useState([]);
+
   const [productData, setProductData] = useState({
     name: "",
     description: "",
     price: "",
     stock: "",
-    isAvailable: true,
+    sendUpdates: false,
+    category: "",
     discount: 0,
+    isAvailable: true,
   });
-  const [range, setRange] = useState("");
-  const [isAvailableOnly, setIsAvailableOnly] = useState(false);
+
+  const [photos, setPhotos] = useState([]);
+
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [sortBy, setSortBy] = useState("");
+  const [inStockOnly, setInStockOnly] = useState(false);
   const [photo, setPhoto] = useState([]);
-  const [menuItem, setMenuItem] = useState([]);
-  const [searchProduct, setSearchProduct] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [add,setAdd]=useState(false)
 
 
-  let getData = useSelector((state) => state.product.products);
-  function removeFile(index) {
-    setPhoto((prev) => prev.filter((_, i) => i !== index));
-  }
 
-  async function getCategoryItems(params) {
-    setLoading(true)
+  const openAddProductModal = () => {
+    setOpenModal(true);
+  };
+
+  const closeAddProductModal = () => {
+    setOpenModal(false);
+
+    setProductData({
+      name: "",
+      description: "",
+      price: "",
+      stock: "",
+      sendUpdates: false,
+      category: "",
+      discount: 0,
+      isAvailable: true,
+    });
+
+    setPhotos([]);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setProductData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+
+    setPhotos((prev) => [...prev, ...files]);
+  };
+
+  const removeFile = (index) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const clearFilters = () => {
+    setSearch("");
+    setSelectedCategory("");
+    setMinPrice("");
+    setMaxPrice("");
+    setSortBy("");
+    setInStockOnly(false);
+  };
+
+  const getCategories = async () => {
     try {
-      let res = await api.get(`products/category`)
-      setMenuItem(res.data.data)
+      setLoading(true);
+
+      const response = await api.get("/products/category");
+
+      setCategories(response.data.categories || []);
     } catch (error) {
-      
-    }finally{
-      setLoading(false)
-    }
-  }
-
-  console.log(getData);
-  
-  let displayProducts = getData
-    ?.filter((product) => {
-      const matchesSearch = product.name
-        .toLowerCase()
-        .includes(searchProduct.toLowerCase());
-      let matchesPrice = true;
-      
-      if (range !== "" && range !== 0) {
-        matchesPrice =
-          product.price >= Number(range) - 1000 &&
-          product.price < Number(range);
-      } 
-      let matchesAvailability = true;
-      if (isAvailableOnly) {
-        matchesAvailability =
-          product.isAvailable === true ||
-          product.isAvailable === "true" ||
-          Number(product.stock) > 0;
-      }
-
-      return matchesSearch && matchesPrice && matchesAvailability;
-    })
-    .sort((a, b) => {
-      if (a.price !== b.price) {
-        return a.price - b.price;
-      }
-      return a.name.localeCompare(b.name);
-    });
-    if(isAvailableOnly){
-    let filteredProducts= displayProducts.filter((i,ind)=>{
-      if(i.isAvailable){
-        return true
-      }
-      return false
-    })
-    displayProducts= filteredProducts
-  }
-
-  let dispatch = useDispatch();
-  let navigate = useNavigate();
-
-  function handleChange(e) {
-    const { name, value, files } = e.target;
-    if (name === "photo") {
-      setPhoto((prev) => [...prev, ...Array.from(e.target.files)]);
-    } else {
-      setProductData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
-    }
-  }
-  function removeFile(index) {
-  setPhoto((prev) =>
-    prev.filter((_, i) => i !== index)
-  );
-}
-
-  const handlePost = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const submissionData = new FormData();
-    submissionData.append("name", productData.name);
-    submissionData.append("discount", productData.discount);
-    submissionData.append("price", productData.price);
-    submissionData.append("description", productData.description);
-    submissionData.append("isAvailable", productData.isAvailable);
-    submissionData.append("stock", productData.stock);
-
-    photo.forEach((file) => {
-      submissionData.append("image", file);
-    });
-    submissionData.forEach((value, key) => {
-      console.log(key, value);
-    });
-    if (!submissionData) {
-      enqueueSnackbar("Field should not be empty", { variant: "error" });
-    }
-
-    try {
-      let response = await api.post(
-        "/products/addProduct",
-        submissionData
-      );
-      console.log(response.data);
-      
-      dispatch(postProducts(productData));
-      enqueueSnackbar("Product added successfully", { variant: "success" });
-    } catch (error) {
-      console.log(error.message);
-      enqueueSnackbar("Failed to add product", { variant: "error" });
-    }
-    finally{
-      setLoading(false)
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  console.log(getData);
-  async function allData() {
+  const getProductsData = async () => {
     try {
-      let response = await api.get("/products/all");
-      console.log(response.data);
+      setLoading(true);
+      
+      const response = await api.get("/products/all");
+      console.log(response.data.data)
+
       dispatch(getProducts(response.data.data));
     } catch (error) {
-      console.error("Fetch error:", error);
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+  const handlePost = async () => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+
+      const formData = new FormData();
+
+      formData.append("name", productData.name);
+
+      formData.append("description", productData.description);
+
+      formData.append("price", productData.price);
+
+      formData.append("stock", productData.stock);
+
+      formData.append("discount", productData.discount);
+
+      formData.append("category", productData.category);
+
+      formData.append("isAvailable", productData.isAvailable);
+
+      photos.forEach((file) => {
+        formData.append("file", file);
+      });
+      formData.append("sendUpdates", productData.sendUpdates);
+
+      formData.forEach((i)=>{
+
+        console.log(i);
+      })
+      
+
+      const response = await api.post("/products/addProduct", formData);
+
+      dispatch(postProducts(response.data.product));
+      closeAddProductModal();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const displayProducts = product.map((products) =>{
+    let filtered = [...(products || [])];
+
+    if (search.trim()) {
+      filtered = filtered.filter((product) =>
+        product.name?.toLowerCase().includes(search.toLowerCase()),
+      );
+    }
+
+    if (selectedCategory) {
+      filtered = filtered.filter(
+        (product) => product.category?._id === selectedCategory,
+      );
+    }
+
+    if (inStockOnly) {
+      filtered = filtered.filter((product) => Number(product.stock) > 0);
+    }
+
+    if (minPrice !== "") {
+      filtered = filtered.filter(
+        (product) => Number(product.price) >= Number(minPrice),
+      );
+    }
+
+    if (maxPrice !== "") {
+      filtered = filtered.filter(
+        (product) => Number(product.price) <= Number(maxPrice),
+      );
+    }
+
+    switch (sortBy) {
+      case "price-low":
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+
+      case "price-high":
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+
+      case "stock":
+        filtered.sort((a, b) => b.stock - a.stock);
+        break;
+
+      case "newest":
+        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+
+      case "oldest":
+        filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        break;
+
+      case "name":
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+
+      default:
+        break;
+    }
+
+    return filtered;
+  });
+  console.log();
+  
 
   useEffect(() => {
-    allData();
-    getCategoryItems();
+    getProductsData();
+    getCategories();
   }, []);
   if (loading) {
-    return <CircularProgress color="primary" />;
+    return (
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+      >
+        <CircularProgress color="primary" />
+      </Backdrop>
+    );
   }
 
   return (
@@ -241,6 +330,8 @@ export default function AdminProducts() {
       sx={{
         margin: "auto",
         padding: "20px",
+        position: "relative",
+        width: "100%",
         backgroundColor: "white",
         borderRadius: "16px",
         boxShadow: "0 8px 25px rgba(62,26,137,0.08)",
@@ -260,14 +351,13 @@ export default function AdminProducts() {
       >
         Product
       </Typography>
-      <Box
-      sx={{position:'absolute', top:0,right:0}}>
-        <PrimaryButton onClick={setAdd(true)}>Add Product</PrimaryButton>
+      <Box sx={{ position: "absolute", top: 0, right: 0 }}>
+        <PrimaryButton onClick={openAddProductModal} sx={{margin:'20px'}}>Add Product</PrimaryButton>
       </Box>
 
       <Grid
         container
-        sx={{ transition: "0.4s" ,minWidth:0}}
+        sx={{ transition: "0.4s", minWidth: 0 }}
         direction={{ xs: "column-reverse", md: "row" }}
         spacing={4}
       >
@@ -275,316 +365,375 @@ export default function AdminProducts() {
           <div>
             <Grid container spacing={3}>
               <Grid item size={12}>
-                <div>
-                  <Grid container spacing={2}>
-                    <Grid item size={5}>
-                      <FormControl fullWidth>
-                        <OutlinedInput
-                          id="search"
-                          placeholder="Search product"
-                          onChange={(e) => setSearchProduct(e.target.value)}
-                          sx={{
-                            borderRadius: "12px",
-                            backgroundColor: "white",
-                          }}
-                        />
-                      </FormControl>
-                    </Grid>
-
-                    <Grid item size={4}>
-                      <FormControl fullWidth>
-                        <Select
-                          value={range}
-                          defaultValue=""
-                          displayEmpty
-                          placeholder="Sort by price"
-                          onChange={(e) => setRange(Number(e.target.value))}
-                          sx={{
-                            borderRadius: "12px",
-                            backgroundColor: "white",
-                          }}
-                        >
-                          <MenuItem value="">--Price--</MenuItem>
-                          <MenuItem value={1000}>0-1000</MenuItem>
-                          <MenuItem value={2000}>1000-2000</MenuItem>
-                          <MenuItem value={3000}>2000-3000</MenuItem>
-                          <MenuItem value={4000}>3000-4000</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid item size={3}>
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={isAvailableOnly}
-                            onChange={(e) =>
-                              setIsAvailableOnly(e.target.checked)
-                            }
-                            color="secondary"
-                          />
-                        }
-                        label="In-Stock"
-                        labelPlacement="bottom"
-                        sx={{ color: "#3E1A89", ml: 1, whiteSpace: "nowrap" }}
-                      />
-                    </Grid>
-                  </Grid>
-                </div>
-              </Grid>
-
-              <Grid item size={12}>
                 <Grid container spacing={2}>
-                  {displayProducts && displayProducts.length > 0 ? (
-                    displayProducts.map((product) => (
-                        <ProductCard product={product} />
-                    ))
-                  ) : (
-                    <Typography variant="body1" color="initial" align="center" sx={{ mt: 2,fontWeight:'20px',width:'100%', textAlign:'center' }}>
-                      Empty data
-                    </Typography>
-                  )}
+                  <Grid item xs={12} md={3}>
+                    <OutlinedInput
+                      fullWidth
+                      placeholder="Search Product"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={2}>
+                    <FormControl fullWidth>
+                      <InputLabel>Category</InputLabel>
+
+                      <Select
+                        value={selectedCategory}
+                        label="Category"
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                      >
+                        <MenuItem value="">All Categories</MenuItem>
+
+                        {categories.map((cat) => (
+                          <MenuItem key={cat._id} value={cat._id}>
+                            {cat.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} md={2}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Min Price"
+                      value={minPrice}
+                      onChange={(e) => setMinPrice(e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={2}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Max Price"
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={2}>
+                    <FormControl fullWidth>
+                      <InputLabel>Sort</InputLabel>
+
+                      <Select
+                        value={sortBy}
+                        label="Sort"
+                        onChange={(e) => setSortBy(e.target.value)}
+                      >
+                        <MenuItem value="">Default</MenuItem>
+
+                        <MenuItem value="newest">Newest</MenuItem>
+
+                        <MenuItem value="price-low">Price Low → High</MenuItem>
+
+                        <MenuItem value="price-high">Price High → Low</MenuItem>
+
+                        <MenuItem value="stock">Stock</MenuItem>
+
+                        <MenuItem value="name">Name</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} md={1}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={inStockOnly}
+                          onChange={(e) => setInStockOnly(e.target.checked)}
+                        />
+                      }
+                      label="Stock"
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      onClick={clearFilters}
+                    >
+                      Clear Filters
+                    </Button>
+                  </Grid>
                 </Grid>
               </Grid>
             </Grid>
           </div>
+
+          <Grid item size={12}>
+            <Grid container spacing={2}>
+              {product?.length > 0 ? (
+                product.map((product) => (
+                  <ProductCard key={product._id} product={product} />
+                ))
+              ) : (
+                <Typography
+                  align="center"
+                  sx={{
+                    width: "100%",
+                    mt: 4,
+                  }}
+                >
+                  No Products Found
+                </Typography>
+              )}
+            </Grid>
+          </Grid>
         </Grid>
-        {
-add?(<Grid item size={{ sm: 12, md: 5 }} sx={{ minWidth: 0, maxWidth: { md: "41.66%" }, width: "100%" }}>
-  
-  <Stack
-    component="form"
-    onSubmit={handlePost}
-    spacing={2.5}
-    sx={{
-      backgroundColor: "white",
-      padding: "25px",
-      width: "100%",          
-      maxWidth: "100%",       
-      boxSizing: "border-box",
-      borderRadius: "16px",
-      border: "1px solid #3E1A89",
-    }}
-  >
-    <Typography variant="h6" sx={{ color: "#3E1A89", fontWeight: 600 }}>
-      Add Product
-    </Typography>
+      </Grid>
 
-    <FormControl fullWidth>
-      <InputLabel>Product Name</InputLabel>
-      <OutlinedInput
-        name="name"
-        label="Product Name"
-        onChange={handleChange}
-        sx={{ borderRadius: "10px" }}
-      />
-    </FormControl>
-
-    <FormControl fullWidth>
-      <InputLabel>Description</InputLabel>
-      <OutlinedInput
-        multiline
-        rows={4}
-        name="description"
-        label="Description"
-        onChange={handleChange}
-        sx={{ borderRadius: "10px" }}
-      />
-    </FormControl>
-
-    <Button
-      component="label"
-      variant="contained"
-      startIcon={<CloudUploadIcon />}
-      sx={{
-        backgroundColor: "#3E1A89",
-        color: "white",
-        borderRadius: "10px",
-        textTransform: "none",
-        "&:hover": {
-          backgroundColor: "#3E1A89",
-          opacity: 0.9,
-        },
-      }}
-    >
-      Upload Images
-      <VisuallyHiddenInput
-        type="file"
-        name="photo"
-        onChange={handleChange}
-        multiple
-      />
-    </Button>
-
-    <Box sx={{ width: "100%", minWidth: 0, maxWidth: "100%", display: "block", overflow: "hidden" }}>
-      <Stack
-        direction="row"
-        flexWrap="nowrap"    
-        gap={1}
-        sx={{
-          width: "80%",
-          height: "115px",   
-          maxHeight: "145px",
-          overflowX: "scroll", 
-          overflowY: "hidden", 
-          py: 0.5,
-
-          "&::-webkit-scrollbar": {
-            height: "8px",
-            display: "block !important",
-          },
-          "&::-webkit-scrollbar-track": {
-            backgroundColor: "#f1f1f1",
-            borderRadius: "4px",
-          },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor: "#3E1A89",
-            borderRadius: "4px",
-          },
-          scrollbarWidth: "thin",
-        }}
+      <Dialog
+        open={openModal}
+        onClose={closeAddProductModal}
+        maxWidth="md"
+        fullWidth
       >
-        {photo.map((file, index) => {
-          const previewUrl = URL.createObjectURL(file);
+        <DialogTitle sx={{ color: "#3E1A89", fontWeight: 600 }}>
+          Add Product
+        </DialogTitle>
 
-          return (
-            <ImageListItem
-              key={`new-${index}`} 
-              sx={{ 
-                minWidth: "120px",   
-                maxWidth: "120px", 
-                width: "120px",
-                height: "120px", 
-                border: "1px solid #2196f3", 
-                borderRadius: "8px", 
-                overflow: "hidden", // Crucial: Replaced inner overflowX with hidden
-                flexShrink: 0       // Essential to prevent flexbox from crushing images flat
-              }}
-            >
-              <img
-                src={previewUrl}
-                alt="New Upload"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                onLoad={() => URL.revokeObjectURL(previewUrl)}
-              />
-              <ImageListItemBar
-                position="top"
-                actionIcon={
-                  <IconButton
-                    sx={{ color: "#fff", backgroundColor: "rgba(0,0,0,0.5)", m: 0.5 }}
-                    size="small"
-                    onClick={() => removeFile(index)}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                }
-              />
-            </ImageListItem>
-          );
-        })}
-      </Stack>
-    </Box>
+        <DialogContent dividers>
+          <Stack
+            
+        component={'form'}
+        onSubmit={handlePost}
+          spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              fullWidth
+              label="Product Name"
+              name="name"
+              value={productData.name}
+              onChange={handleChange}
+              sx={{ borderRadius: "10px" }}
+            />
 
-            <Grid container spacing={2} >
-              <Grid item xs={6} size={5}>
-                <FormControl fullWidth>
-                  <InputLabel>Price</InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    name="price"
-                    onChange={handleChange}
-                    startAdornment={
-                      <InputAdornment position="start">
-                        <span style={{ color: "#3E1A89" }}>₹</span>
-                      </InputAdornment>
-                    }
-                    label="Price"
-                    sx={{ borderRadius: "10px" }}
-                  />
-                </FormControl>
-              </Grid>
-              <Grid item xs={6} size={5}>
-                <FormControl fullWidth>
-                  <InputLabel>Discount</InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    name="discount"
-                    
-                    onChange={handleChange}
-                    startAdornment={
-                      <InputAdornment position="end">
-                        <span style={{ color: "#3E1A89" }}>%</span>
-                      </InputAdornment>
-                    }
-                    label="Discount"
-                    sx={{ borderRadius: "10px" }}
-                  />
-                </FormControl>
-              </Grid>
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="Description"
+              name="description"
+              value={productData.description}
+              onChange={handleChange}
+              sx={{ borderRadius: "10px" }}
+            />
 
-              <Grid item xs={6} size={7}>
-                <FormControlLabel
-                  label="Stock Available"
-                  sx={{ color: "#3E1A89", mt: 1 }}
-                  control={
-                    <Android12Switch
-                      checked={productData.isAvailable}
-                      onChange={() =>
-                        setProductData({
-                          ...productData,
-                          isAvailable: !productData.isAvailable,
-                        })
-                      }
-                    />
+            <FormControl fullWidth>
+              <InputLabel>Category</InputLabel>
+
+              <Select
+                name="category"
+                value={productData.category}
+                label="Category"
+                onChange={handleChange}
+              >
+                {categories.map((item) => (
+                  <MenuItem key={item._id} value={item._id}>
+                    {item.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Price"
+                  type="number"
+                  name="price"
+                  value={productData.price}
+                  onChange={handleChange}
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <span style={{ color: "#3E1A89" }}>₹</span>
+                    </InputAdornment>
                   }
+                  label="Price"
+                  sx={{ borderRadius: "10px" }}
+                />
+              </Grid>
+
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Discount"
+                  type="number"
+                  name="discount"
+                  value={productData.discount}
+                  onChange={handleChange}
+                  startAdornment={
+                    <InputAdornment position="end">
+                      <span style={{ color: "#3E1A89" }}>%</span>
+                    </InputAdornment>
+                  }
+                  sx={{ borderRadius: "10px" }}
                 />
               </Grid>
             </Grid>
 
-            <FormControl fullWidth>
-              <InputLabel>Category</InputLabel>
-              <Select
-                name="category"
-                onChange={handleChange}
-                sx={{ borderRadius: "10px" }}
-              >
-                {menuItem.map((item) => (
-                  <MenuItem key={item} value={item}>
-                    {item}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>            
-          <FormControl fullWidth>
-              <InputLabel>Stock</InputLabel>
-              <OutlinedInput
-                type="number"
-                name="stock"
-                onChange={handleChange}
-                label="Stock"
-                sx={{ borderRadius: "10px" }}
-              />
-            </FormControl>
+            <TextField
+              fullWidth
+              label="Stock"
+              type="number"
+              name="stock"
+              value={productData.stock}
+              onChange={handleChange}
+              sx={{ borderRadius: "10px" }}
+            />
 
-            <PrimaryButton
-              type="submit"
+            <FormControlLabel
+              label="Available"
+              sx={{ color: "#3E1A89", mt: 1 }}
+              control={
+                <Android12Switch
+                  checked={productData.isAvailable}
+                  onChange={() =>
+                    setProductData({
+                      ...productData,
+                      isAvailable: !productData.isAvailable,
+                    })
+                  }
+                />
+              }
+            />
+
+            <Button
+              component="label"
+              variant="contained"
+              startIcon={<CloudUploadIcon />}
               sx={{
                 backgroundColor: "#3E1A89",
                 color: "white",
                 borderRadius: "10px",
                 textTransform: "none",
-                fontWeight: 600,
                 "&:hover": {
                   backgroundColor: "#3E1A89",
                   opacity: 0.9,
                 },
               }}
             >
-              Add Product
-            </PrimaryButton>
+              Upload Images
+              <VisuallyHiddenInput
+                type="file"
+                name="photo"
+                onChange={handleImageChange}
+                multiple
+              />
+            </Button>
+
+            {photos.length > 0 && (
+              <Stack
+                direction="row"
+                flexWrap="nowrap"
+                spacing={1}
+                gap={1}
+                sx={{
+                  width: "80%",
+                  height: "115px",
+                  maxHeight: "145px",
+                  overflowX: "scroll",
+                  overflowY: "hidden",
+                  py: 0.5,
+                  "&::-webkit-scrollbar": {
+                    height: "8px",
+                    display: "block !important",
+                  },
+                  "&::-webkit-scrollbar-track": {
+                    backgroundColor: "#f1f1f1",
+                    borderRadius: "4px",
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    backgroundColor: "#3E1A89",
+                    borderRadius: "4px",
+                  },
+                  scrollbarWidth: "thin",
+                }}
+              >
+                {photo.map((file, index) => {
+                  const previewUrl = URL.createObjectURL(file);
+
+                  return (
+                    <ImageListItem
+                      key={`new-${index}`}
+                      sx={{
+                        minWidth: "120px",
+                        maxWidth: "120px",
+                        width: "120px",
+                        height: "120px",
+                        border: "1px solid #2196f3",
+                        borderRadius: "8px",
+                        overflow: "hidden",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <img
+                        src={previewUrl}
+                        alt="New Upload"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                        onLoad={() => URL.revokeObjectURL(previewUrl)}
+                      />
+                      <ImageListItemBar
+                        position="top"
+                        actionIcon={
+                          <IconButton
+                            sx={{
+                              color: "#fff",
+                              backgroundColor: "rgba(0,0,0,0.5)",
+                              m: 0.5,
+                            }}
+                            size="small"
+                            onClick={() => removeFile(index)}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        }
+                      />
+                    </ImageListItem>
+                  );
+                })}
+              </Stack>
+            )};
+            <DialogActions>
+          <FormControlLabel
+            control={<Checkbox name="sendUpdates" onChange={handleChange} />}
+            label="Send updates to Customers"
+          />
+          <Button color="error" onClick={closeAddProductModal}>
+            Cancel
+          </Button>
+
+          <PrimaryButton
+            type="submit"
+            sx={{
+              backgroundColor: "#3E1A89",
+              color: "white",
+              borderRadius: "10px",
+              textTransform: "none",
+              fontWeight: 600,
+              "&:hover": {
+                backgroundColor: "#3E1A89",
+                opacity: 0.9,
+              },
+            }}
+          >
+            Add Product
+          </PrimaryButton>
+        </DialogActions>
           </Stack>
-        </Grid>):
-        null}
-        </Grid>
+        </DialogContent>
+
+        
+      </Dialog>
     </Box>
   );
 }

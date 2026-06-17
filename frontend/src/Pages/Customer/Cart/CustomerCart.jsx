@@ -30,6 +30,7 @@ export default function CustomerCart() {
   let decodeId = jwtDecode(token).id
   const [qty, setQty] = useState(1)
   const [addresses,setAddress] = useState([])
+  const [totalPrice,setTotalPrice]= useState(300)
   const [open, setOpen] = React.useState(false);
   const [updateAddress,setUpdateAddress] = useState(null)
     const theme = useTheme();
@@ -48,6 +49,8 @@ export default function CustomerCart() {
     try {
       let res = await api.get(`/cart/getCart`)
         dispatch(getItems(res.data.cart))
+        console.log(res.data.cart);
+        
         
     } catch (error) {
       
@@ -106,11 +109,10 @@ export default function CustomerCart() {
   async function orderPayment(params) {
     
   }
-  let address=
-  updateAddress && Object.keys(updateAddress).length
-    ? updateAddress
+  let address=  updateAddress && Object.keys(updateAddress).length? updateAddress
     : addresses?.[0];
-  console.log(cartItems);
+
+  console.log(address);
 
 useEffect(() => {
   getAddress();
@@ -123,6 +125,8 @@ useEffect(() => {
       addresses.find(item => item.isDefault) || addresses[0];
 
     setUpdateAddress(defaultAddress);
+    console.log(address);
+    
   }
 }, [addresses]);
   
@@ -311,12 +315,12 @@ useEffect(() => {
                   fontWeight={600}
                   color="text.primary"
                 >
-                  ₹
+                  ₹{totalPrice}
                 </Typography>
               </Box>
             </Stack>
 
-              <PaymentButton />
+              <PaymentButton amount={totalPrice}/>
           </CardContent>
         </Card>
       </Grid>
