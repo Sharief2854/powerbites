@@ -105,6 +105,7 @@ function Register() {
     } catch (err) {
       console.log(err.response?.data);
       setSnackbar({ open: true, message: err.response?.data?.message || "Registration failed. Please try again.", severity: "error" });
+  
       setTimeout(() => {
         if (err.response?.data?.existingUser) {
           navigate(`/login`);

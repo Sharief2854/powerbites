@@ -11,7 +11,7 @@ import AddIcon from "@mui/icons-material/Add";
 import StarIcon from "@mui/icons-material/Star";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../api/axiosConfig";
 import { deleteeditaddress, geteditaddress, getEditProfile, postCustomerPhoto, deleteCustomerPhoto } from "../../Redux/Slices/CM_ProfileSlice";
 import CustomerCard from "./CustomerCard";
@@ -20,6 +20,7 @@ import { jwtDecode } from "jwt-decode";
 function CustomerProfile({ onBack }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const fileInputRef = useRef(null);
 
   const editProfile = useSelector((state) => state.editprofile.editprofile || {});
@@ -27,8 +28,8 @@ function CustomerProfile({ onBack }) {
   const customerPhoto = useSelector((state) => state.editprofile.photo || []);
 
   const [image, setImage] = useState("");
-  const [message, setMessage] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState(location.state?.message || null);
+  const [loading, setLoading] = useState(!editProfile.name); // Only show loader if profile data is missing
   const [deletingId, setDeletingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
 
@@ -75,6 +76,10 @@ function CustomerProfile({ onBack }) {
     try {
       const token = localStorage.getItem("token");
       let id = "6a2a987342fbcdfda0a5c5b0"; 
+       if (token) {
+        const decoded = jwtDecode(token);
+        id = decoded.id || id;
+      }
 
       let response = await api.delete(`/updateCustomerProfile/deletePhoto/${id}`);
       dispatch(deleteCustomerPhoto(response.data));
@@ -90,9 +95,14 @@ function CustomerProfile({ onBack }) {
     try {
        const token = localStorage.getItem("token");
       let id = "6a2a987342fbcdfda0a5c5b0"; 
+       if (token) {
+        const decoded = jwtDecode(token);
+        id = decoded.id || id;
+      }
       let response = await api.get(`/updateCustomerProfile/getPhoto/${id}`);
+      console.log("response photos :", response.data);
       const imagePath =
-        response.data?.photo?.url ||
+        response.data.imageUrl ||
         response.data?.user?.image ||
         response.data?.photo ||
         response.data?.path ||
@@ -105,8 +115,8 @@ function CustomerProfile({ onBack }) {
     }
   };
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (showLoader = true) => {
+    if (showLoader) setLoading(true);
     try {
       const [profileRes, addressRes] = await Promise.all([
         api.get("/updateCustomerProfile/getProfile"),
@@ -117,16 +127,25 @@ function CustomerProfile({ onBack }) {
     } catch (err) {
       setMessage({ text: "Failed to load data", type: "error" });
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   };
 
   const setAsDefault = async (id) => {
+    // 1. Instantly update the Redux state (Optimistic Update)
+    const updatedAddresses = editAddress.map((addr) => ({
+      ...addr,
+      isDefault: addr._id === id, // Sets true for the clicked address, false for all others
+    }));
+    dispatch(geteditaddress(updatedAddresses));
+
     try {
+      // 2. Make the API call in the background
       await api.get(`/updateCustomerProfile/setDefaultAddress/${id}`);
-      fetchData();
       setMessage({ text: "Default address updated!", type: "success" });
     } catch (err) {
+      // 3. Only fetch data to revert the state if the API fails
+      fetchData(false);
       setMessage({ text: "Failed to set default address", type: "error" });
     }
   };
@@ -149,7 +168,14 @@ function CustomerProfile({ onBack }) {
   };
 
   useEffect(() => { 
-    fetchData(); 
+    // Clear message from location state after displaying it once
+    if (location.state?.message) {
+      navigate(location.pathname, { replace: true });
+    }
+    // Only fetch data on initial load if it's not already in Redux
+    if (!editProfile.name) {
+      fetchData(); 
+    }
     fetchCustomerPhoto();
   }, []);
 
@@ -223,22 +249,21 @@ function CustomerProfile({ onBack }) {
             <Box>
               <Typography variant="h5" fontWeight={700} sx={{ color: '#1a202c', mb: 0.5 }}>{name}</Typography>
               <Typography variant="body1" color="text.secondary" sx={{ mb: 0.5 }}>{email}</Typography>
-              <Typography variant="caption" color="text.disabled" display="block">Customer Profile Management Account</Typography>
             </Box>
           </Box>
 
           {/* Personal Details Section */}
           <Typography variant="subtitle1" fontWeight={600} color="primary" gutterBottom>Personal Details</Typography>
           <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Typography variant="caption" color="text.secondary" display="block">Name</Typography>
               <Typography fontWeight={500}>{name || "—"}</Typography>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Typography variant="caption" color="text.secondary" display="block">Email Address</Typography>
               <Typography fontWeight={500}>{email || "—"}</Typography>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Typography variant="caption" color="text.secondary" display="block">Phone Number</Typography>
               <Typography fontWeight={500}>{phone || "—"}</Typography>
             </Grid>
@@ -273,23 +298,23 @@ function CustomerProfile({ onBack }) {
                 </Typography>
                 
                 <Grid container spacing={2} sx={{ mb: 2 }}>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <Typography variant="caption" color="text.secondary" display="block">Street Address</Typography>
                     <Typography variant="body2" fontWeight={500}>{addr.street}</Typography>
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <Typography variant="caption" color="text.secondary" display="block">City</Typography>
                     <Typography variant="body2" fontWeight={500}>{addr.city}</Typography>
                   </Grid>
-                  <Grid item xs={6} sm={4}>
+                  <Grid size={{ xs: 6, sm: 4 }}>
                     <Typography variant="caption" color="text.secondary" display="block">State</Typography>
                     <Typography variant="body2" fontWeight={500}>{addr.state}</Typography>
                   </Grid>
-                  <Grid item xs={6} sm={4}>
+                  <Grid size={{ xs: 6, sm: 4 }}>
                     <Typography variant="caption" color="text.secondary" display="block">Pincode</Typography>
                     <Typography variant="body2" fontWeight={500}>{addr.pincode}</Typography>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <Typography variant="caption" color="text.secondary" display="block">Country</Typography>
                     <Typography variant="body2" fontWeight={500}>{addr.country}</Typography>
                   </Grid>
