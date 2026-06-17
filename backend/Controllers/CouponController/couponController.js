@@ -1,4 +1,4 @@
-const couponModel = require("../../Model/cuoponModel");
+const couponModel = require("../../Model/couponModel");
 
 
 async function setCoupon(req, res) {
