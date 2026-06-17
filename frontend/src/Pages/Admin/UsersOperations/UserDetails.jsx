@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import {
   Box,
   Paper,
@@ -20,6 +19,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  MenuItem,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
@@ -33,6 +33,7 @@ function UserDetails() {
   const customers = useSelector((state) => state.user.users);
   const dispatch = useDispatch();
   const [search, setSearch] = useState("");
+  const [verifyFilter, setVerifyFilter] = useState("all");
   const [openDelete, setOpenDelete] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
 
@@ -41,9 +42,7 @@ function UserDetails() {
 
   async function getData() {
     try {
-      const res = await api.get(
-        "/crudAdmin/getAllcustomers"
-      );
+      const res = await api.get("/crudAdmin/getAllcustomers");
       dispatch(setData(res.data));
     } catch (err) {
       console.log(err);
@@ -52,9 +51,7 @@ function UserDetails() {
 
   async function deleteCustomer(id) {
     try {
-      await api.delete(
-        `/crudAdmin/deletecustomer/${id}`
-      );
+      await api.delete(`/crudAdmin/deletecustomer/${id}`);
       dispatch(deleteUser(id));
       setOpenDelete(false);
       setSelectedUserId(null);
@@ -67,9 +64,20 @@ function UserDetails() {
     getData();
   }, []);
 
-  const filteredCustomers = customers?.filter((item) =>
-    item.name?.toLowerCase().startsWith(search.toLowerCase())
-  );
+  const filteredCustomers = customers?.filter((item) => {
+    const matchesSearch = item.name
+      ?.toLowerCase()
+      .includes(search.toLowerCase());
+
+    const matchesVerify =
+      verifyFilter === "all"
+        ? true
+        : verifyFilter === "verified"
+        ? item.isVerified === true
+        : item.isVerified === false;
+
+    return matchesSearch && matchesVerify;
+  });
 
   return (
     <Box
@@ -104,36 +112,59 @@ function UserDetails() {
           Users
         </Typography>
 
-        <TextField
-          fullWidth
-          placeholder="Search customer by name..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          size="small"
-          sx={{
-            mb: { xs: 2, sm: 3 },
-            backgroundColor: "#fff",
-            borderRadius: 2,
-            "& .MuiInputBase-root": {
-              fontSize: { xs: "0.9rem", sm: "1rem" },
-              minHeight: { xs: 44, sm: 48 },
-            },
-            "& .MuiInputBase-input": {
-              py: { xs: 1.2, sm: 1.4 },
-            },
-          }}
-          slotProps={{
-            input: {
-              startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ fontSize: { xs: 20, sm: 22 } }} color="action" />
-              </InputAdornment>
-            ),
-            }
-          }}
-        />
+        <Stack
+          direction={{ xs: "column", sm: "column", md: "row" }}
+          spacing={2}
+          sx={{ mb: { xs: 2, sm: 3 } }}
+        >
+          <TextField
+            fullWidth
+            placeholder="Search customer by name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            size="small"
+            sx={{
+              backgroundColor: "#fff",
+              borderRadius: 2,
+              "& .MuiInputBase-root": {
+                fontSize: { xs: "0.9rem", sm: "1rem" },
+                minHeight: { xs: 44, sm: 48 },
+              },
+              "& .MuiInputBase-input": {
+                py: { xs: 1.2, sm: 1.4 },
+              },
+            }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon
+                      sx={{ fontSize: { xs: 20, sm: 22 } }}
+                      color="action"
+                    />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
 
-        {/* Desktop Table */}
+          <TextField
+            select
+            value={verifyFilter}
+            onChange={(e) => setVerifyFilter(e.target.value)}
+            size="small"
+            sx={{
+              minWidth: { xs: "100%", md: 220 },
+              backgroundColor: "#fff",
+              borderRadius: 2,
+            }}
+          >
+            <MenuItem value="all">All Users</MenuItem>
+            <MenuItem value="verified">Verified Users</MenuItem>
+            <MenuItem value="notVerified">Not Verified Users</MenuItem>
+          </TextField>
+        </Stack>
+
         <Box
           sx={{
             display: { xs: "none", md: "block" },
@@ -170,7 +201,9 @@ function UserDetails() {
                 {filteredCustomers?.length > 0 ? (
                   filteredCustomers.map((item) => (
                     <TableRow key={item._id} hover>
-                      <TableCell sx={{ fontSize: "0.95rem" }}>{item.name}</TableCell>
+                      <TableCell sx={{ fontSize: "0.95rem" }}>
+                        {item.name}
+                      </TableCell>
                       <TableCell
                         sx={{ fontSize: "0.95rem", wordBreak: "break-word" }}
                       >
@@ -225,7 +258,6 @@ function UserDetails() {
           </TableContainer>
         </Box>
 
-        {/* Mobile + Tablet Card View */}
         <Stack
           spacing={{ xs: 1.5, sm: 2 }}
           sx={{
@@ -314,114 +346,26 @@ function UserDetails() {
         </Stack>
       </Paper>
 
-      {/* Delete Dialog */}
       <Dialog
         open={openDelete}
         onClose={() => setOpenDelete(false)}
         fullScreen={fullScreen}
         fullWidth
         maxWidth="xs"
-        PaperProps={{
-          sx: {
-            borderRadius: { xs: 0, sm: 4 },
-            p: { xs: 1, sm: 1.5 },
-          },
-        }}
       >
-        <DialogTitle sx={{ p: 0 }}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              textAlign: "center",
-              pt: { xs: 4, sm: 3 },
-              px: 2,
-            }}
-          >
-            <Box
-              sx={{
-                width: { xs: 68, sm: 72 },
-                height: { xs: 68, sm: 72 },
-                borderRadius: "50%",
-                backgroundColor: "#fdecea",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                mb: 2,
-              }}
-            >
-              <DeleteOutlineRoundedIcon
-                sx={{
-                  fontSize: { xs: 34, sm: 38 },
-                  color: "error.main",
-                }}
-              />
-            </Box>
-
-            <Typography
-              variant="h5"
-              sx={{
-                fontWeight: 700,
-                fontSize: { xs: "1.25rem", sm: "1.5rem" },
-              }}
-            >
-              Delete User?
-            </Typography>
-          </Box>
-        </DialogTitle>
-
-        <DialogContent sx={{ pt: 2 }}>
-          <DialogContentText
-            sx={{
-              textAlign: "center",
-              fontSize: { xs: "0.95rem", sm: "1rem" },
-              color: "text.secondary",
-              px: { xs: 1, sm: 2 },
-              lineHeight: 1.6,
-            }}
-          >
-            Are you sure you want to delete this customer? This action cannot be undone.
+        <DialogTitle>Delete User?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this customer? This action cannot be
+            undone.
           </DialogContentText>
         </DialogContent>
-
-        <DialogActions
-          sx={{
-            px: { xs: 2, sm: 3 },
-            pb: { xs: 3, sm: 2 },
-            pt: 1,
-            flexDirection: { xs: "column", sm: "row" },
-            gap: 1.5,
-          }}
-        >
+        <DialogActions>
+          <Button onClick={() => setOpenDelete(false)}>Cancel</Button>
           <Button
-            fullWidth
-            variant="outlined"
-            onClick={() => setOpenDelete(false)}
-            sx={{
-              borderRadius: 2.5,
-              textTransform: "none",
-              py: 1.2,
-              fontWeight: 600,
-              fontSize: { xs: "0.95rem", sm: "1rem" },
-            }}
-          >
-            Cancel
-          </Button>
-
-          <Button
-            fullWidth
-            variant="contained"
             color="error"
+            variant="contained"
             onClick={() => deleteCustomer(selectedUserId)}
-            sx={{
-              borderRadius: 2.5,
-              textTransform: "none",
-              py: 1.2,
-              fontWeight: 600,
-              fontSize: { xs: "0.95rem", sm: "1rem" },
-              boxShadow: "none",
-            }}
           >
             Yes, Delete
           </Button>

@@ -27,6 +27,7 @@ import CustomerProducts from "./Pages/Customer/CustomerProducts/CustomerProducts
 import ProductPage from "./Pages/Customer/CustomerProducts/ProductPage";
 import CustomerCart from "./Pages/Customer/Cart/CustomerCart";
 import OrderList from "./Pages/Customer/CustomerOrder/OrderList";
+import ReviewOfProducts from "./Pages/Customer/CustomerOrder/ReviewOfProducts";
 
 
 function App() {
@@ -65,6 +66,7 @@ function App() {
          <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
          <Route path ="/customer/editprofile/:id" element={<CustomerEditProfile/>}/>
          <Route path ="/customer/orderlist" element={<OrderList/>}/>
+        <Route path="/customer/reviews/:productId" element={<ReviewOfProducts />} />
         </Route>
 
       </Routes>
