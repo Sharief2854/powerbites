@@ -107,7 +107,7 @@ function CustomerProfile({ onBack }) {
         response.data?.photo ||
         response.data?.path ||
         response.data?.photo?.path;
-
+      console.log("image path :", imagePath);
       dispatch(postCustomerPhoto(imagePath));
       setImage(imagePath);
     } catch (err) {
@@ -178,6 +178,15 @@ function CustomerProfile({ onBack }) {
     }
     fetchCustomerPhoto();
   }, []);
+  useEffect(() => {
+  if (message) {
+    const timer = setTimeout(() => {
+      setMessage(null);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }
+}, [message]);
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}><CircularProgress /></Box>;
 
@@ -344,7 +353,7 @@ function CustomerProfile({ onBack }) {
       </CustomerCard>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={confirmDelete.open} onClose={() => setConfirmDelete({ open: false, id: null })} PaperProps={{ sx: { borderRadius: 3, p: 1 } }}>
+      <Dialog open={confirmDelete.open} onClose={() => setConfirmDelete({ open: false, id: null })} slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}>
         <DialogTitle fontWeight={700}>Delete Saved Address?</DialogTitle>
         <DialogContent>
           <DialogContentText>Are you sure you want to remove this address? This action cannot be reversed.</DialogContentText>

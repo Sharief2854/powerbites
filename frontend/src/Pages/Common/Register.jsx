@@ -69,6 +69,21 @@ function Register() {
     !passwordError &&
     !confirmPasswordError;
 
+  const HandleEmailVerify =async()=>{
+
+    try {
+
+      let rresponse = await api.post("/auth/verifyEmail")
+      console.log("response register :",response.data)
+      
+
+    }
+    catch(err){
+      console.log(err.response.data)
+    }
+
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -172,6 +187,7 @@ function Register() {
                 autoComplete="name"
                 margin="normal"
               />
+              <Box>
               <TextField
                 fullWidth
                 label="Email"
@@ -183,6 +199,8 @@ function Register() {
                 autoComplete="email"
                 margin="normal"
               />
+              <Button onClick={HandleEmailVerify} variant="contained">Verify</Button>
+              </Box>
               <PasswordField
                 fullWidth
                 label="Password"

@@ -183,14 +183,14 @@ export default function DashboardLayout() {
               onClose={handleClose}
               transformOrigin={{ horizontal: 'right', vertical: 'top' }}
               anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-              PaperProps={{
-                sx: {
+              slotProps={{
+                paper: { sx: {
                   mt: 1,
                   borderRadius: 3,
                   boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
                   minWidth: 180,
                 },
-              }}
+              }}}
             >
               <MenuItem onClick={handleClose}>My Profile</MenuItem>
               <MenuItem onClick={handleClose}>Settings</MenuItem>

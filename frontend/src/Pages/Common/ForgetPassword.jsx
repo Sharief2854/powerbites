@@ -38,7 +38,7 @@ function ForgotPassword() {
     try {
       console.log("Sending recovery link to:", email);
       // TODO: Integrate your actual Password Reset API endpoint here
-      let response = await api.post("http://localhost:4500/resetPass/forgotpassword",{email});
+      let response = await api.post("/resetPass/forgotpassword",{email});
 
       console.log("res data :",response.data)
       // Toggle success state to show a beautiful success confirmation
