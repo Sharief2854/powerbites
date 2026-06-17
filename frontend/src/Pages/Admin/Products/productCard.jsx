@@ -18,11 +18,11 @@ export default function ProductCard({product}) {
 
     let token = localStorage.getItem("token")
     // let getImage =
-    let cleanPath =  product.image.replace(/\\/g, '/').replace(/^\/+/, '')
+    // let cleanPath =  product?.image?.replace(/\\/g, '/').replace(/^\/+/, '')
     const navigate = useNavigate();
     let dispatch = useDispatch();
     let toggleUpdate = ()=>{
-      navigate(`updateProduct/${product._id}`)
+      navigate(`updateProduct/${product?._id}`)
     }
     let handleDelete = async(params) => {
             try {
@@ -41,7 +41,7 @@ export default function ProductCard({product}) {
         <CardMedia
           component="img"
           height="140"
-          image={`http://localhost:4500/${cleanPath}`}
+          image={`http://localhost:4500/${product?.image}}`}
           alt="No Image Found"
         />
         <CardContent>

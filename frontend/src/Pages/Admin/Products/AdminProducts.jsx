@@ -245,8 +245,8 @@ export default function AdminProducts() {
     }
   };
 
-  const displayProducts = product.map((products) =>{
-    let filtered = [...(products || [])];
+  const displayProducts = useMemo(() =>{
+    let filtered = [...(product || [])];
 
     if (search.trim()) {
       filtered = filtered.filter((product) =>
@@ -306,8 +306,8 @@ export default function AdminProducts() {
     }
 
     return filtered;
-  });
-  console.log();
+  },[product, search, selectedCategory, inStockOnly, minPrice, maxPrice, sortBy]);
+  console.log(displayProducts);
   
 
   useEffect(() => {
@@ -467,8 +467,8 @@ export default function AdminProducts() {
 
           <Grid item size={12}>
             <Grid container spacing={2}>
-              {product?.length > 0 ? (
-                product.map((product) => (
+              {displayProducts?.length > 0 ? (
+                displayProducts.map((product) => (
                   <ProductCard key={product._id} product={product} />
                 ))
               ) : (
@@ -630,7 +630,7 @@ export default function AdminProducts() {
             {photos.length > 0 && (
               <Stack
                 direction="row"
-                flexWrap="nowrap"
+                flexwrap="nowrap"
                 spacing={1}
                 gap={1}
                 sx={{
@@ -656,6 +656,8 @@ export default function AdminProducts() {
                 }}
               >
                 {photo.map((file, index) => {
+                  console.log(file);
+                  
                   const previewUrl = URL.createObjectURL(file);
 
                   return (

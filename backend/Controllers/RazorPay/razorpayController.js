@@ -5,7 +5,7 @@ const razorpay = require("../../config/razorpayConfig");
 
 const createOrder = async (req, res) => {
     try {
-
+        console.log(req.body);        
         const options = {
             amount: req.body.amount * 100, // ₹500 -> 50000 paise
             currency: "INR",
