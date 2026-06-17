@@ -242,7 +242,6 @@ async function postCustomerPhoto(req, res) {
         // convert \ to /
         const usefullPath = rawpath.replace(/\\/g, "/");
 
-        // 🔥 create full URL
         const baseUrl = `${req.protocol}://${req.get("host")}`;
         const imageUrl = `${baseUrl}/${usefullPath}`;
 
@@ -254,7 +253,7 @@ async function postCustomerPhoto(req, res) {
 
         res.status(200).json({
             message: "Photo uploaded successfully",
-            imagePath: imageUrl,   // ✅ direct usable URL
+            photo: imageUrl,   // ✅ direct usable URL
             user: updatedUser
         });
 
@@ -282,7 +281,7 @@ async function getCustomerPhoto(req, res) {
 
         res.status(200).json({
             message: "Photo retrieved successfully",
-            imageUrl: `${baseUrl}/${user.image}`
+            photo: `${baseUrl}/${user.image}`
         });
 
     } catch (error) {
@@ -472,8 +471,8 @@ async function getCustomerAddresses (req, res) {
                 message: "Unauthorized: User ID missing in token"
             });
         }
-        const addresses = await addressModel.find({ userId });
-
+        const addresses = await addressModel.find({ userId }).sort({ isDefault: -1, createdAt: -1 });
+        console.log("Addresses:", addresses);
         res.status(200).json({  
             message: "Addresses retrieved successfully",
             addresses: addresses
@@ -516,43 +515,49 @@ async function getCustomerAddressById(req, res) {
 }
 
 async function setDefaultAddress(req, res) {
-    console.log("set default address")
     try {
         let userId = req.userId;
-        console.log("User ID from token:", userId); 
+
         if (!userId) {
             return res.status(401).json({
                 message: "Unauthorized: User ID missing in token"
-            })
+            });
         }
-        
+
         let addressId = req.params.id;
-        console.log("Address Id:", addressId); 
 
-        let address = await addressModel.findOne({ _id: addressId, userId });
+        let address = await addressModel.findOne({
+            _id: addressId,
+            userId
+        });
 
-        if(!address){
-           return res.status(404).json({
-                message:"Address not found"
-            })
+        if (!address) {
+            return res.status(404).json({
+                message: "Address not found"
+            });
         }
+
+        // Remove default from all addresses of this user
+        await addressModel.updateMany(
+            { userId },
+            { $set: { isDefault: false } }
+        );
+
+        // Set selected address as default
         address.isDefault = true;
         await address.save();
 
         res.status(200).json({
             message: "Default address set successfully",
-            address: address
-        })
-        
-    }
-    catch (error) {
-        res.status(400).json({
-            message: "Internal Server Error",
-            error: error.message
-        })
-}
-}
+            address
+        });
 
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+}
 module.exports = {
     updateCustomerProfile,
     deleteCustomerProfile,
