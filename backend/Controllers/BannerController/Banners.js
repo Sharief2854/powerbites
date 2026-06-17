@@ -35,7 +35,7 @@ async function allBanners(req, res) {
 //             return res.status(400).json({ message: "At least one banner image is required." });
 //         }
 
-//         const imagePaths = req.files.map(file => file.path);
+        // const imagePaths = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path}`);
 
 //         const bannerData = {
 //             ...body,
