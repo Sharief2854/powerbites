@@ -33,14 +33,15 @@ ConnectDB()
 const app = express()
 app.use(cors())
 app.use(express.json())
-// app.use("/upload", express.static("upload"));
+app.use("/upload", express.static("upload"));
 const path = require("path");
 
 app.use("/upload", express.static(path.join(__dirname, "upload"))
+
 );
-app.get("/test", (req, res) => {
-  res.send("Server working");
-});
+
+
+
 
 app.use("/auth",RegRouter,LoginRouter)
 app.use("/resetPass",ResetRouter)
@@ -62,7 +63,7 @@ app.use("/payment",PaymentRouter)
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter)
 app.use("/developer",DeveloperRouter)
 
-// app.use("/products",ProductRouter) 
+
 
 // Global error handling middleware to catch Multer errors safely
 app.use((err, req, res, next) => {

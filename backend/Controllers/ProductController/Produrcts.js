@@ -24,8 +24,6 @@ async function allProduct(req, res) {
     }
 }
 
-
-
 async function addProduct(req, res) {
     try {
         const body = req.body;
@@ -38,16 +36,12 @@ async function addProduct(req, res) {
                 message: "Product image is required."
             });
         }
-        //         const imagePaths = req.files.map(file =>
-        //     `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
-        // );
-        
-
+       
         const imagePaths = req.files.map(file =>
-            `${req.protocol}://${req.get("host")}/${file.path}`
+            `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
         );
 
-        console.log("Image Paths:", imagePaths);
+        console.log(imagePaths);
 
         // const ProductData = {
         //     ...body,
@@ -93,10 +87,12 @@ async function updateProduct(req, res) {
         const ProductData = { ...req.body };
 
         if (req.files && req.files.length > 0) {
-            const imagePaths = req.files.map(file => file.path);
+            const imagePaths = req.files.map(file =>
+                `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
+            );
+
             ProductData.image = imagePaths;
         }
-
         const product = await ProductModel.findByIdAndUpdate(id, ProductData, { new: true, }
         );
 
