@@ -283,7 +283,7 @@ async function getCustomerPhoto(req, res) {
 
         res.status(200).json({
             message: "Photo retrieved successfully",
-            imageUrl: `${baseUrl}/${user.image}`
+            photo: `${baseUrl}/${user.image}`
         });
 
     } catch (error) {
