@@ -313,7 +313,7 @@ export default function CustomerProducts() {
                 boxShadow: "none",
               },
             }}
-            onClick={() => addItem(item._id),dispatch(addToCart(item._id))}
+          
           >
             Add to cart
           </PrimaryButton>
