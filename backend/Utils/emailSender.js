@@ -2,18 +2,20 @@ const transporter = require("../config/emailConfig");
 const otpGenerator = require('otp-generator');
 
 
-async function emailSender(user){
+async function emailSender(userData){
 
       try{
         let otp = otpGenerator.generate(4, { digits:true,upperCaseAlphabets: false, specialChars: false,lowerCaseAlphabets:false })
         console.log(otp)
     
+        let targetEmail = userData.email || userData;
+        let targetName = userData.name || "User";
     
             const info = await transporter.sendMail({
                 from: process.env.EMAIL,
-                to: user.email,
+                to: targetEmail,
                 subject: "Welcome to Powerbites",
-                text: `Welcome to Powerbites, ${user.name} your verification code is ${otp}`,
+                text: `Welcome to Powerbites, ${targetName}! your verification code is ${otp}`,
 
             })
 
