@@ -42,7 +42,7 @@ const pages = [
   },
   {
     name: "Home",
-    path: "/customer/home",
+    path: "/customer",
     icon: <HomeIcon fontSize="small" />,
   },
 ];

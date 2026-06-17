@@ -42,7 +42,7 @@ export default function CustomerProducts() {
   );
   const handleAddToCart = async (productId) => {
     try{
-      const response = await post("/cart/setCart")
+      const response = await api.post("/cart/setCart")
       dispatch(addCart(response.data.data))
     }
     catch(error){
@@ -198,6 +198,7 @@ export default function CustomerProducts() {
             <Button
               fullWidth
               variant="contained"
+              onClick={() => handleAddToCart(product)}
               sx={{
                 mt: "auto",
                 borderRadius: "12px",
