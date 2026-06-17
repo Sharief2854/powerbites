@@ -6,11 +6,11 @@ const { forgotPassword, VerifyOtp, resetPassword } = require("../../Controllers/
 router.post("/forgotpassword",forgotPassword );
 
 //verifying otp
-router.post("/VerifyOtp/:id",VerifyOtp);
+router.post("/VerifyOtp",VerifyOtp);
 
 //reset password
 
-router.post("/resetpassword/:id", resetPassword)
+router.post("/resetpassword", resetPassword)
 
 
 
