@@ -27,9 +27,19 @@ function generateRefreshToken(user) {
     return token
 }
 
+function regToken(email){
+    let token = jwt.sign(
+        {email},
+        process.env.JWTKEY,
+        {expiresIn:"10m"}
+    )
+    return token
+}
+
 module.exports = {
     generateAccessToken,
-    generateRefreshToken
+    generateRefreshToken,
+    regToken
 }
 
 

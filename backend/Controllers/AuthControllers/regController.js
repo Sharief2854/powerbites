@@ -2,50 +2,36 @@ const userModel = require("../../Model/userModel");
 const otpModel = require("../../Model/otpModel");
 const transporter = require("../../config/emailConfig");
 const emailSender = require("../../Utils/emailSender");
+const { regToken } = require("../../Utils/TokenGenerator");
+const decodeToken = require("../../Utils/decodeToken");
 
 
-
-
-async function regController(req, res) {
+async function verifyEmail(req, res) {
     try {
         let body = req.body;
-
-        if (!body.name || !body.email || !body.password || !body.phone) {
+        if(!body.email){
             return res.status(400).json({
-                message: "All fields are required"
+                message:"Email is required"
             })
         }
+        let user = await userModel.findOne({email:body.email})
+        if(user){
+            return res.status(403).json({
+                message:"User already exists"
+            })
 
-        // 1. Find user or create a new one
-        let userToProcess = await userModel.findOne({ email: body.email });
-
-        if (userToProcess) {
-            if (userToProcess.isVerified) {
-                return res.status(403).json({
-                    message: "User already exists",
-                    existingUser: true
-                });
-            }
-
-            // If not verified, execution naturally continues below to resend OTP
-        } else {
-            userToProcess = await userModel.create(body);
-            if (!userToProcess) {
-                return res.status(400).json({
-                    message: "Something went wrong"
-                });
-            }
         }
 
-        let existingOtp = await otpModel.findOne({ user: userToProcess._id })
+         let existingOtp = await otpModel.findOne({ email: body.email })
 
         if (existingOtp) {
             return res.status(404).json({
                 message: "otp is already sent"
+
             })
         }
 
-        let info = await emailSender(userToProcess )
+        let info = await emailSender( body)
 
 
         if (!info) {
@@ -56,7 +42,7 @@ async function regController(req, res) {
 
         let setOtp = await otpModel.create({
             otp: info.otp,
-            user: userToProcess._id
+            email : body.email
         })
 
         if (!setOtp) {
@@ -64,33 +50,34 @@ async function regController(req, res) {
                 message: "Something went wrong"
             })
         }
-        let result = await userModel.findByIdAndUpdate(userToProcess._id, { expireAt: new Date(Date.now() + 5 * 60 * 1000) }, { returnDocument: 'after' }).select("-password -name -email -phone -role -isVerified")
+
 
         res.status(200).json({
-            message: "check your email",
-            result
+            message:"otp sent successfully",
+            
         })
 
 
-    } catch (err) {
+    }
+    catch (err) {
         res.status(500).json({
             message: err.message
         })
-
     }
 }
 
 async function verifyOtp(req, res) {
     try {
-        let userId = req.params.id;
+
+    
         let body = req.body;
-        if (!body.otp || !userId) {
+        if (!body.otp) {
             return res.status(400).json({
-                message: "OTP and User ID are required"
+                message: "OTP is required"
             });
         }
 
-        const deletedOtp = await otpModel.findOneAndDelete({ otp: body.otp, user: userId });
+        const deletedOtp = await otpModel.findOneAndDelete({ otp: body.otp });
 
         if (!deletedOtp) {
             return res.status(400).json({
@@ -98,21 +85,18 @@ async function verifyOtp(req, res) {
             });
         }
 
-        const user = await userModel.findByIdAndUpdate(
-            userId,
-            { isVerified: true, $unset: { expireAt: 1 } },
-            { returnDocument: 'after' }
-        );
+         let token = regToken({ email:deletedOtp.email });
 
-        if (!user) {
+         if(!token){
+            return res.status(400).json({
+                message:"Something went wrong"
+            })
+         }
 
-            return res.status(404).json({
-                message: "User not found"
-            });
-        }
 
         res.status(200).json({
             message: "OTP verified successfully",
+            token:token
 
         });
     } catch (err) {
@@ -122,7 +106,50 @@ async function verifyOtp(req, res) {
     }
 }
 
-module.exports = { regController, verifyOtp };
+
+
+async function regController(req, res) {
+    try {
+        let body = req.body;
+        let head = req.headers.authorization;
+        let token = head.split(" ")[1];
+
+        let decoded = decodeToken(token, res);
+        if (res.headersSent) return;
 
 
 
+        if (!body.name || !body.email || !body.password || !body.phone) {
+            return res.status(400).json({
+                message: "All fields are required"
+            })
+        }
+
+      
+           let userToProcess = await userModel.create(body);
+
+            if (!userToProcess) {
+                return res.status(400).json({
+                    message: "Something went wrong"
+                });
+            }
+        
+       
+
+        res.status(200).json({
+            message: "User registered successfully, please verify your email",
+            
+        })
+
+
+    } catch (err) {
+        res.status(500).json({
+            message: err.message
+        })
+
+    }
+}
+
+
+
+module.exports = { regController, verifyOtp,verifyEmail };

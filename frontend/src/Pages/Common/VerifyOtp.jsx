@@ -17,10 +17,18 @@ import api from "../../api/axiosConfig";
 
 function VerifyOtp() {
   const [otp, setOtp] = useState("");
+   const [loading, setLoading] = useState(false);
+   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+   
   const navigate = useNavigate();
   let userId = useParams().id
   // Validation Checks using your centralized utility functions
   const otpError = otp ? validateOtp(otp) : "";
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
+
 
   // Evaluates to true only if OTP is typed and contains zero validation errors
   const isFormValid = otp && !otpError;

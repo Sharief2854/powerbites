@@ -30,6 +30,7 @@ const verifyPayment = async (req, res) => {
         razorpay_order_id,
         razorpay_payment_id,
         razorpay_signature,
+        coupon_id
     } = req.body;
 
     const generatedSignature = crypto
@@ -60,6 +61,7 @@ const verifyPayment = async (req, res) => {
                 name: prod.name,
                 price: prod.price,
                 discount: prod.discount,
+                discounted_price: prod.price - (prod.price * (prod.discount / 100)),
                 offer: prod.offer,
                 image: prod.image[0],
                 quantity: item.quantity
@@ -68,11 +70,10 @@ const verifyPayment = async (req, res) => {
 
         const orderData = {
             customer: req.userId,
-            product: cart.map(item => item.product),
-            details: orderDetails,
+            products: orderDetails,
             total: req.body.amount,
             paymentID: razorpay_payment_id,
-            coupon: req.body.coupon || "",
+            coupon: coupon_id || "",
             orderStatus: "order placed",
             address: req.body.addressId
         };
