@@ -21,10 +21,12 @@ const isCustomer = require('./MiddleWare/customerAuth');
 const upload = require('./config/multerConfig');
 const PaymentRouter = require('./Routes/Payments/razorpayRoutes');
 const DeveloperRouter = require('./Routes/DevepolerRoutes/Devepoler');
+const reviewRouter = require('./Routes/Review/Review');
 // const productCategoryRouter =require("./Routes/ProcutsCatoegory/categoryCRUD")
 const ordersRouter = require('./Routes/Orders/ordersRouter');
 
-const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD')
+const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD');
+
 
 
 
@@ -54,6 +56,7 @@ app.use("/payment",PaymentRouter)
 // Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter)
 app.use("/developer",DeveloperRouter)
+app.use("/review",reviewRouter)
 
 // app.use("/products",ProductRouter) 
 
