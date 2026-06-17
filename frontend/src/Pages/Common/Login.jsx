@@ -64,18 +64,11 @@ function Login() {
     setFormData({ email: "", password: "" });
 
     if(decoded.role == "customer"){
-      navigate("/home")
-
-    if(decoded.role == "customer"){
-      navigate("/")
-
+      navigate("/Customer")
     }
     else if(decoded.role == "admin"){
       navigate("/admin")
     }
-    
-
-  }
 }
   catch(err){
     console.log("data ",err.response?.data); 
