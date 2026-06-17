@@ -122,6 +122,7 @@ async function getCustomerProfile(req, res) {
                 message: "User not found"
             });
         }
+        
         res.status(200).json({
             message: "Profile retrieved successfully",
             user: user
@@ -488,6 +489,8 @@ async function getCustomerAddresses (req, res) {
 //get customer address by address id controller function
 async function getCustomerAddressById(req, res) {
     try {   
+
+        console.log("getphotos")
         let userId = req.userId;
         console.log("User ID from token:", userId); 
         if (!userId) {

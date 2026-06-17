@@ -6,6 +6,25 @@ import { useNavigate } from 'react-router-dom'
 import { PrimaryButton } from '../../../Components/Common/Buttons'
 import { jwtDecode } from 'jwt-decode'
 import api from '../../../api/axiosConfig'
+import { useTheme } from '@mui/material/styles';
+import InputLabel from '@mui/material/InputLabel';
+
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  slotProps: {
+    paper: {
+      style: {
+        maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+        width: 250,
+      },
+    },
+  },
+};
+
+const names = ['item1'
+];
 
 export default function CustomerProducts() {
 
@@ -15,6 +34,25 @@ export default function CustomerProducts() {
   const [searchProduct, setSearchProduct] = useState('')
   const [range, setRange] = useState('')
   const [isAvailableOnly, setIsAvailableOnly] = useState(false)
+
+  const theme = useTheme();
+  const [category, setCategory] = React.useState([]);
+function getStyles(name, category, theme) {
+  return {
+    fontWeight: 'medium'
+      // : theme.typography.fontWeightRegular,
+  };
+}
+
+
+  const handleChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setCategory(
+      typeof value === 'string' ? value.split(',') : value,
+    );
+  };
 
   let token = localStorage.getItem("token")
   let decodeId = jwtDecode(token).id
@@ -47,6 +85,19 @@ export default function CustomerProducts() {
       setLoading(false)
     }
   }
+  async function getCategory(params) {
+    setLoading(true)
+    try {
+      let res = await api.get(`/category/allCategories`)
+      setCategory(res.data.categories)
+      console.log(res.data.categories);      
+    } catch (error) {
+      // enqueueSnackbar('')
+    }
+    finally {
+      setLoading(false)
+    }
+  }
   async function getCartItems(params) {
     setLoading(true)
     try {
@@ -66,7 +117,7 @@ export default function CustomerProducts() {
   .filter((product) => {
     const search = product.name
       .toLowerCase()
-      .includes(searchProduct.toLowerCase());
+      .startsWith(searchProduct.toLowerCase());
 
     let inStock = true;
 
@@ -105,7 +156,7 @@ export default function CustomerProducts() {
     <Box>
        <Grid container spacing={2}>
                           <Grid item size={5}>
-                            <FormControl fullWidth>
+                            {/* {<FormControl fullWidth>
                               <OutlinedInput
                                 id="search"
                                 placeholder="Search product"
@@ -115,7 +166,38 @@ export default function CustomerProducts() {
                                   backgroundColor: "white",
                                 }}
                               />
-                            </FormControl>
+                            </FormControl>} */}
+
+      <FormControl sx={{ m: 1, width: 300 }}>
+        <InputLabel id="demo-multiple-chip-label">Category</InputLabel>
+        {/* <Select
+          labelId="demo-multiple-chip-label"
+          id="demo-multiple-chip"
+          multiple
+          // value={selected}
+          onChange={handleChange}
+          // input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
+          // renderValue={(selected) => (
+          //   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+          //     {selected.map((value) => (
+          //       <Chip key={value} label={value} />
+          //     ))}
+          //   </Box>
+          // )}
+          MenuProps={MenuProps}
+        >
+          {names.map((name) => (
+            <MenuItem
+              key={name}
+              value={name}
+              style={getStyles(name, theme)}
+            >
+              {name}
+            </MenuItem>
+          ))}
+        </Select> */}
+      </FormControl>
+    
                           </Grid>
       
                           <Grid item size={4}>
@@ -187,7 +269,6 @@ export default function CustomerProducts() {
           },
         }}
         
-            onClick={() => navigate(`/customer/productpage/${item._id}`)}
       >
         <Box sx={{ position: "relative", px: 2, pt: 2 }}>
           <Box
@@ -202,7 +283,7 @@ export default function CustomerProducts() {
           >
             <Box
               component="img"
-              src={`http://localhost:4500/${imagPath}`}
+              src={`http://localhost:4500/${imagePath}`}
               alt={item.name}
               sx={{
                 width: "100%",
@@ -213,7 +294,7 @@ export default function CustomerProducts() {
             />
           </Box>
 
-          <Chip
+          {/* <Chip
             // label="10% OFF"
             size="small"
             sx={{
@@ -226,7 +307,7 @@ export default function CustomerProducts() {
               borderRadius: 2,
               boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
             }}
-          />
+          /> */}
         </Box>
 
         <CardContent
@@ -313,7 +394,7 @@ export default function CustomerProducts() {
                 boxShadow: "none",
               },
             }}
-            onClick={() => addItem(item._id),dispatch(addToCart(item._id))}
+          
           >
             Add to cart
           </PrimaryButton>

@@ -35,7 +35,7 @@ async function allBanners(req, res) {
 //             return res.status(400).json({ message: "At least one banner image is required." });
 //         }
 
-//         const imagePaths = req.files.map(file => file.path);
+        // const imagePaths = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path}`);
 
 //         const bannerData = {
 //             ...body,
@@ -142,9 +142,15 @@ async function updateBanner(req,res){
         const updateData = { ...req.body };
 
         if (req.files && req.files.length > 0) {
-            const imagePaths = req.files.map(file => file.path);
-            updateData.image = imagePaths;
+            updateData.image = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path}`);
         }
+
+        if (!updateData.image) {
+            return res.status(400).json({
+                message: "Image is required"
+            })
+        }
+
 
         let banner = await bannerModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
 
