@@ -122,6 +122,7 @@ async function getCustomerProfile(req, res) {
                 message: "User not found"
             });
         }
+        
         res.status(200).json({
             message: "Profile retrieved successfully",
             user: user
