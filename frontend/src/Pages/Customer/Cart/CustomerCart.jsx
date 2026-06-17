@@ -320,7 +320,7 @@ useEffect(() => {
               </Box>
             </Stack>
 
-              <PaymentButton addressId={address._id} amount={totalPrice}/>
+              <PaymentButton addressId={address} amount={totalPrice}/>
           </CardContent>
         </Card>
       </Grid>
