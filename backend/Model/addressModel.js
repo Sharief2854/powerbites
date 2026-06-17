@@ -9,10 +9,10 @@ const addressSchema = new mongoose.Schema({
 
 label: {
     type: String,
-    default: "Home",
     required: true,
     trim: true,
-    minlength: 1
+    minlength: 1,
+    unique: true
 },
 
   street: {
