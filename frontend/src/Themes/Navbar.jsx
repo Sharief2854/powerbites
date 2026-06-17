@@ -25,18 +25,11 @@ import { Link } from "react-router-dom";
 const pages = [
   { name: "Login", path: "/login", icon: <LoginIcon fontSize="small" /> },
   {
-    name: "Registration",
-    path: "/register",
-    icon: <PersonAddAlt1Icon fontSize="small" />,
+    name: "Registration",path: "/register",icon: <PersonAddAlt1Icon fontSize="small" />,
   },
 ];
 
-const settings = [
-  { name: "Profile", path: "/login", icon: <PersonIcon fontSize="small" /> },
-  { name: "Account", path: "/register", icon: <AccountCircleIcon fontSize="small" /> },
-  { name: "Contact US", path: "/about", icon: <InfoOutlinedIcon fontSize="small" /> },
-  { name: "Home", path: "/", icon: <HomeIcon fontSize="small" /> },
-];
+
 
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -61,12 +54,13 @@ function ResponsiveAppBar() {
   const handleLogoRefresh = () => {
     window.location.href = "/";
   };
+  
 
   return (
     <AppBar
       position="static"
       sx={{
-        background: "linear-gradient(90deg, #1350d4 0%, #0b1269 100%)",
+        backgroundColor: "primary.main",
         borderRadius: { xs: 0, sm: 3 },
         mt: { xs: 0, sm: 1 },
       }}
@@ -83,7 +77,7 @@ function ResponsiveAppBar() {
             sx={{
               display: { xs: "none", md: "flex" },
               mr: 1,
-              color: "#fff8ef",
+              color: "primary.contrastText",
               fontSize: 30,
             }}
           />
@@ -99,7 +93,7 @@ function ResponsiveAppBar() {
               fontFamily: "'Poppins', sans-serif",
               fontWeight: 800,
               letterSpacing: ".08rem",
-              color: "#fff8ef",
+              color: "primary.contrastText",
               cursor: "pointer",
               fontSize: { md: "1.1rem", lg: "1.2rem" },
             }}
@@ -115,7 +109,7 @@ function ResponsiveAppBar() {
               aria-haspopup="true"
               onClick={handleOpenNavMenu}
               color="inherit"
-              sx={{ color: "#fff8ef" }}
+              sx={{ color: "primary.contrastText" }}
             >
               <MenuIcon />
             </IconButton>
@@ -141,6 +135,7 @@ function ResponsiveAppBar() {
                   mt: 1,
                   minWidth: 210,
                   boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
+                  bgcolor: "background.paper",
                 },
               }}
             >
@@ -152,13 +147,13 @@ function ResponsiveAppBar() {
                   onClick={handleCloseNavMenu}
                   sx={{
                     textDecoration: "none",
-                    color: "#333",
+                    color: "text.primary",
                     py: 1.2,
                     display: "flex",
                     alignItems: "center",
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 36, color: "#7b3f00" }}>
+                  <ListItemIcon sx={{ minWidth: 36, color: "primary.main" }}>
                     {page.icon}
                   </ListItemIcon>
 
@@ -169,7 +164,7 @@ function ResponsiveAppBar() {
                         sx={{
                           fontSize: "0.95rem",
                           fontWeight: 500,
-                          color: "#333",
+                          color: "text.primary",
                         }}
                       >
                         {page.name}
@@ -185,7 +180,7 @@ function ResponsiveAppBar() {
             sx={{
               display: { xs: "flex", md: "none" },
               mr: 1,
-              color: "#fff8ef",
+              color: "primary.contrastText",
               fontSize: 25,
             }}
           />
@@ -202,7 +197,7 @@ function ResponsiveAppBar() {
               fontFamily: "'Poppins', sans-serif",
               fontWeight: 800,
               letterSpacing: ".12rem",
-              color: "#fff8ef",
+              color: "primary.contrastText",
               cursor: "pointer",
               fontSize: { xs: "0.95rem", sm: "1.1rem" },
             }}
@@ -227,7 +222,7 @@ function ResponsiveAppBar() {
                 startIcon={page.icon}
                 sx={{
                   my: 2,
-                  color: "#fff8ef",
+                  color: "primary.contrastText",
                   display: "flex",
                   alignItems: "center",
                   textTransform: "none",
@@ -237,94 +232,14 @@ function ResponsiveAppBar() {
                   borderRadius: 2,
                   textDecoration: "none",
                   "&:hover": {
-                    backgroundColor: "rgba(255,255,255,0.12)",
+                    backgroundColor: "secondary.main",
+                    color: "secondary.contrastText",
                   },
                 }}
               >
                 {page.name}
               </Button>
             ))}
-          </Box>
-
-          <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Open settings">
-              <IconButton
-                onClick={handleOpenUserMenu}
-                sx={{
-                  p: 0,
-                  border: "2px solid rgba(255,255,255,0.45)",
-                  borderRadius: "50%",
-                }}
-              >
-                <Avatar
-                  alt="User"
-                  src="/static/images/avatar/2.jpg"
-                  sx={{
-                    width: { xs: 34, sm: 38 },
-                    height: { xs: 34, sm: 38 },
-                  }}
-                />
-              </IconButton>
-            </Tooltip>
-
-            <Menu
-              sx={{
-                mt: "45px",
-                "& .MuiPaper-root": {
-                  borderRadius: 3,
-                  minWidth: 220,
-                  boxShadow: "0 10px 30px rgba(0,0,0,0.14)",
-                },
-              }}
-              id="menu-appbar-user"
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-            >
-              {settings.map((setting) => (
-                <MenuItem
-                  key={setting.name}
-                  component={Link}
-                  to={setting.path}
-                  onClick={handleCloseUserMenu}
-                  sx={{
-                    textDecoration: "none",
-                    color: "#333",
-                    py: 1.2,
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 36, color: "#7b3f00" }}>
-                    {setting.icon}
-                  </ListItemIcon>
-
-                  <ListItemText
-                    disableTypography
-                    primary={
-                      <Typography
-                        sx={{
-                          fontSize: "0.95rem",
-                          fontWeight: 500,
-                          color: "#333",
-                        }}
-                      >
-                        {setting.name}
-                      </Typography>
-                    }
-                  />
-                </MenuItem>
-              ))}
-            </Menu>
           </Box>
         </Toolbar>
       </Container>

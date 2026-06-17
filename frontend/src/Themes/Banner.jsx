@@ -74,29 +74,57 @@ function HomemadeFoodBanner() {
   const navigate = useNavigate();
   const [currentBanner, setCurrentBanner] = useState(0);
   const [currentImage, setCurrentImage] = useState(0);
+  const [pausedUntil, setPausedUntil] = useState(null);
+
+  const activeBanner = banners[currentBanner];
+  const isPaused = pausedUntil && Date.now() < pausedUntil;
 
   useEffect(() => {
+    if (isPaused) return;
+
     const timer = setInterval(() => {
-      setCurrentImage((prevImage) => {
-        const lastImageIndex = banners[currentBanner].images.length - 1;
+      const lastImageIndex = banners[currentBanner].images.length - 1;
 
-        if (prevImage < lastImageIndex) {
-          return prevImage + 1;
-        }
-
+      if (currentImage < lastImageIndex) {
+        setCurrentImage((prev) => prev + 1);
+      } else {
         setCurrentBanner((prevBanner) => (prevBanner + 1) % banners.length);
-        return 0;
-      });
+        setCurrentImage(0);
+      }
     }, 2500);
 
     return () => clearInterval(timer);
-  }, [currentBanner]);
+  }, [currentBanner, currentImage, isPaused]);
 
-  const activeBanner = banners[currentBanner];
+  useEffect(() => {
+    if (!pausedUntil) return;
+
+    const remainingTime = pausedUntil - Date.now();
+    if (remainingTime <= 0) {
+      setPausedUntil(null);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      setPausedUntil(null);
+    }, remainingTime);
+
+    return () => clearTimeout(timeout);
+  }, [pausedUntil]);
+
+  const pauseSlider = () => {
+    setPausedUntil(Date.now() + 30000);
+  };
 
   const handleBannerChange = (bannerIndex) => {
     setCurrentBanner(bannerIndex);
     setCurrentImage(0);
+    pauseSlider();
+  };
+
+  const handleImageClick = (index) => {
+    setCurrentImage(index);
+    pauseSlider();
   };
 
   return (
@@ -107,7 +135,7 @@ function HomemadeFoodBanner() {
           sx={{
             width: "100%",
             overflow: "hidden",
-            background: "linear-gradient(90deg, #ffd86b 0%, #ffb347 100%)",
+            bgcolor: "primary.main",
             boxShadow: "0 12px 35px rgba(0,0,0,0.10)",
             mt: 2,
           }}
@@ -134,7 +162,7 @@ function HomemadeFoodBanner() {
                 sx={{
                   fontSize: { xs: "2rem", sm: "2.6rem", md: "3.4rem" },
                   fontWeight: 800,
-                  color: "#ffffff",
+                  color: "primary.contrastText",
                   lineHeight: 1.1,
                   mb: 1,
                 }}
@@ -146,7 +174,7 @@ function HomemadeFoodBanner() {
                 sx={{
                   fontSize: { xs: "1.2rem", sm: "1.7rem", md: "2.2rem" },
                   fontWeight: 700,
-                  color: "#000000",
+                  color: "secondary.main",
                   mb: 3,
                 }}
               >
@@ -156,12 +184,12 @@ function HomemadeFoodBanner() {
               <Box
                 sx={{
                   display: "inline-block",
-                  backgroundColor: "#0d47a1",
-                  color: "#fff",
+                  backgroundColor: "secondary.main",
+                  color: "secondary.contrastText",
                   px: { xs: 2.5, sm: 3.5, md: 4 },
                   py: { xs: 1.5, sm: 2, md: 2.2 },
                   borderRadius: 3,
-                  boxShadow: "0 10px 25px rgba(13,71,161,0.25)",
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.18)",
                 }}
               >
                 <Typography
@@ -183,27 +211,6 @@ function HomemadeFoodBanner() {
                 >
                   {activeBanner.limit}
                 </Typography>
-
-                <Box
-                  sx={{
-                    mt: 2,
-                    display: "inline-block",
-                    backgroundColor: "#fff",
-                    color: "#111",
-                    px: 2,
-                    py: 1,
-                    borderRadius: 2,
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontWeight: 700,
-                      fontSize: { xs: "0.95rem", md: "1.05rem" },
-                    }}
-                  >
-                    Already Applied
-                  </Typography>
-                </Box>
               </Box>
 
               <Box sx={{ mt: 3 }}>
@@ -211,8 +218,8 @@ function HomemadeFoodBanner() {
                   variant="contained"
                   onClick={() => navigate("/login")}
                   sx={{
-                    backgroundColor: "#111",
-                    color: "#fff",
+                    backgroundColor: "secondary.main",
+                    color: "secondary.contrastText",
                     textTransform: "none",
                     px: 3,
                     py: 1.2,
@@ -220,7 +227,7 @@ function HomemadeFoodBanner() {
                     fontWeight: 700,
                     boxShadow: "none",
                     "&:hover": {
-                      backgroundColor: "#000",
+                      backgroundColor: "background.paper",
                       boxShadow: "none",
                     },
                   }}
@@ -247,7 +254,9 @@ function HomemadeFoodBanner() {
                       borderRadius: "50%",
                       cursor: "pointer",
                       backgroundColor:
-                        currentBanner === index ? "#111" : "rgba(0,0,0,0.25)",
+                        currentBanner === index
+                          ? "secondary.main"
+                          : "rgba(255,255,255,0.35)",
                     }}
                   />
                 ))}
@@ -272,13 +281,15 @@ function HomemadeFoodBanner() {
                 }}
               >
                 <Box
+                  onClick={pauseSlider}
                   sx={{
                     width: "100%",
                     height: { xs: 240, sm: 300, md: 320 },
                     borderRadius: 4,
                     overflow: "hidden",
-                    backgroundColor: "#fff3e0",
+                    backgroundColor: "background.paper",
                     boxShadow: "0 14px 35px rgba(0,0,0,0.18)",
+                    cursor: "pointer",
                   }}
                 >
                   <Box
@@ -306,7 +317,7 @@ function HomemadeFoodBanner() {
                   {activeBanner.images.map((_, index) => (
                     <Box
                       key={index}
-                      onClick={() => setCurrentImage(index)}
+                      onClick={() => handleImageClick(index)}
                       sx={{
                         width: 9,
                         height: 9,
@@ -314,8 +325,8 @@ function HomemadeFoodBanner() {
                         cursor: "pointer",
                         backgroundColor:
                           currentImage === index
-                            ? "#0d47a1"
-                            : "rgba(13,71,161,0.25)",
+                            ? "secondary.main"
+                            : "rgba(255,255,255,0.35)",
                       }}
                     />
                   ))}

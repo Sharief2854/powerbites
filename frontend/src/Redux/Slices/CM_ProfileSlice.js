@@ -1,8 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  editprofile: [],
+  editprofile: {},
   editaddress: [],
+  photo: "",
 };
 
 const CustomerEditProfile = createSlice({
@@ -23,12 +24,8 @@ const CustomerEditProfile = createSlice({
       console.log("action :", state.editprofile);
     },
     updateEditProfile: (state, action) => {
-      state.editprofile = state.editprofile.map((item) => {
-        if (item._id === action.payload._id) {
-          return action.payload;
-        }
-        return item;
-      });
+      // Since profile is a single object, just replace it with the updated payload
+      state.editprofile = action.payload; 
     },
     geteditaddress: (state, action) => {
       state.editaddress = action.payload;
@@ -44,14 +41,25 @@ const CustomerEditProfile = createSlice({
     },
     updateeditaddress: (state, action) => {
       state.editaddress = state.editaddress.map((item) => {
-        if (item._id === action.payload._id) {
-          return action.payload;
+        if (item._id === action.payload.id) {
+          return action.payload.data;
         }
         return item;
       });
     },
+    getCustomerPhoto: (state, action) => {
+      state.photo = action.payload;
+    },
+    deleteCustomerPhoto: (state, action) => {
+      state.photo = "";
+    },
+    postCustomerPhoto: (state, action) => {
+      state.photo = action.payload;
+    },
+   
   },
 });
+
 export const {
   getEditProfile,
   deleteEditProfile,
@@ -61,5 +69,8 @@ export const {
   deleteeditaddress,
   posteditaddress,
   updateeditaddress,
+  getCustomerPhoto,
+  deleteCustomerPhoto,
+  postCustomerPhoto,
 } = CustomerEditProfile.actions;
 export default CustomerEditProfile.reducer;

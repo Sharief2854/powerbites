@@ -63,17 +63,13 @@ function Login() {
     // Dynamic reset after an API handshake (or keep for convenience)
     setFormData({ email: "", password: "" });
 
-    setSnackbar({ open: true, message: "Login successful! Welcome back.", severity: "success" });
-
-    setTimeout(() => {
-      if(decoded.role === "customer"){
-        navigate("/customer");
-      } else if(decoded.role === "admin"){
-        navigate("/admin");
-      }
-    }, 1500);
-
-  }
+    if(decoded.role == "customer"){
+      navigate("/Customer")
+    }
+    else if(decoded.role == "admin"){
+      navigate("/admin")
+    }
+}
   catch(err){
     console.log("data ",err.response?.data); 
     console.log("error ",err); 

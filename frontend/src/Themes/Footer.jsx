@@ -17,18 +17,21 @@ import YouTubeIcon from "@mui/icons-material/YouTube";
 export default function AboutAndFooter() {
   return (
     <>
-      {/* About Section */}
-      <Box sx={{ py: { xs: 6, md: 10 }, backgroundColor: "#fffaf5" }}>
+      <Box sx={{ py: { xs: 6, md: 10 }, backgroundColor: "background.default" }}>
         <Container maxWidth="lg">
-          <Grid container spacing={5} sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}>
+          <Grid
+            container
+            spacing={5}
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             <Grid xs={12} md={6}>
               <Typography
                 sx={{
-                  color: "#ff9800",
+                  color: "primary.main",
                   fontWeight: 700,
                   mb: 1,
                   letterSpacing: 1,
@@ -43,7 +46,7 @@ export default function AboutAndFooter() {
                 variant="h4"
                 sx={{
                   fontWeight: 800,
-                  color: "#1f2937",
+                  color: "text.primary",
                   mb: 2,
                   fontSize: { xs: "1.8rem", md: "2.4rem" },
                 }}
@@ -53,7 +56,7 @@ export default function AboutAndFooter() {
 
               <Typography
                 sx={{
-                  color: "#6b7280",
+                  color: "text.secondary",
                   lineHeight: 1.8,
                   mb: 2,
                   fontSize: "1rem",
@@ -66,7 +69,7 @@ export default function AboutAndFooter() {
 
               <Typography
                 sx={{
-                  color: "#6b7280",
+                  color: "text.secondary",
                   lineHeight: 1.8,
                   mb: 3,
                   fontSize: "1rem",
@@ -80,8 +83,8 @@ export default function AboutAndFooter() {
               <Button
                 variant="contained"
                 sx={{
-                  backgroundColor: "#111827",
-                  color: "#fff",
+                  backgroundColor: "primary.main",
+                  color: "primary.contrastText",
                   textTransform: "none",
                   fontWeight: 700,
                   px: 3,
@@ -89,7 +92,7 @@ export default function AboutAndFooter() {
                   borderRadius: 2.5,
                   boxShadow: "none",
                   "&:hover": {
-                    backgroundColor: "#000",
+                    backgroundColor: "text.primary",
                     boxShadow: "none",
                   },
                 }}
@@ -101,21 +104,20 @@ export default function AboutAndFooter() {
         </Container>
       </Box>
 
-      {/* Footer */}
-      <Box sx={{ backgroundColor: "#111827", color: "#fff", pt: 6, pb: 3 }}>
+      <Box sx={{ backgroundColor: "primary.main", color: "primary.contrastText", pt: 6, pb: 3 }}>
         <Container maxWidth="lg">
           <Grid container spacing={4}>
             <Grid xs={12} md={4}>
               <Typography
                 variant="h6"
-                sx={{ fontWeight: 800, mb: 2, color: "#ffffff" }}
+                sx={{ fontWeight: 800, mb: 2, color: "primary.contrastText" }}
               >
                 Homemade Foods
               </Typography>
 
               <Typography
                 sx={{
-                  color: "#d1d5db",
+                  color: "secondary.main",
                   lineHeight: 1.8,
                   fontSize: "0.95rem",
                 }}
@@ -125,58 +127,80 @@ export default function AboutAndFooter() {
               </Typography>
             </Grid>
 
-            <Grid  xs={12} sm={6} md={2.5}>
-              <Typography sx={{ fontWeight: 700, mb: 2 }}>Quick Links</Typography>
+            <Grid xs={12} sm={6} md={2.5}>
+              <Typography sx={{ fontWeight: 700, mb: 2, color: "primary.contrastText" }}>
+                Quick Links
+              </Typography>
               <Stack spacing={1}>
-                <Link href="#" underline="none" color="#d1d5db">Home</Link>
-                <Link href="#" underline="none" color="#d1d5db">About</Link>
-                <Link href="#" underline="none" color="#d1d5db">Products</Link>
-                <Link href="#" underline="none" color="#d1d5db">Contact</Link>
+                <Link href="#" underline="none" color="secondary.main">
+                  Home
+                </Link>
+                <Link href="#" underline="none" color="secondary.main">
+                  About
+                </Link>
+                <Link href="#" underline="none" color="secondary.main">
+                  Products
+                </Link>
+                <Link href="#" underline="none" color="secondary.main">
+                  Contact
+                </Link>
               </Stack>
             </Grid>
 
             <Grid xs={12} sm={6} md={2.5}>
-              <Typography sx={{ fontWeight: 700, mb: 2 }}>Categories</Typography>
+              <Typography sx={{ fontWeight: 700, mb: 2, color: "primary.contrastText" }}>
+                Categories
+              </Typography>
               <Stack spacing={1}>
-                <Link href="#" underline="none" color="#d1d5db">Snacks</Link>
-                <Link href="#" underline="none" color="#d1d5db">Sweets</Link>
-                <Link href="#" underline="none" color="#d1d5db">Healthy Bars</Link>
-                <Link href="#" underline="none" color="#d1d5db">Gift Packs</Link>
+                <Link href="#" underline="none" color="secondary.main">
+                  Snacks
+                </Link>
+                <Link href="#" underline="none" color="secondary.main">
+                  Sweets
+                </Link>
+                <Link href="#" underline="none" color="secondary.main">
+                  Healthy Bars
+                </Link>
+                <Link href="#" underline="none" color="secondary.main">
+                  Gift Packs
+                </Link>
               </Stack>
             </Grid>
 
             <Grid xs={12} md={3}>
-              <Typography sx={{ fontWeight: 700, mb: 2 }}>Contact</Typography>
+              <Typography sx={{ fontWeight: 700, mb: 2, color: "primary.contrastText" }}>
+                Contact
+              </Typography>
               <Stack spacing={1}>
-                <Typography sx={{ color: "#d1d5db", fontSize: "0.95rem" }}>
+                <Typography sx={{ color: "secondary.main", fontSize: "0.95rem" }}>
                   Phone: +91 98765 43210
                 </Typography>
-                <Typography sx={{ color: "#d1d5db", fontSize: "0.95rem" }}>
+                <Typography sx={{ color: "secondary.main", fontSize: "0.95rem" }}>
                   Email: homemadefoods@gmail.com
                 </Typography>
-                <Typography sx={{ color: "#d1d5db", fontSize: "0.95rem" }}>
+                <Typography sx={{ color: "secondary.main", fontSize: "0.95rem" }}>
                   Address: Hyderabad, India
                 </Typography>
               </Stack>
 
               <Stack direction="row" spacing={1.5} sx={{ mt: 2 }}>
-                <IconButton sx={{ color: "#fff", backgroundColor: "#1f2937" }}>
+                <IconButton sx={{ color: "primary.main", backgroundColor: "secondary.main" }}>
                   <FacebookIcon />
                 </IconButton>
-                <IconButton sx={{ color: "#fff", backgroundColor: "#1f2937" }}>
+                <IconButton sx={{ color: "primary.main", backgroundColor: "secondary.main" }}>
                   <InstagramIcon />
                 </IconButton>
-                <IconButton sx={{ color: "#fff", backgroundColor: "#1f2937" }}>
+                <IconButton sx={{ color: "primary.main", backgroundColor: "secondary.main" }}>
                   <YouTubeIcon />
                 </IconButton>
               </Stack>
             </Grid>
           </Grid>
 
-          <Divider sx={{ borderColor: "rgba(255,255,255,0.12)", my: 4 }} />
+          <Divider sx={{ borderColor: "rgba(255,255,255,0.20)", my: 4 }} />
 
           <Typography
-            sx={{ color: "#9ca3af", fontSize: "0.9rem", textAlign: "center"}}
+            sx={{ color: "secondary.main", fontSize: "0.9rem", textAlign: "center" }}
           >
             © 2026 Homemade Foods. All rights reserved.
           </Typography>

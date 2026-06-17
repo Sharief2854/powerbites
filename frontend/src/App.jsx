@@ -8,7 +8,7 @@ import VerifyOtp from "./Pages/Common/VerifyOtp"
 import ForgotPassword from "./Pages/Common/ForgetPassword";
 import ResetPassword from "./Pages/Common/ResetPassword";
 import ForgotVerifyOtp from "./Pages/Common/ForgetVerifyOtp";
-import Home from "./Pages/Common/Home";
+import Home from "./Pages/Customer/Layout/Home";
 
 import DashboardLayout from "./Pages/Admin/Layout/Dashboard";
 import LandingPage from "./Pages/Common/LandingPage";
@@ -20,14 +20,13 @@ import UpdateProducts from "./Pages/Admin/Products/UpdateProducts";
 import AdminProducts from "./Pages/Admin/Products/AdminProducts";
 import ProtectedRoutes from "./Routes/ProtectedRoutes";
 import CustomerDashboard from "./Pages/Customer/Layout/CustomerDashboard";
-import CustomerProfile from "./Pages/Customer/CustomerProfiles";
 import Overview from "./Pages/Admin/Home/AdminHome";
 import CustomerEditProfile from "./Pages/Customer/CustomerEditProfile";
 import CustomerProducts from "./Pages/Customer/CustomerProducts/CustomerProducts";
 import ProductPage from "./Pages/Customer/CustomerProducts/ProductPage";
 import CustomerCart from "./Pages/Customer/Cart/CustomerCart";
-import CustomerProfile from "./Pages/Customer/CustomerProfiles";
 import OrderList from "./Pages/Customer/CustomerOrder/OrderList";
+import CustomerProfile from "./Pages/Customer/CustomerProfiles";
 
 
 function App() {
@@ -35,10 +34,9 @@ function App() {
   return (
     <Box>
         <BrowserRouter>
-      <Routes>
+        <Routes>
         <Route path ="/" element={<LandingPageLayout/>}>
         <Route index element={<LandingPage/>}/>
-        <Route path ="/home" element={<LandingPage/>}/>
         <Route path ="/register" element={<Register/>}/>
         <Route path ="/verifyOtp/:id" element={<VerifyOtp/>}/>
         <Route path ="/login" element={<Login/>}/>
@@ -46,7 +44,6 @@ function App() {
         <Route path ="/resetpassword/:id" element={<ResetPassword/>}/>
         <Route path ="/forgetverifyOtp/:id" element={<ForgotVerifyOtp/>}/>
         <Route path ="/auth" element={<MainAuthCard/>}/>
-        <Route path ="/home" element={<Home/>}/>
         </Route>
 
         <Route path ="/admin" element={<ProtectedRoutes role="admin"><DashboardLayout/></ProtectedRoutes>}>
@@ -58,14 +55,16 @@ function App() {
         </Route>
 
         <Route path ="/customer" element={<ProtectedRoutes role="customer"><CustomerDashboard/></ProtectedRoutes>}>
+        <Route index element={<Home/>}/>
+         <Route path ="/customer/home" element={<Home/>}/>
         <Route path="/customer/users" element={<UserDetails/>}/>
         <Route path="/customer/profile" element={<CustomerProfile/>}/>
         <Route path="/customer/products" element={<CustomerProducts/>}/>
         <Route path="/customer/productpage/:id" element={<ProductPage/>}/>
         <Route path="/customer/cart/:id" element={<CustomerCart/>}/>
-         <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
-         <Route path ="/customer/editprofile/:id" element={<CustomerEditProfile/>}/>
-         <Route path ="/customer/orderlist" element={<OrderList/>}/>
+        <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
+        <Route path ="/customer/editprofile/:id" element={<CustomerEditProfile/>}/>
+        <Route path ="/customer/orderlist" element={<OrderList/>}/>
         </Route>
 
       </Routes>
