@@ -22,6 +22,47 @@ async function getAllReviews(req, res) {
   }
 }
 
+async function createReview(req,res){
+    try{
+        
+        const{
+            productId,
+            orderId,
+            review,
+            rating
+        }=req.body;
+        console.log(req.body);
+
+        // if(!productId || !orderId || !review || !rating){
+        //     return res.status(400).json({
+        //         success:false,
+        //         message:"All fields are required"
+        //     });
+
+        //     }
+            const reviewData = await ReviewModel.create({
+                productId,
+                orderId,
+                review,
+                rating
+            });
+            console.log(reviewData);
+            return res.status(201).json({
+                success:true,
+                message:"Review created successfully",
+                data: reviewData
+            });
+
+            }catch(error){
+                return res.status(500).json({
+                    success:false,
+                    message:error.message
+                });
+            }
+        }
+        
+
+
 module.exports = {
-  getAllReviews
+  getAllReviews,createReview
 };

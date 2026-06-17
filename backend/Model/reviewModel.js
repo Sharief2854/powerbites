@@ -10,7 +10,7 @@ const reviewSchema = new mongoose.Schema(
 
     orderId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Order",
+        ref: "orders",
         required: true
     },
 
@@ -26,12 +26,11 @@ const reviewSchema = new mongoose.Schema(
         max: 5
     },
 
-    image: {
-        type: String
-    }
+   
 },
 {
     timestamps: true
 });
 
-module.exports = mongoose.model("Review", reviewSchema);
+const ReviewModel = mongoose.model("reviews", reviewSchema);
+module.exports = ReviewModel;
