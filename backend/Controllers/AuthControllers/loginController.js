@@ -52,16 +52,11 @@ const { generateAccessToken, generateRefreshToken } = require("../../Utils/Token
             }
             let setOtp = await otpModel.create({
                 otp: info.otp,
-                user: user._id
+                email: user.email
             })
             if (!setOtp) {
                 return res.status(400).json({
                     message: "Something went wrong"
-                })
-
-                return res.status(400).json({
-                    message: "Please verify your email",
-                    user: user._id
                 })
             }
 
