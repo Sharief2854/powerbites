@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
 const ordersModel = require("../../Model/orderModel");
-const  transporter  = require("../../config/emailConfig");
+const transporter = require("../../config/emailConfig");
 
 async function updateOrderStatus(req, res) {
     try {
-        let orderId = req.params.id;
+        const orderId = req.params.id;
+
         if (!orderId) {
             return res.status(400).json({
                 message: "Order ID is required"
@@ -15,10 +15,7 @@ async function updateOrderStatus(req, res) {
             return res.status(400).json({
                 message: "Validation Error: Request body cannot be empty."
             });
-            
         }
-
-        // console.log("body is",req.body)
 
         let { status } = req.body;
 
@@ -28,31 +25,40 @@ async function updateOrderStatus(req, res) {
             });
         }
 
-        
-        const allowedStatuses = ["order placed", "preparing order", "order shipped", "order delivered", "order cancelled"];
+        // normalize input (VERY IMPORTANT)
+        status = status.trim().toLowerCase();
+
+        const allowedStatuses = [
+            "order placed",
+            "preparing order",
+            "order shipped",
+            "order delivered",
+            "order cancelled"
+        ];
+
         if (!allowedStatuses.includes(status)) {
             return res.status(400).json({
-                message: `Validation Error: Invalid status provided. Allowed values are: ${allowedStatuses.join(", ")}`
+                message: `Invalid status. Allowed: ${allowedStatuses.join(", ")}`
             });
         }
 
-        
-        const order = await ordersModel.findById(orderId)
-            .populate("customer")
-            .populate("products.product")
-            .populate("address");
+        // 1. Update only status (no validation issues)
+        await ordersModel.updateOne(
+            { _id: orderId },
+            { $set: { orderStatus: status } }
+        );
 
-        if (!order) {
+        // 2. Fetch fresh updated order
+        const updatedOrder = await ordersModel.findById(orderId)
+            .populate("customer");
+
+        if (!updatedOrder) {
             return res.status(404).json({
                 message: "Order not found"
             });
         }
 
-    
-        order.orderStatus = status;
-        await order.save();
-
-        
+        // 3. Email content
         let subject = "";
         let html = "";
 
@@ -60,70 +66,100 @@ async function updateOrderStatus(req, res) {
             case "order placed":
                 subject = "Order Placed Successfully 🎉";
                 html = `
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIZmP2iJmKKDGP2QGEaW4Ylfqv4ZiKrRWSrw&s" alt="Order placed" style="width:100%;max-width:600px;border-radius:10px" />
-                    <h2>Hello ${order.customer.name}</h2>
-                    <p>Your order has been placed successfully.</p>
-                    <p>Order ID: ${order._id}</p>
+                    <div style="font-family:Arial;padding:20px">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIZmP2iJmKKDGP2QGEaW4Ylfqv4ZiKrRWSrw&s"
+                     alt="Order placed" 
+                     style="width:100%;max-width:600px;border-radius:10px"
+                      />
+                        <h2>Hello ${updatedOrder.customer?.name || "Customer"}</h2>
+                        <p>Your order has been placed successfully.</p>
+                        <p><b>Order ID:</b> ${updatedOrder._id}</p>
+                    </div>
                 `;
                 break;
 
             case "preparing order":
                 subject = "Your Order is Being Prepared 👨‍🍳";
                 html = `
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIZmP2iJmKKDGP2QGEaW4Ylfqv4ZiKrRWSrw&s" alt="Preparing Order" style="width:100%;max-width:600px;border-radius:10px" />
-                    <h2>Hello ${order.customer.name}</h2>
-                    <p>Your order is currently being prepared.</p>
+                    <div style="font-family:Arial;padding:20px">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIZmP2iJmKKDGP2QGEaW4Ylfqv4ZiKrRWSrw&s" 
+                    alt="order is getting prepared" 
+                    style="width:100%;max-width:600px;border-radius:10px" />
+                        <h2>Hello ${updatedOrder.customer?.name || "Customer"}</h2>
+                        <p>Your order is currently being prepared.</p>
+                        <p><b>Order ID:</b> ${updatedOrder._id}</p>
+                    </div>
                 `;
                 break;
 
             case "order shipped":
                 subject = "Your Order Has Been Shipped 🚚";
                 html = `
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIZmP2iJmKKDGP2QGEaW4Ylfqv4ZiKrRWSrw&s" alt="Order Shipped" style="width:100%;max-width:600px;border-radius:10px" />
-                    <h2>Hello ${order.customer.name}</h2>
-                    <p>Your order has been shipped and is on the way.</p>
+                    <div style="font-family:Arial;padding:20px">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIZmP2iJmKKDGP2QGEaW4Ylfqv4ZiKrRWSrw&s"
+                     alt="Order shipped" 
+                     style="width:100%;max-width:600px;border-radius:10px"
+                      />
+                        <h2>Hello ${updatedOrder.customer?.name || "Customer"}</h2>
+                        <p>Your order has been shipped and is on the way.</p>
+                        <p><b>Order ID:</b> ${updatedOrder._id}</p>
+                    </div>
                 `;
                 break;
 
             case "order delivered":
                 subject = "Order Delivered ✅";
                 html = `
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIZmP2iJmKKDGP2QGEaW4Ylfqv4ZiKrRWSrw&s" alt="Order delivered" style="width:100%;max-width:600px;border-radius:10px" />
-                    <h2>Hello ${order.customer.name}</h2>
-                    <p>Your order has been delivered successfully.</p>
+                    <div style="font-family:Arial;padding:20px">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIZmP2iJmKKDGP2QGEaW4Ylfqv4ZiKrRWSrw&s"
+                     alt="Order deliverd"
+                      style="width:100%;max-width:600px;border-radius:10px" 
+                      />
+                        <h2>Hello ${updatedOrder.customer?.name || "Customer"}</h2>
+                        <p>Your order has been delivered successfully.</p>
+                        <p><b>Order ID:</b> ${updatedOrder._id}</p>
+                    </div>
                 `;
                 break;
 
             case "order cancelled":
                 subject = "Order Cancelled ❌";
                 html = `
-                    <h2>Hello ${order.customer.name}</h2>
-                    <p>Your order status has been updated to cancelled.</p>
+                    <div style="font-family:Arial;padding:20px">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIZmP2iJmKKDGP2QGEaW4Ylfqv4ZiKrRWSrw&s" 
+                    alt="Order placed" 
+                    style="width:100%;max-width:600px;border-radius:10px" 
+                    />
+                        <h2>Hello ${updatedOrder.customer?.name || "Customer"}</h2>
+                        <p>Your order has been cancelled.</p>
+                        <p><b>Order ID:</b> ${updatedOrder._id}</p>
+                    </div>
                 `;
                 break;
             default:
                 return res.status(400).json({
-                    message: "Invalid order status"
+                    message: "Invalid status"
                 });
         }
 
-        if (order.customer && order.customer.email) {
+        // 4. Send email safely
+        if (updatedOrder?.customer?.email) {
             await transporter.sendMail({
                 from: process.env.EMAIL,
-                to: order.customer.email,
-                subject: subject,
-                html: html
+                to: updatedOrder.customer.email,
+                subject,
+                html
             });
         }
 
-        res.status(200).json({
-            message: "Order status updated and notification email sent successfully.",
-            order
+        return res.status(200).json({
+            message: "Order status updated and email sent successfully",
+            order: updatedOrder
         });
 
     } catch (error) {
         console.error("Error updating order status:", error);
-        res.status(500).json({
+        return res.status(500).json({
             message: "Internal server error",
             error: error.message
         });
