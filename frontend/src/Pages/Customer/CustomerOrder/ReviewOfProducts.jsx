@@ -1,437 +1,196 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   Box,
-  Container,
-  Typography,
   Card,
-  CardContent,
   CardMedia,
-  Grid,
-  Stack,
-  Avatar,
+  CardContent,
+  Typography,
   Rating,
-  Divider,
-  Chip,
   TextField,
   Button,
+  Stack,
+  Divider,
 } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { getReviews, addReview } from "../../../Redux/Slices/ReviewSlice";
 import api from "../../../api/axiosConfig";
 
-const deliveredProduct = {
-  _id: "665reviewproduct01",
-  name: "Organic Honey",
-  description:
-    "Pure homemade organic honey collected from natural farms with rich taste and healthy nutrients.",
-  price: 450,
-  stock: 12,
-  isAvailable: true,
-  deliveryStatus: "Delivered",
-  image:
-    "https://images.unsplash.com/photo-1587049633312-d628ae50a8ae?auto=format&fit=crop&w=900&q=80",
-};
-
-const initialReviews = [
-  {
-    _id: 1,
-    userName: "Rahul",
-    rating: 4.5,
-    comment: "Very good quality and taste. Packaging was also neat and clean.",
-    createdAt: "2026-06-10",
-  },
-  {
-    _id: 2,
-    userName: "Sneha",
-    rating: 5,
-    comment: "Excellent product. I will definitely order again.",
-    createdAt: "2026-06-11",
-  },
-];
-
-const initialForm = {
-  rating: 0,
-  comment: "",
-};
-
-function ReviewCard({ review }) {
-  return (
-    <Card
-      sx={{
-        height: "100%",
-        borderRadius: "18px",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-      }}
-    >
-      <CardContent sx={{ p: 3 }}>
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Avatar sx={{ bgcolor: "#3E1A89" }}>
-            {review.userName?.charAt(0)?.toUpperCase() || "U"}
-          </Avatar>
-
-          <Box>
-            <Typography sx={{ fontWeight: 700, color: "#2D1457" }}>
-              {review.userName}
-            </Typography>
-
-            <Typography sx={{ fontSize: "0.85rem", color: "#8b84a0" }}>
-              {new Date(review.createdAt).toLocaleDateString()}
-            </Typography>
-          </Box>
-        </Stack>
-
-        <Divider sx={{ my: 2 }} />
-
-        <Rating
-          value={Number(review.rating || 0)}
-          precision={0.5}
-          readOnly
-        />
-
-        <Typography
-          sx={{
-            mt: 1.5,
-            color: "#5f5870",
-            lineHeight: 1.7,
-          }}
-        >
-          {review.comment}
-        </Typography>
-      </CardContent>
-    </Card>
-  );
-}
-
 function ReviewOfProducts() {
-  const [reviews, setReviews] = useState(initialReviews);
-  const [form, setForm] = useState(initialForm);
-  const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [errors, setErrors] = useState({
-    rating: false,
-    comment: false,
-  });
+  const dispatch = useDispatch();
+  const reviews = useSelector((state) => state.Review.reviews);
 
-  const averageRating = useMemo(() => {
-    if (!reviews.length) return 0;
-    const total = reviews.reduce(
-      (sum, item) => sum + Number(item.rating || 0),
-      0
-    );
-    return total / reviews.length;
-  }, [reviews]);
+  const ratingRef = useRef(0);
+  const reviewRef = useRef();
 
-  const handleRatingChange = (_, newValue) => {
-    setForm((prev) => ({
-      ...prev,
-      rating: newValue || 0,
-    }));
-
-    setErrors((prev) => ({
-      ...prev,
-      rating: false,
-    }));
-  };
-
-  const handleCommentChange = (e) => {
-    setForm((prev) => ({
-      ...prev,
-      comment: e.target.value,
-    }));
-
-    setErrors((prev) => ({
-      ...prev,
-      comment: false,
-    }));
-  };
-
-  const validateForm = () => {
-    const newErrors = {
-      rating: !form.rating,
-      comment: !form.comment.trim(),
-    };
-
-    setErrors(newErrors);
-
-    return !newErrors.rating && !newErrors.comment;
-  };
-
-  const handleSubmitReview = async () => {
-    if (!validateForm()) return;
-
+  const fetchReviews = async () => {
     try {
-      setLoading(true);
-
-      const payload = {
-        productId: deliveredProduct._id,
-        rating: form.rating,
-        comment: form.comment.trim(),
-      };
-
-      // await api.post("/reviews/addReview", payload);
-
-      const newReview = {
-        _id: Date.now(),
-        userName: "You",
-        rating: form.rating,
-        comment: form.comment.trim(),
-        createdAt: new Date().toISOString(),
-      };
-
-      setReviews((prev) => [newReview, ...prev]);
-      setForm(initialForm);
-      setSubmitted(true);
-
-      setTimeout(() => {
-        setSubmitted(false);
-      }, 2000);
+      const response = await api.get("/review/getreviews");
+      dispatch(getReviews(response.data.data));
     } catch (error) {
-      console.error("Review submit error:", error);
-    } finally {
-      setLoading(false);
+      console.log(error);
     }
   };
 
+  const handleAddReview = async () => {
+    try {
+      const payload = {
+        productId: reviews[0]?.productId?._id,
+        rating: ratingRef.current,
+        review: reviewRef.current.value,
+      };
+
+      if (!payload.rating) {
+        alert("Please select rating");
+        return;
+      }
+
+      const response = await api.post("/review/addreview", payload);
+      dispatch(addReview(response.data.data));
+
+      ratingRef.current = 0;
+      reviewRef.current.value = "";
+      fetchReviews();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
   return (
-    <Box
+    <Card
       sx={{
-        minHeight: "100vh",
-        background:
-          "linear-gradient(180deg, #f8f5ff 0%, #ffffff 35%, #f7f7fb 100%)",
-        py: { xs: 4, md: 6 },
+        maxWidth: 700,
+        mt:3,
+        mx: "auto",
+        borderRadius: 4,
+        boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+        overflow: "hidden",
       }}
     >
-      <Container maxWidth="lg">
-        <Card
+      <CardMedia
+        component="img"
+        image={reviews[0]?.productId?.image || ""}
+        alt={reviews[0]?.productId?.name || "product image"}
+        sx={{
+          width: "100%",
+          height: { xs: 220, sm: 320 },
+          objectFit: "cover",
+        }}
+      />
+
+      <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+        <Typography
+          variant="h5"
           sx={{
-            borderRadius: "24px",
-            overflow: "hidden",
-            boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
-            mb: 4,
+            fontWeight: 700,
+            color: "#2D1457",
+            mb: 2,
+            fontSize: { xs: "1.3rem", sm: "1.7rem" },
           }}
         >
-          <Grid container>
-            <Grid item xs={12} md={5}>
-              <CardMedia
-                component="img"
-                image={deliveredProduct.image}
-                alt={deliveredProduct.name}
+          {reviews[0]?.productId?.name || "Product Reviews"}
+        </Typography>
+
+        <Typography
+          variant="h6"
+          sx={{ mb: 2, fontWeight: 600, color: "#3E1A89" }}
+        >
+          Previous Reviews
+        </Typography>
+
+        <Stack spacing={2}>
+          {reviews.length > 0 ? (
+            reviews.map((item) => (
+              <Box
+                key={item._id}
                 sx={{
-                  width: "100%",
-                  height: { xs: 280, md: "100%" },
-                  objectFit: "cover",
+                  p: 2,
+                  border: "1px solid #ece7f5",
+                  borderRadius: 3,
+                  backgroundColor: "#faf8ff",
                 }}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={7}>
-              <CardContent sx={{ p: { xs: 3, md: 4 } }}>
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: 800,
-                    color: "#2D1457",
-                    mb: 1,
-                  }}
-                >
-                  {deliveredProduct.name}
-                </Typography>
-
-                <Typography
-                  sx={{
-                    color: "#6B6280",
-                    fontSize: "1rem",
-                    mb: 2,
-                  }}
-                >
-                  {deliveredProduct.description}
-                </Typography>
-
-                <Stack
-                  direction="row"
-                  spacing={2}
-                  alignItems="center"
-                  flexWrap="wrap"
-                  sx={{ mb: 2 }}
-                >
-                  <Typography
-                    sx={{
-                      fontSize: "1.3rem",
-                      fontWeight: 800,
-                      color: "#3E1A89",
-                    }}
-                  >
-                    ₹{deliveredProduct.price}
-                  </Typography>
-
-                  <Chip
-                    label={deliveredProduct.deliveryStatus}
-                    sx={{
-                      backgroundColor: "#e8f7ec",
-                      color: "#1b7a38",
-                      fontWeight: 700,
-                    }}
-                  />
-
-                  <Chip
-                    label={`${averageRating.toFixed(1)} Rating`}
-                    sx={{
-                      backgroundColor: "#fff4df",
-                      color: "#b26a00",
-                      fontWeight: 700,
-                    }}
-                  />
-                </Stack>
-
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Rating value={averageRating} precision={0.5} readOnly />
-                  <Typography sx={{ color: "#6c6480", fontWeight: 600 }}>
-                    {averageRating.toFixed(1)} ({reviews.length} reviews)
-                  </Typography>
-                </Stack>
-              </CardContent>
-            </Grid>
-          </Grid>
-        </Card>
-
-        {deliveredProduct.deliveryStatus === "Delivered" && (
-          <Card
-            sx={{
-              borderRadius: "20px",
-              boxShadow: "0 8px 28px rgba(0,0,0,0.06)",
-              mb: 4,
-            }}
-          >
-            <CardContent sx={{ p: { xs: 3, md: 4 } }}>
-              <Typography
-                variant="h5"
-                sx={{ fontWeight: 800, color: "#2D1457", mb: 1 }}
               >
-                Give Your Review
-              </Typography>
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  justifyContent="space-between"
+                  alignItems={{ xs: "flex-start", sm: "center" }}
+                  spacing={1}
+                >
+                  <Rating value={item.rating || 0} readOnly size="small" />
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "#7a738f", fontSize: "0.85rem" }}
+                  >
+                    {item.createdAt
+                      ? new Date(item.createdAt).toLocaleDateString()
+                      : ""}
+                  </Typography>
+                </Stack>
 
-              <Typography sx={{ color: "#7a738f", mb: 3 }}>
-                Rate this delivered product and share your experience
-              </Typography>
-
-              <Box sx={{ mb: 3 }}>
-                <Typography sx={{ mb: 1, color: "#2D1457", fontWeight: 700 }}>
-                  Your Rating
-                </Typography>
-
-                <Rating
-                  name="customer-rating"
-                  value={form.rating}
-                  precision={0.5}
-                  onChange={handleRatingChange}
-                  sx={{ fontSize: "2rem" }}
-                />
-
-                {errors.rating && (
-                  <Typography sx={{ color: "red", mt: 1, fontSize: "0.9rem" }}>
-                    Please select a rating
+                {item.review && (
+                  <Typography sx={{ mt: 1.2, color: "#4b5563" }}>
+                    {item.review}
                   </Typography>
                 )}
               </Box>
-
-              <Box sx={{ mb: 3 }}>
-                <Typography sx={{ mb: 1, color: "#2D1457", fontWeight: 700 }}>
-                  Your Review
-                </Typography>
-
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  placeholder="Write your review here..."
-                  value={form.comment}
-                  onChange={handleCommentChange}
-                  error={errors.comment}
-                  helperText={errors.comment ? "Please enter your review" : ""}
-                />
-              </Box>
-
-              <Button
-                variant="contained"
-                onClick={handleSubmitReview}
-                disabled={loading}
-                sx={{
-                  backgroundColor: "#3E1A89",
-                  textTransform: "none",
-                  borderRadius: "12px",
-                  px: 4,
-                  py: 1.2,
-                  fontWeight: 700,
-                  "&:hover": {
-                    backgroundColor: "#2f1368",
-                  },
-                }}
-              >
-                {loading ? "Submitting..." : "Submit Review"}
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {submitted && (
-          <Box
-            sx={{
-              textAlign: "center",
-              py: 3,
-              mb: 4,
-              borderRadius: "18px",
-              backgroundColor: "#e8f7ec",
-            }}
-          >
-            <Typography sx={{ color: "#1b7a38", fontWeight: 700 }}>
-              Review submitted successfully
-            </Typography>
-          </Box>
-        )}
-
-        <Box sx={{ mb: 3 }}>
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 800,
-              color: "#2D1457",
-              mb: 1,
-            }}
-          >
-            Customer Reviews
-          </Typography>
-
-          <Typography sx={{ color: "#7a738f" }}>
-            See what customers are saying about this product
-          </Typography>
-        </Box>
-
-        {reviews.length > 0 ? (
-          <Grid container spacing={3}>
-            {reviews.map((review) => (
-              <Grid item xs={12} md={6} key={review._id}>
-                <ReviewCard review={review} />
-              </Grid>
-            ))}
-          </Grid>
-        ) : (
-          <Box
-            sx={{
-              textAlign: "center",
-              py: 8,
-              borderRadius: "18px",
-              backgroundColor: "#fff",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.05)",
-            }}
-          >
-            <Typography variant="h6" sx={{ color: "#3E1A89", mb: 1 }}>
-              No reviews available
-            </Typography>
+            ))
+          ) : (
             <Typography sx={{ color: "#7a738f" }}>
-              This product has not received any reviews yet
+              No reviews yet. Be the first to rate this product.
             </Typography>
+          )}
+        </Stack>
+
+        <Divider sx={{ my: 3 }} />
+
+        <Typography
+          variant="h6"
+          sx={{ mb: 2, fontWeight: 600, color: "#3E1A89" }}
+        >
+          Add Your Review
+        </Typography>
+
+        <Stack spacing={2}>
+          <Box>
+            <Typography sx={{ mb: 1, fontWeight: 500 }}>Your Rating *</Typography>
+            <Rating
+              onChange={(event, newValue) => {
+                ratingRef.current = newValue;
+              }}
+            />
           </Box>
-        )}
-      </Container>
-    </Box>
+
+          <TextField
+            label="Write a review (optional)"
+            multiline
+            rows={4}
+            fullWidth
+            inputRef={reviewRef}
+          />
+
+          <Button
+            variant="contained"
+            onClick={handleAddReview}
+            sx={{
+              alignSelf: "flex-start",
+              px: 3,
+              py: 1,
+              borderRadius: 2,
+              textTransform: "none",
+              backgroundColor: "#3E1A89",
+              "&:hover": {
+                backgroundColor: "#2f1368",
+              },
+            }}
+          >
+            Submit Rating
+          </Button>
+        </Stack>
+      </CardContent>
+    </Card>
   );
 }
 

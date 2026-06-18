@@ -27,6 +27,8 @@ import ProductPage from "./Pages/Customer/CustomerProducts/ProductPage";
 import CustomerCart from "./Pages/Customer/Cart/CustomerCart";
 import OrderList from "./Pages/Customer/CustomerOrder/OrderList";
 import CustomerProfile from "./Pages/Customer/CustomerProfiles";
+import ReviewOfProducts from "./Pages/Customer/CustomerOrder/ReviewOfProducts";
+import Offsers from "./Pages/Admin/Offsers/Offsers";
 
 
 function App() {
@@ -52,6 +54,7 @@ function App() {
         <Route path ="/admin/customers" element={<UserDetails/>}/>
         <Route path="/admin/products" element={<AdminProducts/>}/>
         <Route path="/admin/products/updateProduct/:id" element={<UpdateProducts/>}/>
+        <Route path="/admin/offsers" element={<Offsers/>}/>
         </Route>
 
         <Route path ="/customer" element={<ProtectedRoutes role="customer"><CustomerDashboard/></ProtectedRoutes>}>
@@ -65,6 +68,7 @@ function App() {
         <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
         <Route path ="/customer/editprofile/:id" element={<CustomerEditProfile/>}/>
         <Route path ="/customer/orderlist" element={<OrderList/>}/>
+        <Route path ="/customer/reviews/:id" element={<ReviewOfProducts/>}/>
         </Route>
 
       </Routes>
