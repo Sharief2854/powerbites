@@ -17,7 +17,7 @@ const couponSchema = new mongoose.Schema({
     },
     min_order_value: {
         type: Number,
-        default: 0
+        required: true
     },
     
     title: {
@@ -28,10 +28,7 @@ const couponSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    offer: {
-        type: String,
-        
-    },
+   
     discount: {
         type: Number,
         required: true
