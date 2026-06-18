@@ -6,7 +6,7 @@ async function allProduct(req, res) {
     try {
         console.log("hello")
 
-        const data = await ProductModel.find();
+        const data = await ProductModel.find().sort({ updatedAt: -1 });
         if (!data) {
             return res.status(400).json({
                 message: "No Products found"
