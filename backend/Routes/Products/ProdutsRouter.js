@@ -1,26 +1,13 @@
 const express = require("express");
 const upload = require('../../config/multerConfig');
 const ProductModel = require("../../Model/ProductModel");
-const isAdmin = require('../../MiddleWare/adminAuth')
-const { addProduct, updateProduct, deleteProduct, allProduct, getTotalProducts } = require("../../Controllers/ProductController/Produrcts");
+const isAdmin = require('../../MiddleWare/adminAuth');
+const { addProduct, updateProduct, deleteProduct, allProduct } = require("../../Controllers/ProductController/Produrcts");
 
 const router = express.Router();
-router.post("/addProduct",upload.array("file", 100), addProduct);
-router.post(
-  "/test",
-  upload.array("file", 100),
-  (req, res) => {
-    console.log("BODY:", req.body);
-    console.log("FILES:", req.files);
-
-    res.json({
-      body: req.body,
-      files: req.files
-    });
-  }
-);
+router.post("/addProduct",upload.array("file", 5), addProduct);
     
-router.put("/updateProduct/:id",isAdmin,upload.array("file", 100),updateProduct);
+router.put("/updateProduct/:id",isAdmin,upload.array("file", 5),updateProduct);
 router.delete("/deleteProduct/:id", deleteProduct);
 router.get("/all", allProduct);
 

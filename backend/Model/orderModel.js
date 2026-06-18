@@ -31,8 +31,8 @@ const ordersSchema= new mongoose.Schema({
             required:true
         },
         offer:{
-            type:String,
-            required:true
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"offer"
         },
         image:{
             type:String,
