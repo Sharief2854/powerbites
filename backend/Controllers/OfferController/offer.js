@@ -1,6 +1,5 @@
 
-
-
+const offerModel = require("../../Model/offerModel");
 
 async function getOffers(req,res){
     try{
@@ -118,4 +117,31 @@ async function updateOffer(req,res){
     }
 }
 
-module.exports = {getOffers,setOffer,deleteOffer,updateOffer}
+async function updateStatus(req,res){
+    try{
+        let id = req.params.id;
+        let status = req.body.status;
+
+        let updatedStatus = await offerModel.findByIdAndUpdate(id,{status},{new:true});
+
+        if(!updatedStatus){
+            return res.status(400).json({
+                message:"Offer not found"
+            })
+        }
+
+        res.status(200).json({
+            message:"Status updated successfully",
+            status: updatedStatus
+        })
+
+    }
+    catch(err){
+        res.status(500).json({
+            message:"Internal Server Error",
+            error:err.message
+        })
+    }
+}
+
+module.exports = {getOffers,setOffer,deleteOffer,updateOffer,updateStatus}
