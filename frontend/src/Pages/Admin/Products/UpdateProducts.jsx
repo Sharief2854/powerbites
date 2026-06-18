@@ -77,18 +77,17 @@ export default function UpdateProducts() {
   let allProducts = useSelector((state) => state?.product?.products);
   let { id } = useParams();
   let product = allProducts?.find((e) => {
-    // return e._id == id;
-    return e.id == id;
+    return e._id == id;
   });
   console.log(allProducts);
 
   const [productData, setProductData] = useState({
-    name: product.name,
-    description: product.description,
-    price: product.price,
-    stock: product.stock,
-    discount: product.discount,
-    isAvailable: product.isAvailable,
+    name: product?.name,
+    description: product?.description,
+    price: product?.price,
+    stock: product?.stock,
+    discount: product?.discount,
+    isAvailable: product?.isAvailable,
   });
 
   const [selectedFile, setSelectedFile] = useState([]);
@@ -118,15 +117,15 @@ export default function UpdateProducts() {
   function removeExisting(index) {
     setExistingPhotos((prev) => prev.filter((_, i) => i !== index));
   }
-  async function updateProducts(e) {
-    e.preventDefault();
-
     async function getById(params) {
       try {
         let response = await api.get(`admin/all/${product._id}`);
         dispatch(getProducts(response.data.data));
       } catch (error) {}
     }
+
+  async function updateProducts(e) {
+    e.preventDefault();
 
     const formData = new FormData();
 
@@ -150,7 +149,7 @@ export default function UpdateProducts() {
       );
 
       if(response.status === 200){
-      dispatch(updateProduct(response.data.products));
+      dispatch(updateProduct(response.data.product));
       enqueueSnackbar("Product updated successfully", {
         variant: "success",
         anchorOrigin: { vertical: "top", horizontal: "right" },
@@ -203,7 +202,6 @@ export default function UpdateProducts() {
           </FormControl>
           <Button
             component="label"
-            role={undefined}
             variant="contained"
             tabIndex={-1}
             startIcon={<CloudUploadIcon />}

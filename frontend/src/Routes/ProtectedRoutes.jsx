@@ -9,6 +9,10 @@ export default function ProtectedRoutes({ role, children }) {
   const navigate=useNavigate();
 
   useEffect(() => {
+    if(!token){
+      navigate("/login", { replace: true });
+      return
+    }
     if (decodeRole.role != role) {
       navigate("/login", { replace: true });
       localStorage.clearItem("token");
