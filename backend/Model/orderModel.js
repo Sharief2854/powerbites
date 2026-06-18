@@ -26,8 +26,13 @@ const ordersSchema= new mongoose.Schema({
         discount:{
             type:Number,
         },
+        discounted_price:{
+            type:Number,
+            required:true
+        },
         offer:{
             type:String,
+            required:true
         },
         image:{
             type:String,

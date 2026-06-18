@@ -34,14 +34,8 @@ const userSchema= new mongoose.Schema({
         type:String,
         defaulr:""
     },
-    isVerified:{
-        type:Boolean,
-        default:false
-    },
-    expireAt: {
-        type: Date,
-        expires: 0
-    }
+  
+   
 },
 {
     timestamps:true
