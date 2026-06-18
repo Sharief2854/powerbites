@@ -706,14 +706,14 @@ function OrderList() {
             sx={{
               mb: 3,
               borderRadius: { xs: 3, sm: 4 },
-              border: "1px solid #e5e7eb",
+              border: "1px solid #4e5667",
               boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.02)",
               overflow: "hidden",
               bgcolor: "#fff",
             }}
           >
             {/* META HEADER BLOCK */}
-            <Box sx={{ p: 2.5, bgcolor: "#f1f5f9", display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { xs: "flex-start", sm: "center" }, justifyContent: "space-between", gap: 2 }}>
+            <Box sx={{ p: 2.5, bgcolor: "#7cafe2", display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { xs: "flex-start", sm: "center" }, justifyContent: "space-between", gap: 2 }}>
               <Box sx={{ display: "flex", gap: { xs: 2.5, sm: 4 }, flexWrap: "wrap", width: { xs: "100%", sm: "auto" } }}>
                 <Box sx={{ minWidth: { xs: "40%", sm: "auto" } }}>
                   <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: "uppercase" }}>Order ID</Typography>
