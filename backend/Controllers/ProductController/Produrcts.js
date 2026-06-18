@@ -4,6 +4,7 @@ const sendProductNotification = require("../../Utils/sendProductNotification");
 
 async function allProduct(req, res) {
     try {
+        console.log("hello")
 
         const data = await ProductModel.find().populate({path:"category"}).sort({ createdAt: -1 });
         console.log(data)
@@ -13,7 +14,8 @@ async function allProduct(req, res) {
             })
         }
         res.status(200).json({
-            message: "Banners fetched successfully", data
+            message: "Banners fetched successfully", 
+            data
         })
 
     }
@@ -39,7 +41,7 @@ async function addProduct(req, res) {
         }
        
         const imagePaths = req.files.map(file =>
-            `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
+            `${req.protocol}://${req.get("host")}/${file.path}`
         );
 
         console.log(imagePaths);
@@ -101,7 +103,7 @@ async function updateProduct(req, res) {
 
         if (req.files && req.files.length > 0) {
             const imagePaths = req.files.map(file =>
-                `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
+                `${req.protocol}://${req.get("host")}/${file.path}`
             );
 
             ProductData.image = imagePaths;

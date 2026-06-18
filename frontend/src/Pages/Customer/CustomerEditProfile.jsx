@@ -140,7 +140,7 @@ function CustomerEditProfile() {
     street: "",
     city: "",
     state: "",
-    country: "",
+    country: "India",
     pincode: "",
     _id: "",
     isDefault: false,
@@ -187,7 +187,7 @@ function CustomerEditProfile() {
         street: "",
         city: "",
         state: "",
-        country: "",
+        country: "India",
         pincode: "",
         _id: "",
         isDefault: false,
@@ -255,11 +255,12 @@ function CustomerEditProfile() {
         `/updateCustomerProfile/updateProfile/${userId}`,
         payload,
       );
-      console.log("Server response data:", res.data);
-      dispatch(updateEditProfile({id:userId,data :res.data.user}));
-      console.log("Profile updated successfully!");
-      setMessage({ text: "Profile updated successfully!", type: "success" });
-      setTimeout(() => navigate("/customer/profile"), 1500);
+      // Merge the partial update from the server with the existing profile data
+      const updatedFullProfile = { ...editProfile, ...res.data.user };
+      // Dispatch an action that replaces the entire profile object in Redux
+      dispatch(getEditProfile(updatedFullProfile));
+      // Navigate immediately and pass a success message to the profile page
+      navigate("/customer/profile", { state: { message: { text: "Profile updated successfully!", type: "success" } } });
     } catch (err) {
       console.error("Profile update error:", err.response?.data || err.message); // FIX: Added for better debugging.
       setMessage({ text: "Failed to update profile", type: "error" });
@@ -302,11 +303,11 @@ function CustomerEditProfile() {
         dispatch(posteditaddress(response.data.address));
       }
 
-      setMessage({
-        text: editaddressId ? "Address updated!" : "New address added!",
-        type: "success",
+      // Navigate immediately and pass a success message to the profile page
+      navigate("/customer/profile", { state: { 
+        message: { text: editaddressId ? "Address updated!" : "New address added!", type: "success" } 
+      }
       });
-      setTimeout(() => navigate("/customer/profile"), 1400);
     } catch (err) {
       console.error("Address save error:", err.response?.data || err.message);
       setMessage({ text: "Failed to save address", type: "error" });

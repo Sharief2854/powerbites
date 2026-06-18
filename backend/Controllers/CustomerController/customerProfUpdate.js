@@ -279,10 +279,15 @@ async function getCustomerPhoto(req, res) {
         }
 
         const baseUrl = `${req.protocol}://${req.get("host")}`;
+        
+        // Check if the image path is already an absolute URL to prevent duplication.
+        const photoUrl = user.image.startsWith('http') 
+            ? user.image 
+            : `${baseUrl}/${user.image}`;
 
         res.status(200).json({
             message: "Photo retrieved successfully",
-            photo: `${baseUrl}/${user.image}`
+            photo: photoUrl
         });
 
     } catch (error) {

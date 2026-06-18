@@ -119,7 +119,7 @@ const handleDecrease = () => {
   }
 
   function checkOutPage() {
-    navigate(`/customer/cart/${id}`);
+    navigate(`/customer/cart`);
   }
 
   useEffect(() => {
@@ -129,11 +129,10 @@ const handleDecrease = () => {
     setImageLoading(true);
   }, [selectedImage]);
 
-  const images =
-    product?.image?.map(
-      (img) =>
-        `http://localhost:4500/${img.replace(/\\/g, "/").replace(/^\/+/, "")}`,
-    ) || [];
+  const images = product?.image?.map(
+    (img) =>
+      `http://localhost:4500/${img.replace(/\\/g, "/").replace(/^\/+/, "")}`,
+  ) || [];
 
   if (loading && !product?._id) {
     return (
@@ -149,7 +148,7 @@ const handleDecrease = () => {
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <Grid container spacing={4}>
-        <Grid item xs={12} sm={6} md={6} lg={6}>
+        <Grid size={{xs:12,sm:6,md:6,lg:6}}>
           <Card
             elevation={0}
             sx={{
@@ -177,9 +176,8 @@ const handleDecrease = () => {
                 display: imageLoading ? "none" : "block",
                 transition: "transform 0.3s ease",
                 "&:hover": {
-                  transform: "scale(1.05)", // zoom effect desktop
+                  transform: "scale(1.05)",
                 },
-                cursor: "zoom-in",
               }}
             />
           </Card>
@@ -246,7 +244,7 @@ const handleDecrease = () => {
           </Stack>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={6} lg={6}>
+        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
           <Stack spacing={3}>
             <Typography variant="h4" fontWeight={700}>
               {product?.name}
@@ -309,52 +307,7 @@ const handleDecrease = () => {
 
             <Divider />
 
-            {/* <Box>
-              <Typography mb={1} fontWeight={600}>
-                Quantity
-              </Typography>
-
-              <Box
-                sx={{
-                  width: "fit-content",
-                  border: 1,
-                  borderColor: "divider",
-                  borderRadius: 2,
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <IconButton
-                  size="small"
-                  disabled={quantity <= 1}
-                  onClick={() => {
-                    setQuantity((prev) => prev - 1);
-                    quantity > 1 && setCartQuantity(quantity - 1);
-                  }}
-                >
-                  <Remove />
-                </IconButton>
-
-                <Typography
-                  sx={{
-                    px: 3,
-                    fontWeight: 600,
-                  }}
-                >
-                  {quantity}
-                </Typography>
-
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    setQuantity((prev) => prev + 1);
-                    setCartQuantity(quantity + 1);
-                  }}
-                >
-                  <Add />
-                </IconButton>
-              </Box>
-            </Box> */}
+            
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               
@@ -362,18 +315,16 @@ const handleDecrease = () => {
   <PrimaryButton
     fullWidth
     variant="contained"
-    startIcon={<AddIcon />}
     sx={{
-      backgroundColor: "#111827",
+      backgroundColor: "primary",
       color: "#fff",
-      borderRadius: 3,
       py: 1.1,
       textTransform: "none",
       fontWeight: 700,
       fontSize: "0.95rem",
       boxShadow: "none",
       "&:hover": {
-        backgroundColor: "#000",
+        backgroundColor: "#10003c",
         boxShadow: "none",
       },
     }}
@@ -434,7 +385,7 @@ const handleDecrease = () => {
           <Grid item xs={12} sm={6}>
             <Typography fontWeight={600}>Category</Typography>
             <Typography color="text.secondary">
-              {product?.category || "N/A"}
+              {category || "N/A"}
             </Typography>
           </Grid>
 
@@ -452,19 +403,6 @@ const handleDecrease = () => {
             </Typography>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <Typography fontWeight={600}>Color</Typography>
-            <Typography color="text.secondary">
-              {product?.color || "N/A"}
-            </Typography>
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <Typography fontWeight={600}>Warranty</Typography>
-            <Typography color="text.secondary">
-              {product?.warranty || "1 Year"}
-            </Typography>
-          </Grid>
         </Grid>
       </Paper>
 

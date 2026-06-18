@@ -38,16 +38,23 @@ function ForgotPassword() {
     try {
       console.log("Sending recovery link to:", email);
       // TODO: Integrate your actual Password Reset API endpoint here
-      let response = await api.post("http://localhost:4500/resetPass/forgotpassword",{email});
-
+      let response = await api.post("/resetPass/forgotpassword",{email});
       console.log("res data :",response.data)
+      localStorage.setItem("forgetToken",response.data.token)
       // Toggle success state to show a beautiful success confirmation
       setIsSubmitted(true);
       setSnackbar({ open: true, message: "A recovery OTP has been sent to your email.", severity: "success" });
 
-      setTimeout(() => navigate(`/forgetverifyOtp/${response.data.user}`), 1500);
+      setTimeout(() => navigate(`/forget/forgetverifyOtp`), 1500);
     } catch(err) {
       console.log(err.response?.data?.message);
+      let alreadyOtp = localStorage.getItem("forgetToken")
+      if(alreadyOtp){
+         setIsSubmitted(true);
+        setSnackbar({ open: true, message: "You already have an active OTP. Please verify it.", severity: "info" });
+      } else {
+        setSnackbar({ open: true, message: err.response?.data?.message || "Failed to send OTP. Please try again.", severity: "error" });
+      }
       setSnackbar({ open: true, message: err.response?.data?.message || "Failed to send OTP. Please try again.", severity: "error" });
     } finally {
       setLoading(false);
@@ -163,10 +170,19 @@ function ForgotPassword() {
                   variant="outlined"
                   fullWidth
                   onClick={() => setIsSubmitted(false)}
-                  sx={{ py: 1, borderColor: '#4A1BF1', color: '#4A1BF1', fontWeight: 'bold' }}
+                  sx={{ py: 1, borderColor: '#4A1BF1', color: '#4A1BF1', fontWeight: 'bold',mt:2 }}
                 >
                   Resend Otp
                 </Button>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => navigate(`/forget/forgetverifyOtp`)}
+                  sx={{ py: 1, borderColor: '#4A1BF1', color: '#4A1BF1', fontWeight: 'bold',mt:2 }}
+                >
+                  VerifyOtp
+                </Button>
+
               </Box>
             )}
             

@@ -40,11 +40,13 @@ function App() {
         <Route path ="/register" element={<Register/>}/>
         <Route path ="/verifyOtp/:id" element={<VerifyOtp/>}/>
         <Route path ="/login" element={<Login/>}/>
+        
         <Route path ="/forget" element={<ForgotPassword/>}/>
-        <Route path ="/resetpassword/:id" element={<ResetPassword/>}/>
-        <Route path ="/forgetverifyOtp/:id" element={<ForgotVerifyOtp/>}/>
+        <Route path ="/forget/forgetverifyOtp" element={<ForgotVerifyOtp/>}/>
+        <Route path ="/forget/forgetverifyOtp/resetpassword" element={<ResetPassword/>}/>
         <Route path ="/auth" element={<MainAuthCard/>}/>
         </Route>
+        
 
         <Route path ="/admin" element={<ProtectedRoutes role="admin"><DashboardLayout/></ProtectedRoutes>}>
         <Route index element={<Overview/>}/>
@@ -61,7 +63,7 @@ function App() {
         <Route path="/customer/profile" element={<CustomerProfile/>}/>
         <Route path="/customer/products" element={<CustomerProducts/>}/>
         <Route path="/customer/productpage/:id" element={<ProductPage/>}/>
-        <Route path="/customer/cart/:id" element={<CustomerCart/>}/>
+        <Route path="/customer/cart" element={<CustomerCart/>}/>
         <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
         <Route path ="/customer/editprofile/:id" element={<CustomerEditProfile/>}/>
         <Route path ="/customer/orderlist" element={<OrderList/>}/>
@@ -75,5 +77,3 @@ function App() {
 }
 
 export default App
-
-
