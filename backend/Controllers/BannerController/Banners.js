@@ -31,8 +31,24 @@ async function setBanner(req, res) {
     try {
         const body = req.body;
 
+        // Clean up accidental spaces in keys sent by frontend FormData
+        Object.keys(body).forEach(key => {
+            const trimmedKey = key.trim();
+            if (trimmedKey !== key) {
+                body[trimmedKey] = body[key];
+                delete body[key];
+            }
+        });
+
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ message: "At least one banner image is required." });
+        }
+        
+
+        if (!body.title || !body.name || !body.description || !body.user) {
+            return res.status(400).json({ 
+                message: "Missing required fields: 'name', 'title', 'description', and 'user' are required." 
+            });
         }
 
         const imagePaths = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path}`);
@@ -41,6 +57,11 @@ async function setBanner(req, res) {
             ...body,
             image: imagePaths
         };
+
+        // Prevent CastError if frontend sends empty strings or "undefined" for ObjectIds
+        if (!bannerData.product || bannerData.product === "undefined") delete bannerData.product;
+        if (!bannerData.offer || bannerData.offer === "undefined") delete bannerData.offer;
+        if (!bannerData.coupon || bannerData.coupon === "undefined") delete bannerData.coupon;
 
         const newBanner = await bannerModel.create(bannerData);
         if (!newBanner) {
