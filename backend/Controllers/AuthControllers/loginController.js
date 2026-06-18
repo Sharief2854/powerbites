@@ -16,6 +16,9 @@ const { generateAccessToken, generateRefreshToken } = require("../../Utils/Token
             })
 
         }
+
+        let email = body.email.token;
+        let password = body.password;
                 
 
         
