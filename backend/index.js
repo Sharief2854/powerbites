@@ -26,6 +26,8 @@ const reviewRouter = require('./Routes/Review/Review');
 const ordersRouter = require('./Routes/Orders/ordersRouter');
 
 const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD');
+const orderStatusRouter = require('./Routes/OrderStatus/orderStatusUpdating');
+
 
 
 
@@ -46,19 +48,20 @@ app.use("/cart",isCustomer,CartRouter)
 app.use("/products",ProductRouter)
 app.use("/banner",bannerRouter)
 
-// app.use("/category",productCategoryRouter)
+
 app.use("/orders",ordersRouter)
 
 app.use("/coupon",couponRouter)
-app.use("/category",isAdmin,productCategoryRouter)
+app.use("/category",productCategoryRouter)
 app.use("/payment",PaymentRouter)
 
 // Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter)
 app.use("/developer",DeveloperRouter)
 app.use("/review",reviewRouter)
+app.use("/orderStatus",orderStatusRouter)
 
-// app.use("/products",ProductRouter) 
+
 
 // Global error handling middleware to catch Multer errors safely
 app.use((err, req, res, next) => {
