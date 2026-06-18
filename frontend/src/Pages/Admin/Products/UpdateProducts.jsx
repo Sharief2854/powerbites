@@ -117,15 +117,15 @@ export default function UpdateProducts() {
   function removeExisting(index) {
     setExistingPhotos((prev) => prev.filter((_, i) => i !== index));
   }
-  async function updateProducts(e) {
-    e.preventDefault();
-
     async function getById(params) {
       try {
         let response = await api.get(`admin/all/${product._id}`);
         dispatch(getProducts(response.data.data));
       } catch (error) {}
     }
+
+  async function updateProducts(e) {
+    e.preventDefault();
 
     const formData = new FormData();
 
@@ -149,7 +149,7 @@ export default function UpdateProducts() {
       );
 
       if(response.status === 200){
-      dispatch(updateProduct(response.data.products));
+      dispatch(updateProduct(response.data.product));
       enqueueSnackbar("Product updated successfully", {
         variant: "success",
         anchorOrigin: { vertical: "top", horizontal: "right" },

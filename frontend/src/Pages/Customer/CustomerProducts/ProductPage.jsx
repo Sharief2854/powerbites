@@ -119,7 +119,7 @@ const handleDecrease = () => {
   }
 
   function checkOutPage() {
-    navigate(`/customer/cart/${id}`);
+    navigate(`/customer/cart`);
   }
 
   useEffect(() => {
@@ -129,13 +129,10 @@ const handleDecrease = () => {
     setImageLoading(true);
   }, [selectedImage]);
 
-  const images =["https://www.alphr.com/wp-content/uploads/2020/08/Firefox_015.jpg",
-    "https://i.sstatic.net/IV376.png","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5ozsysT5ggWeSb7SZHLtUGOXe2MR6ACLUJA&s"
-  ]
-    // product?.image?.map(
-    //   (img) =>
-    //     `http://localhost:4500/${img.replace(/\\/g, "/").replace(/^\/+/, "")}`,
-    // ) || [];
+  const images = product?.image?.map(
+    (img) =>
+      `http://localhost:4500/${img.replace(/\\/g, "/").replace(/^\/+/, "")}`,
+  ) || [];
 
   if (loading && !product?._id) {
     return (
@@ -388,7 +385,7 @@ const handleDecrease = () => {
           <Grid item xs={12} sm={6}>
             <Typography fontWeight={600}>Category</Typography>
             <Typography color="text.secondary">
-              {product?.category || "N/A"}
+              {category || "N/A"}
             </Typography>
           </Grid>
 
@@ -406,19 +403,6 @@ const handleDecrease = () => {
             </Typography>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <Typography fontWeight={600}>Color</Typography>
-            <Typography color="text.secondary">
-              {product?.color || "N/A"}
-            </Typography>
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <Typography fontWeight={600}>Warranty</Typography>
-            <Typography color="text.secondary">
-              {product?.warranty || "1 Year"}
-            </Typography>
-          </Grid>
         </Grid>
       </Paper>
 

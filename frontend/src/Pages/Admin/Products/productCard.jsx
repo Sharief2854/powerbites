@@ -13,6 +13,7 @@ import { PrimaryButton } from '../../../Components/Common/Buttons';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Grid, Stack } from '@mui/material';
+import api from '../../../api/axiosConfig';
 
 export default function ProductCard({product}) {
 
@@ -26,22 +27,24 @@ export default function ProductCard({product}) {
     }
     let handleDelete = async(params) => {
             try {
-                let response = await api.delete(`/products/deleteProduct/${id}`)
-                dispatch(deleteProducts(response.data.products))
+                let response = await api.delete(`/products/deleteProduct/${params}`)
+                dispatch(deleteProducts(params))
                 enqueueSnackbar("Product deleted successfully", { variant: "success" });
               } catch (error) {
+                console.log(error.message);
+                
                 enqueueSnackbar("Failed to delete ", { variant: "error" });
               }
     }
   return (
     <Grid size={{ xs: 12, sm: 4 }}>
-    <Card sx={{ maxWidth: 345 }}>
+    <Card sx={{ maxWidth: 345,maxHeight:390 }}>
       <SnackbarProvider/>
       <CardActionArea>
         <CardMedia
           component="img"
           height="140"
-          image={`http://localhost:4500/${product?.image}}`}
+          image={product.image[0].replace(/\\/g, '/').replace(/^\/+/, '')}
           alt="No Image Found"
         />
         <CardContent>

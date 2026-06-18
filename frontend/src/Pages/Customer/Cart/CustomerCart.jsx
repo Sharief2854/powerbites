@@ -12,12 +12,16 @@ import {
   Button,
   Checkbox,
   Skeleton,
+  Modal,
+  FormControl,
+  TextField,
+  CircularProgress,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import api from "../../../api/axiosConfig";
 import { jwtDecode } from "jwt-decode";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
 import { EditNotificationsSharp } from "@mui/icons-material";
 import {
@@ -39,6 +43,369 @@ import {
 } from "../../../Redux/Slices/CM_CartSlice";
 import PaymentButton from "../Payments/PaymentButton";
 
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  pt: 2,
+  px: 4,
+  pb: 3,
+};
+const countriesData = {
+  India: [
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chhattisgarh",
+    "Delhi",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal",
+  ],}
+
+function AddressModal() {
+  const [open, setOpen] = React.useState(false);
+  
+  const handleOpen = () => {
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
+  //   const [addressForm, setAddressForm] = useState({
+  //     label: "",
+  //     street: "",
+  //     city: "",
+  //     state: "",
+  //     country: "",
+  //     pincode: "",
+  //     _id: "",
+  //     isDefault: false,
+  //   });
+  // const handleAddressChange = (e) => {
+  //   const { name, value } = e.target;
+    
+  //   setAddressForm((prev) => ({ ...prev, [name]: value }));
+
+  //   // Reset state when country changes
+  //   if (name === "country") {
+  //     setAddressForm((prev) => ({ ...prev, state: "" }));
+  //   }
+  // };
+  const [message, setMessage] = useState(null);
+  const editProfile = useSelector((state) => state.editprofile.editprofile);
+  
+    const editAddress = useSelector((state) => state.editprofile.editaddress);
+  
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingAddress, setSavingAddress] = useState(false);
+  const [otherLabel ,setOtherLabel] = useState("")
+
+  const [profileForm, setProfileForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+  });
+
+  const [addressForm, setAddressForm] = useState({
+    label: "",
+    street: "",
+    city: "",
+    state: "",
+    country: "",
+    pincode: "",
+    _id: "",
+    isDefault: false,
+  });
+
+  const editaddressId = useParams().id || "";
+
+
+  // Sync initial Address data based on URL parameter
+  useEffect(() => {
+    if (editaddressId && Array.isArray(editAddress)) {
+      const currentAddr = editAddress.find(
+        (addr) => addr._id === editaddressId,
+      );
+      if (currentAddr) {
+        const isPredefined = ["", "HOME", "OFFICE"].includes(currentAddr.label);
+        setAddressForm({
+          label: isPredefined ? (currentAddr.label || "") : "OTHER",
+          street: currentAddr.street || "",
+          city: currentAddr.city || "",
+          state: currentAddr.state || "",
+          country: currentAddr.country || "",
+          pincode: currentAddr.pincode || "",
+          _id: currentAddr._id || "",
+          isDefault: currentAddr.isDefault || false,
+        });
+        setOtherLabel(isPredefined ? "" : currentAddr.label);
+      }
+    } else {
+      // Clear form when in "Add Mode" (no ID in params)
+      setAddressForm({
+        label: "",
+        street: "",
+        city: "",
+        state: "",
+        country: "",
+        pincode: "",
+        _id: "",
+        isDefault: false,
+      });
+    }
+  }, [editaddressId, editAddress]);
+
+  const handleProfileChange = (e) => {
+    const { name, value } = e.target;
+    setProfileForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+ 
+
+  const handleAddressChange = (e) => {
+    const { name, value } = e.target;
+    
+    setAddressForm((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "country") {
+      setAddressForm((prev) => ({ ...prev, state: "" }));
+    }
+  };
+
+  const handleDefaultChange = (e) => {
+    setAddressForm((prev) => ({ ...prev, isDefault: e.target.checked }));
+    console.log("addressfrom :", addressForm);
+  };
+
+  
+
+  // Save / Update Address
+  const handleSaveAddress = async (e) => {
+    e.preventDefault();
+    setSavingAddress(true);
+    setMessage(null);
+    try {
+      const token = localStorage.getItem("token");
+      const decoded = jwtDecode(token);
+      const userId = decoded.id;
+
+      const finalLabel = addressForm.label === "OTHER" ? otherLabel : addressForm.label;
+      const payload = { ...addressForm, label: finalLabel, userId };
+      if (!payload._id) delete payload._id; // Prevents MongoDB CastError on empty string
+      let response;
+
+      if (editaddressId) {
+        response = await api.put(
+          `/updateCustomerProfile/updateAddress/${editaddressId}`,
+          payload,
+        );
+        dispatch(
+          updateeditaddress({
+            id: addressForm._id,
+            data: response.data.address,
+          }),
+        );
+      } else {
+        response = await api.post(
+          `/updateCustomerProfile/addAddress/${userId}`,
+          payload,
+        );
+        dispatch(posteditaddress(response.data.address));
+      }
+
+      setMessage({
+        text: "Address added!",
+        type: "success",
+      });
+      setTimeout(() => navigate("/customer/cart"), 1400);
+    } catch (err) {
+      console.error("Address save error:", err.response?.data || err.message);
+      setMessage({ text: "Failed to save address", type: "error" });
+    } finally {
+      setSavingAddress(false);
+    }
+  };
+
+  const availableStates = countriesData[addressForm.country] || [];
+
+
+
+  return (
+    <React.Fragment>
+               <IconButton  onClick={handleOpen}>
+                  <PrimaryButton sx={{width:200, m:0}}>Add New Address</PrimaryButton>
+                </IconButton>
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="child-modal-title"
+        aria-describedby="child-modal-description"
+      >
+        <Box sx={{ ...style, width: 200 }}>
+          <form onSubmit={handleSaveAddress}>
+            <Typography
+              variant="subtitle1"
+              fontWeight={600}
+              color="primary"
+              gutterBottom
+            >
+              { "Add New Address"}
+            </Typography>
+
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12 }}>
+                <FormControl fullWidth>
+                  <Select
+                    name="label"
+                    value={addressForm.label}
+                    onChange={handleAddressChange}
+                    displayEmpty
+                  >
+                    <MenuItem value="">Select Address Type</MenuItem>
+                    <MenuItem value="HOME">Home</MenuItem>
+                    <MenuItem value="OFFICE">Office</MenuItem>
+                    <MenuItem value="OTHER">Other</MenuItem>
+                  </Select>
+                  {addressForm.label === "OTHER" && (
+                    <TextField
+                      name="customLabel"
+                      label="Specify Address Type"
+                      value={otherLabel}
+                      onChange={(e)=>setOtherLabel(e.target.value)}
+                      variant="outlined"
+                      fullWidth
+                      margin="normal" 
+                    />
+                  )}
+                </FormControl>
+              </Grid>
+
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  fullWidth
+                  label="Street / Locality"
+                  name="street"
+                  value={addressForm.street}
+                  onChange={handleAddressChange}
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <FormControl fullWidth>
+                  <Select
+                    name="country"
+                    value={addressForm.country}
+                    onChange={handleAddressChange}
+                    displayEmpty
+                  >
+                    <MenuItem value="">Select Country</MenuItem>
+                    {Object.keys(countriesData).map((country) => (
+                      <MenuItem key={country} value={country}>
+                        {country}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <FormControl fullWidth>
+                  <Select
+                    name="state"
+                    value={addressForm.state}
+                    onChange={handleAddressChange}
+                    displayEmpty
+                    disabled={!addressForm.country}
+                  >
+                    {/* <MenuItem value="">Select State</MenuItem> */}
+                    {availableStates.map((state) => (
+                      <MenuItem key={state} value={state}>
+                        {state}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  fullWidth
+                  label="City"
+                  name="city"
+                  value={addressForm.city}
+                  onChange={handleAddressChange}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Pincode"
+                  name="pincode"
+                  value={addressForm.pincode}
+                  onChange={handleAddressChange}
+                />
+              </Grid>
+            </Grid>
+
+            <Box
+              sx={{
+                mt: 4,
+                display: "flex",
+                gap: 2,
+                justifyContent: "flex-end",
+              }}
+            >
+              {/* <Button
+                variant="outlined"
+                // startIcon={<ArrowBackIcon />}
+                onClick={() => navigate("/customer/profile")}
+              >
+                Cancel
+              </Button> */}
+              <PrimaryButton
+                type="submit"
+                variant="contained"
+                disabled={savingAddress}
+              >
+                {"Add Address"}
+              </PrimaryButton>
+          <Button onClick={handleClose}>Back</Button>
+            </Box>
+          </form>
+        </Box>
+      </Modal>
+    </React.Fragment>
+  );
+}
+
 export default function CustomerCart() {
   const cartItems = useSelector((state) => state.cart.items);
   const quantity = useSelector((state) => state.cart.cartValue);
@@ -54,6 +421,7 @@ export default function CustomerCart() {
   const [updateAddress, setUpdateAddress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [openAddress, setOpenAddress] = useState(false);
+  const [coupon,setCoupon] = useState("")
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -189,14 +557,6 @@ export default function CustomerCart() {
       setUpdateAddress(defaultAddress);
     } catch (error) {}
   }
-  async function addAddresses(params) {
-    response = await api.post(
-      `/updateCustomerProfile/addAddress/${userId}`,
-      {},
-
-      updateAddress(response),
-    );
-  }
 
   async function changeAddress(params) {
     try {
@@ -275,11 +635,8 @@ export default function CustomerCart() {
 
                 <Stack
                   direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <IconButton onClick={handleClickOpen}>
-                    {address ? (
+                  sx={{justifyContent:'space-between'}}
+                >{address ? (
                       <Typography
                         variant="body2"
                         color="text.secondary"
@@ -291,6 +648,8 @@ export default function CustomerCart() {
                     ) : (
                       ""
                     )}
+                  <IconButton onClick={handleClickOpen}>
+                    
                     <EditIcon />
                   </IconButton>
                 </Stack>
@@ -304,16 +663,12 @@ export default function CustomerCart() {
               aria-labelledby="responsive-dialog-title"
             >
               <DialogTitle id="responsive-dialog-title">
-               
-               <IconButton sx={{}} onClick={()=>setOpenAddress(p=>!openAddress)}>
-                  <PrimaryButton >Add New Address</PrimaryButton>
-                </IconButton>
+               <AddressModal/>
                 <Typography variant="body1" color="initial">
                   or select from below
                 </Typography>
               </DialogTitle>
               <DialogContent>
-                {openAddress && <>Options</>}
                 {addresses.map((item) => {
                   console.log(openAddress);
 
@@ -343,7 +698,11 @@ export default function CustomerCart() {
                     <Grid size={{ xs: 12, sm: 3, md: 2 }}>
                       <CardMedia
                         component="img"
-                        image={item?.product?.image}
+                        image={
+                          item?.product?.image?.[0]
+                            ? `http://localhost:4500/${item.product.image[0].replace(/\\/g, "/").replace(/^\/+/, "")}`
+                            : "/no-image.png"
+                        }
                         alt={item?.product?.productName}
                         sx={{
                           height: 120,
@@ -474,6 +833,16 @@ export default function CustomerCart() {
                   </Typography>
                 </Box>
               </Stack>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Coupon Code"
+                  name="coupon"
+                  // value={addressForm.pincode}
+                  onChange={()=>setCoupon(e.target.value)}
+                />
+              </Grid>
+
 
               <PaymentButton addressId={address?._id} amount={totalPrice} />
             </CardContent>
