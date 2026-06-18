@@ -22,13 +22,27 @@ const bannerSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    bannerType: {
+        type: String,
+        enum: ["General", "Product", "Offer", "Coupon"],
+        default: "General",
+        required: true
+    },
+    product: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+    },
     offer: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "offer",        
     },
+    coupon: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "coupon",
+    },
     discount: {
         type: String,
-        required: true
+        default: ""
     },
     status:{
         type:String,
