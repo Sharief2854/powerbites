@@ -60,7 +60,7 @@ function ForgotVerifyOtp() {
 
       setVerified(true);
       setSnackbar({ open: true, message: "OTP verified! You can now reset your password.", severity: "success" });
-      setTimeout(() => navigate(`/resetpassword`), 1500);
+      setTimeout(() => navigate(`forget/forgetverifyOtp/resetpassword`), 1500);
     } catch(err) {
       console.log(err);
       setSnackbar({ open: true, message: err.response?.data?.message || "Verification failed. Please try again.", severity: "error" });

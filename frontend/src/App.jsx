@@ -40,9 +40,10 @@ function App() {
         <Route path ="/register" element={<Register/>}/>
         <Route path ="/verifyOtp/:id" element={<VerifyOtp/>}/>
         <Route path ="/login" element={<Login/>}/>
+        
         <Route path ="/forget" element={<ForgotPassword/>}/>
-        <Route path ="/resetpassword" element={<ResetPassword/>}/>
-        <Route path ="/forgetverifyOtp" element={<ForgotVerifyOtp/>}/>
+        <Route path ="/forget/forgetverifyOtp" element={<ForgotVerifyOtp/>}/>
+        <Route path ="/forget/forgetverifyOtp/resetpassword" element={<ResetPassword/>}/>
         <Route path ="/auth" element={<MainAuthCard/>}/>
         </Route>
         
@@ -76,5 +77,3 @@ function App() {
 }
 
 export default App
-
-
