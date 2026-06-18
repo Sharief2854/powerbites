@@ -129,7 +129,7 @@ async function getCart(req,res){
     try{   
 
         let userId = req.userId;
-        let cart = await cartModel.find({customer:userId});
+        let cart = await cartModel.find({customer:userId}).populate("product") ;
 
         if(!cart){
             return res.status(400).json({
