@@ -65,7 +65,11 @@ function ResetPassword() {
     setLoading(true);
     try {
       let password = formData.password;
-      let response = await api.post(`http://localhost:4500/resetPass/resetpassword/${userId}`,{password});
+      let response = await api.post(`/resetPass/resetpassword`,{password},{
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("forgetToken")}`,
+        },
+      });
 
       if (response.status != 200) {
         return setSnackbar({ open: true, message: response.data.message || "Failed to reset password. Please try again.", severity: "error" });

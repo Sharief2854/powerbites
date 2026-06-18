@@ -39,13 +39,13 @@ function ForgotPassword() {
       console.log("Sending recovery link to:", email);
       // TODO: Integrate your actual Password Reset API endpoint here
       let response = await api.post("/resetPass/forgotpassword",{email});
-
       console.log("res data :",response.data)
+      localStorage.setItem("forgetToken",response.data.token)
       // Toggle success state to show a beautiful success confirmation
       setIsSubmitted(true);
       setSnackbar({ open: true, message: "A recovery OTP has been sent to your email.", severity: "success" });
 
-      setTimeout(() => navigate(`/forgetverifyOtp/${response.data.user}`), 1500);
+      setTimeout(() => navigate(`/forgetverifyOtp`), 1500);
     } catch(err) {
       console.log(err.response?.data?.message);
       setSnackbar({ open: true, message: err.response?.data?.message || "Failed to send OTP. Please try again.", severity: "error" });

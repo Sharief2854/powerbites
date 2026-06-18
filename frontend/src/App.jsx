@@ -41,10 +41,11 @@ function App() {
         <Route path ="/verifyOtp/:id" element={<VerifyOtp/>}/>
         <Route path ="/login" element={<Login/>}/>
         <Route path ="/forget" element={<ForgotPassword/>}/>
-        <Route path ="/resetpassword/:id" element={<ResetPassword/>}/>
-        <Route path ="/forgetverifyOtp/:id" element={<ForgotVerifyOtp/>}/>
+        <Route path ="/resetpassword" element={<ResetPassword/>}/>
+        <Route path ="/forgetverifyOtp" element={<ForgotVerifyOtp/>}/>
         <Route path ="/auth" element={<MainAuthCard/>}/>
         </Route>
+        
 
         <Route path ="/admin" element={<ProtectedRoutes role="admin"><DashboardLayout/></ProtectedRoutes>}>
         <Route index element={<Overview/>}/>

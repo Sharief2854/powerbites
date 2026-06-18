@@ -46,7 +46,11 @@ function ForgotVerifyOtp() {
 
     setLoading(true);
     try {
-      let res = await api.post(`http://localhost:4500/resetPass/verifyOtp/${userId}`,{otp});
+      let res = await api.post(`/resetPass/VerifyOtp`,{otp},{
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("forgetToken")}`,
+        },
+      });
       console.log("res data :",res.data)
 
       if (res.status !== 200) {
@@ -56,7 +60,7 @@ function ForgotVerifyOtp() {
 
       setVerified(true);
       setSnackbar({ open: true, message: "OTP verified! You can now reset your password.", severity: "success" });
-      setTimeout(() => navigate(`/resetpassword/${userId}`), 1500);
+      setTimeout(() => navigate(`/resetpassword`), 1500);
     } catch(err) {
       console.log(err);
       setSnackbar({ open: true, message: err.response?.data?.message || "Verification failed. Please try again.", severity: "error" });
