@@ -42,7 +42,8 @@ export default function CustomerProducts() {
   );
   const handleAddToCart = async (productId) => {
     try{
-      const response = await api.post("/cart/setCart")
+      const response = await api.post("/cart/setCart",{})
+      console.log(response)
       dispatch(addCart(response.data.data))
     }
     catch(error){
