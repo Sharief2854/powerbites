@@ -32,7 +32,7 @@ const pages = [
   },
   {
     name: "Orders",
-    path: "/orders",
+    path: "/customer/orderlist",
     icon: <InfoOutlinedIcon fontSize="small" />,
   },
   {

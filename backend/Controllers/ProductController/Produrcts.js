@@ -36,12 +36,17 @@ async function addProduct(req, res) {
                 message: "Product image is required."
             });
         }
-       
+
         const imagePaths = req.files.map(file =>
-            `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
+            `${req.protocol}://${req.get("host")}/${file.path}`
         );
 
-        console.log(imagePaths);
+        console.log(imagePaths); 
+        const price = Number(req.body.price);
+        const discount = Number(req.body.discount || 0);
+        const discount_Price = price - (price * discount / 100);
+
+        //    let discountPrice = price - discount_price* /100
 
         // const ProductData = {
         //     ...body,
@@ -52,7 +57,9 @@ async function addProduct(req, res) {
             description: req.body.description,
             price: req.body.price,
             stock: req.body.stock,
-            image: imagePaths
+            image: imagePaths,
+            discount,
+            discount_Price
         };
 
         console.log(ProductData);
@@ -65,7 +72,16 @@ async function addProduct(req, res) {
         }
 
         // Send email notification
-        await sendProductNotification(Product);
+        if (body.sendUpdate) {
+            await sendProductNotification(Product);
+        }
+        else {
+            res.status(400).json({
+                messsage: " their is a no new Product"
+            })
+        }
+
+
 
         return res.status(201).json({
             message: "Product added successfully",

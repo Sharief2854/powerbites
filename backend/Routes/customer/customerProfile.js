@@ -33,8 +33,6 @@ router.get("/getPhoto/:id",getCustomerPhoto);
 //deleting customer photos
 router.delete("/deletePhoto/:id",deleteCustomerPhoto);
 
-
-
 // customer adding address to their profile and also setting default address if it is the first address of the customer
 router.post("/addAddress/:id",addingAddress);
 

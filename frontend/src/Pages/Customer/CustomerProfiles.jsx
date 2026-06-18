@@ -88,7 +88,9 @@ function CustomerProfile({ onBack }) {
 
   const fetchCustomerPhoto = async () => {
     try {
-      let response = await api.get(`/updateCustomerProfile/getProfile`);
+       const token = localStorage.getItem("token");
+      let id = "6a2a987342fbcdfda0a5c5b0"; 
+      let response = await api.get(`/updateCustomerProfile/getPhoto/${id}`);
       const imagePath =
         response.data?.photo?.url ||
         response.data?.user?.image ||
