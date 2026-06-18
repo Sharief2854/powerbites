@@ -151,13 +151,26 @@ export default function AdminProducts() {
   };
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-  setPhotos(
-    files.map((file) => ({
-      file,
-      preview: URL.createObjectURL(file),
-    }))
-  );
+  const files = Array.from(e.target.files);
+
+  setPhotos((prev) => {
+    const newFiles = files.filter(
+      (file) =>
+        !prev.some(
+          (p) =>
+            p.file.name === file.name &&
+            p.file.size === file.size
+        )
+    );
+
+    return [
+      ...prev,
+      ...newFiles.map((file) => ({
+        file,
+        preview: URL.createObjectURL(file),
+      })),
+    ];
+  });
 };
   
 
@@ -220,8 +233,8 @@ export default function AdminProducts() {
 
       formData.append("isAvailable", productData.isAvailable);
 
-      photos.forEach((photoObj) => {
-        formData.append("file", photoObj.file);
+      photos.forEach((photo) => {
+        formData.append("file", photo.file);
       });
       formData.append("sendUpdates", productData.sendUpdates);
 
@@ -238,10 +251,10 @@ export default function AdminProducts() {
     }
   };
 
-  console.log(product);
+  // console.log(product);
   
   const displayProducts = useMemo(() => {
-    let filtered = [...(product || [])];
+    let filtered = product;
     if (search.trim()) {
       filtered = filtered.filter((product) =>
         product?.name?.toLowerCase().includes(search.toLowerCase()),
@@ -312,7 +325,7 @@ export default function AdminProducts() {
 
   useEffect(() => {
     getProductsData();
-    getCategories();
+    getCategories()
   }, []);
   if (loading) {
     return (
@@ -343,7 +356,7 @@ export default function AdminProducts() {
         sx={{
           color: "#3E1A89",
           fontWeight: 700,
-          mb: 4,
+          mb: 4
         }}
       >
         Product
@@ -485,14 +498,6 @@ export default function AdminProducts() {
         </Grid>
       </Grid>
 
-        <IconButton
-          color="primary"
-          sx={{ position: "absolute", top: 0, right: 0, m: 1 }}
-          onClick={closeAddProductModal}
-        >
-          <CloseIcon fontSize="small" />
-        </IconButton>
-
 <Modal open={openModal} onClose={closeAddProductModal}>
   <Box
     sx={{
@@ -508,7 +513,7 @@ export default function AdminProducts() {
       overflow: "hidden",
     }}
   >
-    {/* Header */}
+    
     <Box
       sx={{
         display: "flex",
@@ -530,7 +535,6 @@ export default function AdminProducts() {
       </IconButton>
     </Box>
 
-    {/* Form Content */}
     <Stack
       component="form"
       onSubmit={handlePost}
@@ -596,13 +600,97 @@ export default function AdminProducts() {
             </Button>
 
 
-            <Box
+{photos.length > 0 && (
+              <Box
+                sx={{
+    display: "flex",
+    width: "100%",
+    height: "100%",
+    py: 1,
+                }}
+              >
+                <Stack
+                  direction="row"
+                  flexwrap="nowrap"
+                  gap={1}
+                  sx={{
+                    width: "80%",
+                    height: "115px",
+                    maxHeight: "145px",
+                    overflowX: "scroll",
+                    overflowY: "hidden",
+                    py: 0.5,
+
+                    "&::-webkit-scrollbar": {
+                      height: "8px",
+                      display: "block !important",
+                    },
+                    "&::-webkit-scrollbar-track": {
+                      backgroundColor: "#f1f1f1",
+                      borderRadius: "4px",
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                      backgroundColor: "#3E1A89",
+                      borderRadius: "4px",
+                    },
+                    scrollbarWidth: "thin",
+                  }}
+                >
+                  {photos.map((file, index) => {
+                    return (
+                      <ImageListItem
+                        key={`new-${index}`}
+                        sx={{
+                          minWidth: "120px",
+                          maxWidth: "120px",
+                          width: "120px",
+                          height: "120px",
+                          border: "1px solid #2196f3",
+                          borderRadius: "8px",
+                          overflow: "hidden",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <img
+        src={file.preview}
+        alt=""
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          display: "block",
+        }}
+      />
+                        <ImageListItemBar
+                          position="top"
+                          actionIcon={
+                            <IconButton
+                              sx={{
+                                color: "#fff",
+                                backgroundColor: "rgba(0,0,0,0.5)",
+                                m: 0.5,
+                              }}
+                              size="small"
+                              onClick={() => removeFile(index)}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          }
+                        />
+                      </ImageListItem>
+                    );
+                  })}
+                </Stack>
+              </Box>
+            )}
+
+
+            {/* <Box
   sx={{
     display: "flex",
-    gap: 1,
-    overflowX: "auto",
+    overflowX: "scroll",
     width: "100%",
-    height: "300px",
+    height: "82px",
     py: 1,
   }}
 >
@@ -612,10 +700,10 @@ export default function AdminProducts() {
       sx={{
         // flex: "0 0 auto",
         width: 120,
-        height: "520px",
+        height: "120px",
         border: "1px solid #ccc",
         borderRadius: 2,
-        // overflow: "hidden",
+        overflow: "hidden",
       }}
     >
       <img
@@ -630,7 +718,7 @@ export default function AdminProducts() {
       />
     </Box>
   ))}
-</Box>
+</Box> */}
 
       <FormControl fullWidth>
         <InputLabel>Category</InputLabel>

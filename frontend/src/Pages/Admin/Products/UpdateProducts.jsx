@@ -20,13 +20,16 @@ import {
 import React, { useEffect, useState } from "react";
 import { PrimaryButton } from "../../../Components/Common/Buttons";
 import { useDispatch, useSelector } from "react-redux";
-import { enqueueSnackbar } from "notistack";
+import { enqueueSnackbar, SnackbarProvider } from "notistack";
 import { updateProduct } from "../../../Redux/Slices/ProductSlice";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import styled from "@emotion/styled";
 import api from "../../../api/axiosConfig";
+import { getProducts } from "../../../Redux/Slices/ProductSlice";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { v4 as uuidv4 } from "uuid";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -102,7 +105,7 @@ export default function UpdateProducts() {
 
   if (name === "photo") {
     const uploadedFiles = Array.from(files);
-    setSelectedFile((prev) => [...prev, ...uploadedFiles]);
+    setPhotos((prev) => [...prev, ...uploadedFiles]);
   } else {
     setProductData((prev) => ({
       ...prev,
@@ -162,8 +165,8 @@ export default function UpdateProducts() {
   useEffect(() => {
     if (product) {
       setProductData(product);
-      // setExistingPhotos(product.image.map((e) => e) || []);
-      // getById();
+      setExistingPhotos(product.image.map((e) => e) || []);
+      getById();
     }
   }, [product]);
   console.log(product, existingPhotos);
@@ -171,7 +174,7 @@ export default function UpdateProducts() {
   return (
     <Box>
       <Box sx={{ width: "80%", margin: "auto", padding: "20px" }}>
-        <SnackbarContent />
+        <SnackbarProvider />
         <Typography align="center" variant="h4" gutterBottom>
           Update Product Details
         </Typography>
@@ -215,56 +218,135 @@ export default function UpdateProducts() {
               multiple
             />
           </Button>
-          {
-            <Stack
-              direction={"row"}
-              flexWrap="wrap"
-              gap={1}
-              sx={{
-                width: "100%",
-                maxHeight: "120px",
-                overflowY: "auto",
-                py: 0.5,
-              }}
-            >
-              {existingPhotos.map((img, index) => (
-                <Chip
-                  key={index}
-                  label={img.split("/").pop()}
-                  sx={{ fontSize: "9px" }}
-                  onDelete={() => removeExisting(index)}
+          { (
+                        <Box
+                          sx={{
+              display: "flex",
+              width: "100%",
+              height: "100%",
+              py: 1,
+                          }}
+                        >
+                          <Stack
+                            direction="row"
+                            flexwrap="nowrap"
+                            gap={1}
+                            sx={{
+                              width: "80%",
+                              height: "115px",
+                              maxHeight: "145px",
+                              overflowX: "scroll",
+                              overflowY: "hidden",
+                              py: 0.5,
+          
+                              "&::-webkit-scrollbar": {
+                                height: "8px",
+                                display: "block !important",
+                              },
+                              "&::-webkit-scrollbar-track": {
+                                backgroundColor: "#f1f1f1",
+                                borderRadius: "4px",
+                              },
+                              "&::-webkit-scrollbar-thumb": {
+                                backgroundColor: "#3E1A89",
+                                borderRadius: "4px",
+                              },
+                              scrollbarWidth: "thin",
+                            }}
+                          >
+           {existingPhotos.map((img, index) => {
+                img = img.replace(/\\/g, "/").replace(/^\/+/, "")
+                      return (
+                        <ImageListItem
+                          key={`new-${index}`}
+                          sx={{
+                            minWidth: "120px",
+                            maxWidth: "120px",
+                            width: "120px",
+                            border: "1px solid #2196f3",
+                            borderRadius: "8px",
+                            overflow: "hidden", 
+                            flexShrink: 0,
+                          }}
+                        >
+                          <img
+                            src={`http://localhost:4500/${img}`}
+                            alt="Upload"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                            onLoad={() => URL.revokeObjectURL(img)}
+                          />
+                          <ImageListItemBar
+                            position="top"
+                            actionIcon={
+                              <IconButton
+                                sx={{
+                                  color: "#fff",
+                                  backgroundColor: "rgba(0,0,0,0.5)",
+                                  m: 0.5,
+                                }}
+                                size="small"
+                                onClick={() => removeFile(index)}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            }
+                          />
+                        </ImageListItem>
+                      )})}
+                            {photos.length > 0 && (
+                              photos.map((file, index) => {
+                              return (
+                                <ImageListItem
+                                  key={`new-${index}`}
+                                  sx={{
+                                    minWidth: "120px",
+                                    maxWidth: "120px",
+                                    width: "120px",
+                                    height: "120px",
+                                    border: "1px solid #2196f3",
+                                    borderRadius: "8px",
+                                    overflow: "hidden",
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  <img
+                  src={file.preview}
+                  alt=""
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
                 />
-              ))}
-              {selectedFile.map((file, index) => {
-            const localPreviewUrl = URL.createObjectURL(file);
-            
-            return (
-              <ImageListItem key={uuidv4()} sx={{ border: "1px solid #2196f3", borderRadius: "8px", overflow: "hidden" }}>
-                <img
-                  src={localPreviewUrl}
-                  alt="New Img"
-                  loading="lazy"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  onLoad={() => URL.revokeObjectURL(localPreviewUrl)} 
-                />
-                <ImageListItemBar
-                  position="top"
-                  actionIcon={
-                    <IconButton
-                      sx={{ color: "rgba(255, 255, 255, 0.9)", backgroundColor: "rgba(0,0,0,0.5)", m: 0.5, "&:hover": { backgroundColor: "rgba(255,0,0,0.7)" } }}
-                      size="small"
-                      onClick={() => removeFile(index)}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  }
-                  actionPosition="right"
-                />
-              </ImageListItem>
-            );
-          })}
-            </Stack>
-          }
+                                  <ImageListItemBar
+                                    position="top"
+                                    actionIcon={
+                                      <IconButton
+                                        sx={{
+                                          color: "#fff",
+                                          backgroundColor: "rgba(0,0,0,0.5)",
+                                          m: 0.5,
+                                        }}
+                                        size="small"
+                                        onClick={() => removeFile(index)}
+                                      >
+                                        <DeleteIcon fontSize="small" />
+                                      </IconButton>
+                                    }
+                                  />
+                                </ImageListItem>
+                              );
+                            })
+                          )}
+                          </Stack>
+                        </Box>
+                      )}
+          
           <Grid container spacing={2}>
             <Grid xs={6}>
               <FormControl fullWidth margin="normal">
@@ -277,6 +359,8 @@ export default function UpdateProducts() {
                   startAdornment={
                     <InputAdornment position="start">₹</InputAdornment>
                   }
+                  inputProps={{ min: 0 }}
+                   
                   name="price"
                   label="Price"
                 />
@@ -290,6 +374,8 @@ export default function UpdateProducts() {
                   name="discount"
                   value={productData.discount}
                   onChange={handleChange}
+                  inputProps={{ min: 0 }}
+                   
                   endAdornment={
                     <InputAdornment position="end">
                       <span style={{ color: "#3E1A89" }}>%</span>
@@ -324,6 +410,7 @@ export default function UpdateProducts() {
               id="stock"
               type="number"
               label="Stock"
+              inputProps={{ min: 0 }}                   
               value={productData.stock}
               onChange={handleChange}
               name="stock"

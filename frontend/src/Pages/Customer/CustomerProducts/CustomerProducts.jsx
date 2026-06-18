@@ -325,7 +325,7 @@ export default function CustomerProducts() {
                   >
                     <Box
                       component="img"
-                      src={`http://localhost:4500/${imagePath}`}
+                      src={imagePath}
                       alt={item.name}
                       sx={{
                         width: "100%",
