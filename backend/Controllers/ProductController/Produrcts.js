@@ -5,10 +5,11 @@ const sendProductNotification = require("../../Utils/sendProductNotification");
 async function allProduct(req, res) {
     try {
 
-        const data = await ProductModel.find();
+        const data = await ProductModel.find().populate({path:"category"}).sort({ createdAt: -1 });
+        console.log(data)
         if (!data) {
             return res.status(400).json({
-                message: "No Products found"
+                message: "Something went wrong"
             })
         }
         res.status(200).json({
@@ -52,6 +53,8 @@ async function addProduct(req, res) {
             description: req.body.description,
             price: req.body.price,
             stock: req.body.stock,
+            category: req.body.category,
+            discount: req.body.discount,
             image: imagePaths
         };
 
@@ -65,7 +68,17 @@ async function addProduct(req, res) {
         }
 
         // Send email notification
-        await sendProductNotification(Product);
+           if(body.sendUpdates){
+            return
+             await sendProductNotification(Product);
+           }
+           else{
+            return
+            res.status(400).json({
+                message: "Something went wrong"
+            })
+           }
+          
 
         return res.status(201).json({
             message: "Product added successfully",

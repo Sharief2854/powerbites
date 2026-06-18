@@ -21,6 +21,7 @@ const productSchema = new mongoose.Schema(
             required: true,
             default: 0,
         },
+
         image: {
             type: [String],
             required: true,
@@ -40,6 +41,11 @@ const productSchema = new mongoose.Schema(
         isAvailable: {
             type: Boolean,
             default: true,
+        },
+        category: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "ProductCategory",
+            required: true,
         },
     },
     {
