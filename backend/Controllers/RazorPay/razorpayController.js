@@ -61,7 +61,7 @@ const verifyPayment = async (req, res) => {
                 name: prod.name,
                 price: prod.price,
                 discount: prod.discount,
-                discounted_price: prod.price - (prod.price * (prod.discount / 100)),
+                discounted_price: prod.price - (prod.price * (prod.discount / 100)), 
                 offer: prod.offer,
                 image: prod.image[0],
                 quantity: item.quantity

@@ -58,7 +58,7 @@ async function forgotPassword(req,res) {
         }
 
 
-        let token = regToken({ email: user.email });
+        let token = regToken( user.email );
 
         if (!token) {
             return res.status(400).json({
