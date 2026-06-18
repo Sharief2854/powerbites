@@ -4,8 +4,12 @@ const mongoose = require('mongoose');
 
 
 
-const bannerSchema = new mongoose.Schema({
-    name: {
+const offerSchema = new mongoose.Schema({
+    title: {
+        type: String,
+        required: true
+    },
+    code: {
         type: String,
         required: true
     },
@@ -14,22 +18,12 @@ const bannerSchema = new mongoose.Schema({
         ref: "users",
         required: true
     },
-    title: {
-        type: String,
-        required: true
-    },
+  
     description: {
         type: String,
         required: true
     },
-    offer: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "offer",        
-    },
-    discount: {
-        type: String,
-        required: true
-    },
+  
     status:{
         type:String,
         default:"InActive",
@@ -52,5 +46,5 @@ const bannerSchema = new mongoose.Schema({
 )
 
 
-const bannerModel = mongoose.model("banner", bannerSchema)
-module.exports = bannerModel  
+const offerModel = mongoose.model("offer", offerSchema)
+module.exports = offerModel  
