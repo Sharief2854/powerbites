@@ -33,11 +33,19 @@ const orderStatusRouter = require('./Routes/OrderStatus/orderStatusUpdating');
 
 
 ConnectDB()
-
+// app.post("/upload",)
 const app = express()
 app.use(cors())
 app.use(express.json())
 app.use("/upload", express.static("upload"));
+const path = require("path");
+
+app.use("/upload", express.static(path.join(__dirname, "upload"))
+
+);
+
+
+
 
 app.use("/auth",RegRouter,LoginRouter)
 app.use("/resetPass",ResetRouter)
