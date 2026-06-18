@@ -8,6 +8,9 @@ export default function PaymentButton({
   addressId,
   coupon_id = "",
 }) {
+  if(!addressId){
+    return
+  }
   const handlePayment = async () => {
     try {
       const { data: order } = await api.post(
@@ -18,7 +21,7 @@ export default function PaymentButton({
       );
 
       const options = {
-        key: "rzp_test_T2CRpgA1UJwni6",
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: order.currency,
         order_id: order.id,

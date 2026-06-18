@@ -14,13 +14,12 @@ const productReducer = createSlice({
             state.products = state.products.filter((product)=>product._id !== action.payload)
         },
         postProducts:(state,action)=>{
-            console.log(action.payload);
-            
             state.products= state.products.push(action.payload)
         },
         updateProduct:(state,action)=>{
             state.products = state.products.map((product)=>{
                 if(product._id === action.payload._id){
+                        action.payload.image.map((newimg)=>{newimg.includes(product.image)?newimg:product.image.push(newimg)})
                     return action.payload
                 }
                 return product
