@@ -11,6 +11,7 @@ const ProductRouter = require("./Routes/Products/ProdutsRouter")
 const isAdmin = require('./MiddleWare/adminAuth');
 const CartRouter = require('./Routes/Cart/cartRouter');
 const bannerRouter = require('./Routes/Banner/bannerRoutes');
+const offerRouter = require('./Routes/Offer/offerRouter');
 const multer = require('multer');
 
 const couponRouter = require('./Routes/Coupon/couponRouter');
@@ -53,6 +54,7 @@ app.use("/crudAdmin",isAdmin,adminRouter)
 app.use("/cart",isCustomer,CartRouter)
 app.use("/products",ProductRouter)
 app.use("/banner",bannerRouter)
+app.use("/offer",offerRouter)
 
 // app.use("/category",productCategoryRouter)
 app.use("/orders",ordersRouter)
