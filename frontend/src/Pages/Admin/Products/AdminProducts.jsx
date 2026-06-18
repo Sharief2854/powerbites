@@ -232,6 +232,8 @@ export default function AdminProducts() {
 
       const response = await api.post("/products/addProduct", formData);
 
+      console.log(response.data);
+
       dispatch(postProducts(response.data.product));
       closeAddProductModal();
     } catch (error) {

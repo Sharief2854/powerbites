@@ -129,11 +129,13 @@ const handleDecrease = () => {
     setImageLoading(true);
   }, [selectedImage]);
 
-  const images =
-    product?.image?.map(
-      (img) =>
-        `http://localhost:4500/${img.replace(/\\/g, "/").replace(/^\/+/, "")}`,
-    ) || [];
+  const images =["https://www.alphr.com/wp-content/uploads/2020/08/Firefox_015.jpg",
+    "https://i.sstatic.net/IV376.png","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5ozsysT5ggWeSb7SZHLtUGOXe2MR6ACLUJA&s"
+  ]
+    // product?.image?.map(
+    //   (img) =>
+    //     `http://localhost:4500/${img.replace(/\\/g, "/").replace(/^\/+/, "")}`,
+    // ) || [];
 
   if (loading && !product?._id) {
     return (
@@ -149,7 +151,7 @@ const handleDecrease = () => {
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <Grid container spacing={4}>
-        <Grid item xs={12} sm={6} md={6} lg={6}>
+        <Grid size={{xs:12,sm:6,md:6,lg:6}}>
           <Card
             elevation={0}
             sx={{
@@ -177,9 +179,8 @@ const handleDecrease = () => {
                 display: imageLoading ? "none" : "block",
                 transition: "transform 0.3s ease",
                 "&:hover": {
-                  transform: "scale(1.05)", // zoom effect desktop
+                  transform: "scale(1.05)",
                 },
-                cursor: "zoom-in",
               }}
             />
           </Card>
@@ -246,7 +247,7 @@ const handleDecrease = () => {
           </Stack>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={6} lg={6}>
+        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
           <Stack spacing={3}>
             <Typography variant="h4" fontWeight={700}>
               {product?.name}
@@ -317,18 +318,16 @@ const handleDecrease = () => {
   <PrimaryButton
     fullWidth
     variant="contained"
-    startIcon={<AddIcon />}
     sx={{
-      backgroundColor: "#111827",
+      backgroundColor: "primary",
       color: "#fff",
-      borderRadius: 3,
       py: 1.1,
       textTransform: "none",
       fontWeight: 700,
       fontSize: "0.95rem",
       boxShadow: "none",
       "&:hover": {
-        backgroundColor: "#000",
+        backgroundColor: "#10003c",
         boxShadow: "none",
       },
     }}

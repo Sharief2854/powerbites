@@ -8,6 +8,9 @@ export default function PaymentButton({
   addressId,
   coupon_id = "",
 }) {
+  if(!addressId){
+    return
+  }
   const handlePayment = async () => {
     try {
       const { data: order } = await api.post(
