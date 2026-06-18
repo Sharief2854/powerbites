@@ -126,6 +126,13 @@ async function VerifyOtp(req,res) {
 
 async function resetPassword(req,res){
      try {
+        let head = req.headers.authorization;
+        let token = head.split(" ")[1];
+
+
+        let decoded = decodeToken(token, res);
+        if (res.headersSent) return;
+
         
         let body = req.body;
 
@@ -135,7 +142,7 @@ async function resetPassword(req,res){
             });
         }
 
-        let user = await userModel.findById(id);
+        let user = await userModel.findOne({email:decoded.email});
         if (!user) {
             return res.status(400).json({
                 message: "User not found"
@@ -145,7 +152,7 @@ async function resetPassword(req,res){
         user.password = body.password;
         await user.save(); 
 
-        let clearReset =await resetModel.deleteOne({user:id})
+        let clearReset =await resetModel.deleteOne({user:user._id})
         if(!clearReset){
               return res.status(400).json({
                 message:"Something went wrong"
