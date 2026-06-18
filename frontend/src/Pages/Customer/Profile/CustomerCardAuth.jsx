@@ -1,7 +1,7 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import React from "react";
 
-function CustomerCard({ title, children, sx }) {
+function CustomerCardAuth({ title, children, sx }) {
   return (
     <Box
       sx={{
@@ -39,4 +39,4 @@ function CustomerCard({ title, children, sx }) {
   );
 }
 
-export default CustomerCard;
+export default CustomerCardAuth;

@@ -21,12 +21,14 @@ import AdminProducts from "./Pages/Admin/Products/AdminProducts";
 import ProtectedRoutes from "./Routes/ProtectedRoutes";
 import CustomerDashboard from "./Pages/Customer/Layout/CustomerDashboard";
 import Overview from "./Pages/Admin/Home/AdminHome";
-import CustomerEditProfile from "./Pages/Customer/CustomerEditProfile";
 import CustomerProducts from "./Pages/Customer/CustomerProducts/CustomerProducts";
 import ProductPage from "./Pages/Customer/CustomerProducts/ProductPage";
 import CustomerCart from "./Pages/Customer/Cart/CustomerCart";
 import OrderList from "./Pages/Customer/CustomerOrder/OrderList";
-import CustomerProfile from "./Pages/Customer/CustomerProfiles";
+import CustomerProfile from "./Pages/Customer/Profile/CustomerProfiles";
+import CustomerEditProfile from "./Pages/Customer/Profile/CustomerEditProfile";
+import CustomerEditAddress from "./Pages/Customer/Profile/CustomerEditAddress";
+
 
 
 function App() {
@@ -65,7 +67,8 @@ function App() {
         <Route path="/customer/productpage/:id" element={<ProductPage/>}/>
         <Route path="/customer/cart" element={<CustomerCart/>}/>
         <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
-        <Route path ="/customer/editprofile/:id" element={<CustomerEditProfile/>}/>
+        <Route path ="/customer/editaddress" element={<CustomerEditAddress/>}/>
+        <Route path ="/customer/editaddress/:id" element={<CustomerEditAddress/>}/>
         <Route path ="/customer/orderlist" element={<OrderList/>}/>
         </Route>
 
