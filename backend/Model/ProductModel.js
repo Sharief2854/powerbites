@@ -34,8 +34,10 @@ const productSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
-        offer:{
-            type:String
+        offer: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "offer",
+            default: null
         },
         isAvailable: {
             type: Boolean,
