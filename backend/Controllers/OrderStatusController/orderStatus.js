@@ -74,6 +74,32 @@ async function updateOrderStatus(req, res) {
                         <h2>Hello ${updatedOrder.customer?.name || "Customer"}</h2>
                         <p>Your order has been placed successfully.</p>
                         <p><b>Order ID:</b> ${updatedOrder._id}</p>
+                        <a href="http://http://localhost:5173//orders/${updatedOrder._id}"
+     style="
+        display:inline-block;
+        padding:12px 20px;
+        margin-top:10px;
+        background:#28a745;
+        color:white;
+        text-decoration:none;
+        border-radius:5px;
+        font-weight:bold;
+     ">
+     Track Your Order
+  </a>
+   <a href="http://http://localhost:5173//"
+     style="
+        display:inline-block;
+        padding:12px 20px;
+        margin-top:10px;
+        background:#28a745;
+        color:white;
+        text-decoration:none;
+        border-radius:5px;
+        font-weight:bold;
+     ">
+     Visit site
+  </a>
                     </div>
                 `;
                 break;
@@ -88,6 +114,32 @@ async function updateOrderStatus(req, res) {
                         <h2>Hello ${updatedOrder.customer?.name || "Customer"}</h2>
                         <p>Your order is currently being prepared.</p>
                         <p><b>Order ID:</b> ${updatedOrder._id}</p>
+                         <a href="http://http://localhost:5173//orders/${updatedOrder._id}"
+     style="
+        display:inline-block;
+        padding:12px 20px;
+        margin-top:10px;
+        background:#28a745;
+        color:white;
+        text-decoration:none;
+        border-radius:5px;
+        font-weight:bold;
+     ">
+     Track Your Order
+  </a>
+   <a href="http://http://localhost:5173//"
+     style="
+        display:inline-block;
+        padding:12px 20px;
+        margin-top:10px;
+        background:#28a745;
+        color:white;
+        text-decoration:none;
+        border-radius:5px;
+        font-weight:bold;
+     ">
+     Visit site
+  </a>
                     </div>
                 `;
                 break;
@@ -103,6 +155,32 @@ async function updateOrderStatus(req, res) {
                         <h2>Hello ${updatedOrder.customer?.name || "Customer"}</h2>
                         <p>Your order has been shipped and is on the way.</p>
                         <p><b>Order ID:</b> ${updatedOrder._id}</p>
+                         <a href="http://http://localhost:5173//orders/${updatedOrder._id}"
+     style="
+        display:inline-block;
+        padding:12px 20px;
+        margin-top:10px;
+        background:#28a745;
+        color:white;
+        text-decoration:none;
+        border-radius:5px;
+        font-weight:bold;
+     ">
+     Track Your Order
+  </a>
+   <a href="http://http://localhost:5173//"
+     style="
+        display:inline-block;
+        padding:12px 20px;
+        margin-top:10px;
+        background:#28a745;
+        color:white;
+        text-decoration:none;
+        border-radius:5px;
+        font-weight:bold;
+     ">
+     Visit site
+  </a>
                     </div>
                 `;
                 break;
@@ -118,6 +196,32 @@ async function updateOrderStatus(req, res) {
                         <h2>Hello ${updatedOrder.customer?.name || "Customer"}</h2>
                         <p>Your order has been delivered successfully.</p>
                         <p><b>Order ID:</b> ${updatedOrder._id}</p>
+                         <a href="http://http://localhost:5173//orders/${updatedOrder._id}"
+     style="
+        display:inline-block;
+        padding:12px 20px;
+        margin-top:10px;
+        background:#28a745;
+        color:white;
+        text-decoration:none;
+        border-radius:5px;
+        font-weight:bold;
+     ">
+     Track Your Order
+  </a>
+   <a href="http://http://localhost:5173//"
+     style="
+        display:inline-block;
+        padding:12px 20px;
+        margin-top:10px;
+        background:#28a745;
+        color:white;
+        text-decoration:none;
+        border-radius:5px;
+        font-weight:bold;
+     ">
+     Visit site
+  </a>
                     </div>
                 `;
                 break;
