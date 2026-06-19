@@ -7,7 +7,7 @@ async function allProduct(req, res) {
     try {
         const data = await ProductModel.find().populate({ path: "category" }).sort({ createdAt: -1 });
 
-        const Productdata = await ProductModel.find().sort({ updatedAt:-1});
+        const Productdata = await ProductModel.find().sort({ updatedAt: -1 });
         if (!data) {
             return res.status(400).json({
                 message: "No products found"
@@ -28,9 +28,10 @@ async function allProduct(req, res) {
 }
 
 
+
+
 async function addProduct(req, res) {
     try {
-
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({
                 message: "Product image is required."
@@ -41,17 +42,19 @@ async function addProduct(req, res) {
             `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
         );
 
+        console.log("Category from request:", req.body.category);
 
-        // console.log("Category from Postman:", req.body.category);
-
-        const categoryNames = req.body.category.split(",").map(name => name.trim());
-        console.log("Category Names:", categoryNames);
-
-        const categories = await ProductCategoryModel.find({
-            name: { $in: categoryNames }
+        const category = await ProductCategoryModel.findOne({
+            name: req.body.category.trim()
         });
 
-        console.log("Categories Found:", categories);
+        console.log("Found Category:", category);
+
+        if (!category) {
+            return res.status(400).json({
+                message: "Category not found"
+            });
+        }
 
         const ProductData = {
             name: req.body.name,
@@ -59,18 +62,18 @@ async function addProduct(req, res) {
             price: req.body.price,
             stock: req.body.stock,
             discount: req.body.discount,
-            category: categories.map(p => p._id),
+            category: category._id,
             image: imagePaths
         };
 
-        const Product = await ProductModel.create(ProductData);
+        const product = await ProductModel.create(ProductData);
 
-        const productWithCategory = await ProductModel.findById(Product._id)
+        const productWithCategory = await ProductModel.findById(product._id)
             .populate("category", "name");
 
-        return res.status(201).json({
+        return res.status(200).json({
             message: "Product added successfully",
-            Product: productWithCategory
+            data: productWithCategory
         });
 
     } catch (err) {
@@ -79,6 +82,7 @@ async function addProduct(req, res) {
         });
     }
 }
+
 async function updateProduct(req, res) {
     try {
         const id = req.params.id;
