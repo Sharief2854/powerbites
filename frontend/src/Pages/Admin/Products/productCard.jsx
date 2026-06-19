@@ -14,17 +14,33 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Grid, Stack } from '@mui/material';
 import api from '../../../api/axiosConfig';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 export default function ProductCard({product}) {
+  const [open, setOpen] = React.useState(false);
+  const [deleteState,setDeleteState] = React.useState('')
+
+  const handleClickOpen = (params) => {
+    setOpen(true);
+    setDeleteState(params)
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
     let token = localStorage.getItem("token")
-    // let getImage =
-    // let cleanPath =  product?.image?.replace(/\\/g, '/').replace(/^\/+/, '')
     const navigate = useNavigate();
     let dispatch = useDispatch();
     let toggleUpdate = ()=>{
       navigate(`updateProduct/${product?._id}`)
     }
+
+    
     let handleDelete = async(params) => {
             try {
                 let response = await api.delete(`/products/deleteProduct/${params}`)
@@ -38,7 +54,7 @@ export default function ProductCard({product}) {
     }
   return (
     <Grid size={{ xs: 12, sm: 4 }}>
-    <Card sx={{ maxWidth: 345,maxHeight:390 }}>
+    <Card sx={{ maxWidth: "100%",maxHeight:390 }}>
       <SnackbarProvider/>
       <CardActionArea>
         <CardMedia
@@ -46,6 +62,7 @@ export default function ProductCard({product}) {
           height="140"
           image={product.image[0].replace(/\\/g, '/').replace(/^\/+/, '')}
           alt="No Image Found"
+          sx={{ objectFit: 'cover' }}
         />
         <CardContent>
           <Typography gutterBottom variant="h5" component="div">
@@ -69,11 +86,30 @@ export default function ProductCard({product}) {
         <PrimaryButton onClick={()=>(toggleUpdate(product._id))} size="small" color="primary">
           Update
         </PrimaryButton>
-        <PrimaryButton onClick={()=>(handleDelete(product._id))} size="small" color="primary">
+        <PrimaryButton onClick={()=>(onClick=handleClickOpen(product._id))} size="small" color="primary">
           Delete
         </PrimaryButton>
       </CardActions>
     </Card>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-adminProductDelete"
+        aria-describedby="alert-dialog-description"
+        role="alertdialog"
+      >
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete this product?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={()=>handleDelete(deleteState)} autoFocus>
+            Confirm
+          </Button>
+          <Button onClick={handleClose}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   );
 }

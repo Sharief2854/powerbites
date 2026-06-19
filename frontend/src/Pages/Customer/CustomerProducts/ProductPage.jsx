@@ -44,8 +44,10 @@ export default function ProductPage() {
 
   async function getProduct() {
     try {
-      const res = await api.get(`/products/getprd/${id}`);
+      const res = await api.get(`/admin/getprd/${id}`);
       setProduct(res.data.data);
+      console.log(res.data.data);
+      
     } catch (error) {
       console.log(error);
     }
@@ -75,7 +77,6 @@ export default function ProductPage() {
 }
 const handleAddToCart = async () => {
   await addItem();
-  setQuantity(1);
 };
 
 const handleIncrease = () => {
@@ -131,7 +132,7 @@ const handleDecrease = () => {
 
   const images = product?.image?.map(
     (img) =>
-      `http://localhost:4500/${img.replace(/\\/g, "/").replace(/^\/+/, "")}`,
+      `${img.replace(/\\/g, "/").replace(/^\/+/, "")}`,
   ) || [];
 
   if (loading && !product?._id) {
@@ -385,7 +386,7 @@ const handleDecrease = () => {
           <Grid item xs={12} sm={6}>
             <Typography fontWeight={600}>Category</Typography>
             <Typography color="text.secondary">
-              {category || "N/A"}
+              {product?.category || "N/A"}
             </Typography>
           </Grid>
 

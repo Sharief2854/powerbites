@@ -16,17 +16,21 @@ import {
   Typography, IconButton,
   ImageListItem,
   ImageListItemBar,
+  Checkbox,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { PrimaryButton } from "../../../Components/Common/Buttons";
 import { useDispatch, useSelector } from "react-redux";
-import { enqueueSnackbar } from "notistack";
+import { enqueueSnackbar, SnackbarProvider } from "notistack";
 import { updateProduct } from "../../../Redux/Slices/ProductSlice";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import styled from "@emotion/styled";
 import api from "../../../api/axiosConfig";
+import { getProducts } from "../../../Redux/Slices/ProductSlice";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { v4 as uuidv4 } from "uuid";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -76,9 +80,7 @@ const Android12Switch = styled(Switch)(({ theme }) => ({
 export default function UpdateProducts() {
   let allProducts = useSelector((state) => state?.product?.products);
   let { id } = useParams();
-  let product = allProducts?.find((e) => {
-    return e._id == id;
-  });
+  let product = allProducts
   console.log(allProducts);
 
   const [productData, setProductData] = useState({
@@ -88,9 +90,11 @@ export default function UpdateProducts() {
     stock: product?.stock,
     discount: product?.discount,
     isAvailable: product?.isAvailable,
+    sendUpdates: product?.sendUpdates,
+    category: product?.category?._id,
   });
 
-  const [selectedFile, setSelectedFile] = useState([]);
+  const [filteredFile, setFilteredFile] = useState([]);
   const [existingPhotos, setExistingPhotos] = useState([]);
   const [photos, setPhotos] = useState([]);
   let token = localStorage.getItem("token");
@@ -101,8 +105,24 @@ export default function UpdateProducts() {
   const { name, value, files } = e.target;
 
   if (name === "photo") {
-    const uploadedFiles = Array.from(files);
-    setSelectedFile((prev) => [...prev, ...uploadedFiles]);
+    const imgFile = Array.from(files);
+    setPhotos((prev) => {
+    const newFiles = imgFile.filter(
+      (file) =>
+        !prev.some(
+          (p) =>
+            p.file.name === file.name &&
+            p.file.size === file.size
+        )
+    );
+    return [
+      ...prev,
+      ...newFiles.map((file) => ({
+        file,
+        preview: URL.createObjectURL(file),
+      })),
+    ];
+  });
   } else {
     setProductData((prev) => ({
       ...prev,
@@ -111,23 +131,24 @@ export default function UpdateProducts() {
   }
 }
 
+
   function removeFile(index) {
-    setSelectedFile((prev) => prev.filter((_, i) => i !== index));
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
   }
   function removeExisting(index) {
-    setExistingPhotos((prev) => prev.filter((_, i) => i !== index));
-  }
-    async function getById(params) {
-      try {
-        let response = await api.get(`admin/all/${product._id}`);
-        dispatch(getProducts(response.data.data));
-      } catch (error) {}
-    }
+  setExistingPhotos((prev) =>
+    prev.filter((_, i) => i !== index)
+  );
+}
+    
 
   async function updateProducts(e) {
     e.preventDefault();
 
-    const formData = new FormData();
+  const formData = new FormData();
+  formData.forEach((photo) => {
+    console.log(photo.value);
+  });
 
     formData.append("name", productData.name);
     formData.append("price", productData.price);
@@ -135,11 +156,12 @@ export default function UpdateProducts() {
     formData.append("stock", productData.stock);
     formData.append("discount", productData.discount);
     formData.append("isAvailable", productData.isAvailable);
+    formData.append("category", productData.category);
+    formData.append("sendUpdates", productData.sendUpdates);
+    formData.append("existingPhotos", JSON.stringify(existingPhotos))
 
-    formData.append("existingPhotos", JSON.stringify(existingPhotos));
-
-    selectedFile.forEach((file) => {
-      formData.append("file", file);
+    photos.forEach((photo) => {
+      formData.append("file", photo.photo);
     });
 
     try {
@@ -158,20 +180,33 @@ export default function UpdateProducts() {
       enqueueSnackbar("Failed to update", { variant: "error" });
     }
   }
-
+async function getById(params) {
+      try {
+        let response = await api.get(`admin/getprd/${id}`);
+        console.log(response.data);
+        
+        dispatch(getProducts(response.data.data));
+      } catch (error) {console.log(error.message);
+      }
+    }
+    useEffect(() => {
+      getById()
+    
+    }, [])
+    
   useEffect(() => {
     if (product) {
       setProductData(product);
-      // setExistingPhotos(product.image.map((e) => e) || []);
-      // getById();
+      setExistingPhotos(product.image.map((e) => e) || []);
+      getById();
     }
-  }, [product]);
+  }, []);
   console.log(product, existingPhotos);
 
   return (
     <Box>
       <Box sx={{ width: "80%", margin: "auto", padding: "20px" }}>
-        <SnackbarContent />
+        <SnackbarProvider />
         <Typography align="center" variant="h4" gutterBottom>
           Update Product Details
         </Typography>
@@ -215,56 +250,135 @@ export default function UpdateProducts() {
               multiple
             />
           </Button>
-          {
-            <Stack
-              direction={"row"}
-              flexWrap="wrap"
-              gap={1}
-              sx={{
-                width: "100%",
-                maxHeight: "120px",
-                overflowY: "auto",
-                py: 0.5,
-              }}
-            >
-              {existingPhotos.map((img, index) => (
-                <Chip
-                  key={index}
-                  label={img.split("/").pop()}
-                  sx={{ fontSize: "9px" }}
-                  onDelete={() => removeExisting(index)}
+          { (
+                        <Box
+                          sx={{
+              display: "flex",
+              width: "100%",
+              height: "100%",
+              py: 1,
+                          }}
+                        >
+                          <Stack
+                            direction="row"
+                            flexwrap="nowrap"
+                            gap={1}
+                            sx={{
+                              width: "80%",
+                              height: "115px",
+                              maxHeight: "145px",
+                              overflowX: "scroll",
+                              overflowY: "hidden",
+                              py: 0.5,
+          
+                              "&::-webkit-scrollbar": {
+                                height: "8px",
+                                display: "block !important",
+                              },
+                              "&::-webkit-scrollbar-track": {
+                                backgroundColor: "#f1f1f1",
+                                borderRadius: "4px",
+                              },
+                              "&::-webkit-scrollbar-thumb": {
+                                backgroundColor: "#3E1A89",
+                                borderRadius: "4px",
+                              },
+                              scrollbarWidth: "thin",
+                            }}
+                          >
+           {existingPhotos.map((img, index) => {
+                // img = img.replace(/\\/g, "/").replace(/^\/+/, "")
+                      return (
+                        <ImageListItem
+                          key={`new-${index}`}
+                          sx={{
+                            minWidth: "120px",
+                            maxWidth: "120px",
+                            width: "120px",
+                            border: "1px solid #2196f3",
+                            borderRadius: "8px",
+                            overflow: "hidden", 
+                            flexShrink: 0,
+                          }}
+                        >
+                          <img
+                            src={img}
+                            alt="Upload"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                            onLoad={() => URL.revokeObjectURL(img)}
+                          />
+                          <ImageListItemBar
+                            position="top"
+                            actionIcon={
+                              <IconButton
+                                sx={{
+                                  color: "#fff",
+                                  backgroundColor: "rgba(0,0,0,0.5)",
+                                  m: 0.5,
+                                }}
+                                size="small"
+                                onClick={() => removeExisting(index)}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            }
+                          />
+                        </ImageListItem>
+                      )})}
+                            {photos.length > 0 && (
+                              photos.map((file, index) => {
+                              return (
+                                <ImageListItem
+                                  key={`new-${index}`}
+                                  sx={{
+                                    minWidth: "120px",
+                                    maxWidth: "120px",
+                                    width: "120px",
+                                    height: "120px",
+                                    border: "1px solid #2196f3",
+                                    borderRadius: "8px",
+                                    overflow: "hidden",
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  <img
+                  src={file.preview}
+                  alt=""
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
                 />
-              ))}
-              {selectedFile.map((file, index) => {
-            const localPreviewUrl = URL.createObjectURL(file);
-            
-            return (
-              <ImageListItem key={uuidv4()} sx={{ border: "1px solid #2196f3", borderRadius: "8px", overflow: "hidden" }}>
-                <img
-                  src={localPreviewUrl}
-                  alt="New Img"
-                  loading="lazy"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  onLoad={() => URL.revokeObjectURL(localPreviewUrl)} 
-                />
-                <ImageListItemBar
-                  position="top"
-                  actionIcon={
-                    <IconButton
-                      sx={{ color: "rgba(255, 255, 255, 0.9)", backgroundColor: "rgba(0,0,0,0.5)", m: 0.5, "&:hover": { backgroundColor: "rgba(255,0,0,0.7)" } }}
-                      size="small"
-                      onClick={() => removeFile(index)}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  }
-                  actionPosition="right"
-                />
-              </ImageListItem>
-            );
-          })}
-            </Stack>
-          }
+                                  <ImageListItemBar
+                                    position="top"
+                                    actionIcon={
+                                      <IconButton
+                                        sx={{
+                                          color: "#fff",
+                                          backgroundColor: "rgba(0,0,0,0.5)",
+                                          m: 0.5,
+                                        }}
+                                        size="small"
+                                        onClick={() => removeFile(index)}
+                                      >
+                                        <DeleteIcon fontSize="small" />
+                                      </IconButton>
+                                    }
+                                  />
+                                </ImageListItem>
+                              );
+                            })
+                          )}
+                          </Stack>
+                        </Box>
+                      )}
+          
           <Grid container spacing={2}>
             <Grid xs={6}>
               <FormControl fullWidth margin="normal">
@@ -277,6 +391,8 @@ export default function UpdateProducts() {
                   startAdornment={
                     <InputAdornment position="start">₹</InputAdornment>
                   }
+                  inputProps={{ min: 0 }}
+                   
                   name="price"
                   label="Price"
                 />
@@ -290,6 +406,8 @@ export default function UpdateProducts() {
                   name="discount"
                   value={productData.discount}
                   onChange={handleChange}
+                  inputProps={{ min: 0 }}
+                   
                   endAdornment={
                     <InputAdornment position="end">
                       <span style={{ color: "#3E1A89" }}>%</span>
@@ -324,11 +442,22 @@ export default function UpdateProducts() {
               id="stock"
               type="number"
               label="Stock"
+              inputProps={{ min: 0 }} 
+              onWheel={(e)=>e.target.value}                  
               value={productData.stock}
               onChange={handleChange}
               name="stock"
             />
           </FormControl>
+          <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={productData.sendUpdates}
+                    name="sendUpdates"
+                    onChange={handleChange} />
+                }
+                label="Send updates to Customers"
+              />
           <PrimaryButton type="submit">Update</PrimaryButton>
         </Stack>
       </Box>
