@@ -74,6 +74,7 @@ app.use("/review",reviewRouter)
 app.use("/orderStatus",orderStatusRouter)
 app.use("/dashboard",isAdmin,dashboardRouter)
 app.use("/product",productfiltering)
+app.use("/dashboard",dashboardRouter)
 
 
 
