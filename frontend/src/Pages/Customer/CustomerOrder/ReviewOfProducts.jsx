@@ -53,7 +53,7 @@ function ReviewCard({ review }) {
         </Typography>
 
         {review?.review ? (
-          <Typography sx={{ mt: 1.2, color: "#4b5563", lineHeight: 1.7 }}>
+          <Typography sx={{ mt: 1.2, color: "#4b5563" }}>
             {review.review}
           </Typography>
         ) : (
@@ -70,12 +70,11 @@ function ReviewOfProducts() {
   const dispatch = useDispatch();
   const reviews = useSelector((state) => state?.Review?.reviews) || [];
 
-  const [rating, setRating] = useState(0);
-  const [reviewText, setReviewText] = useState("");
+  const ratingRef = useRef(0);
+  const reviewRef = useRef(null);
+
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-
-  const timeoutRef = useRef(null);
 
   const deliveredProduct = useMemo(() => {
     return reviews?.[0]?.productId || null;
@@ -84,6 +83,7 @@ function ReviewOfProducts() {
   const fetchReviews = async () => {
     try {
       const response = await api.get("/review/getreviews");
+      console.log(response.data.data)
       dispatch(getReviews(response?.data?.data || []));
     } catch (error) {
       console.log("GET REVIEWS ERROR:", error?.response?.data || error.message);
@@ -91,41 +91,33 @@ function ReviewOfProducts() {
     }
   };
 
-  const handleSubmitReview = async () => {
-    if (loading) return;
-
+  const handleAddReview = async () => {
     try {
-      if (!deliveredProduct?._id) {
-        alert("Product not found");
-        return;
-      }
 
-      if (!rating) {
+      const payload = {
+        productId: deliveredProduct._id,
+        rating: ratingRef.current || 0,
+        review: reviewRef.current?.value?.trim() || "",
+      };
+
+      if (!payload.rating) {
         alert("Please select rating");
         return;
       }
 
       setLoading(true);
 
-      const payload = {
-        productId: deliveredProduct._id,
-        rating,
-        review: reviewText.trim(),
-      };
-
       await api.post("/review/addreview", payload);
 
-      setRating(0);
-      setReviewText("");
-      setSubmitted(true);
-
-      await fetchReviews();
-
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+      ratingRef.current = 0;
+      if (reviewRef.current) {
+        reviewRef.current.value = "";
       }
 
-      timeoutRef.current = setTimeout(() => {
+      setSubmitted(true);
+      await fetchReviews();
+
+      setTimeout(() => {
         setSubmitted(false);
       }, 2500);
     } catch (error) {
@@ -137,12 +129,6 @@ function ReviewOfProducts() {
 
   useEffect(() => {
     fetchReviews();
-
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
   }, []);
 
   return (
@@ -155,7 +141,7 @@ function ReviewOfProducts() {
       }}
     >
       <Container maxWidth="lg">
-        {deliveredProduct ? (
+        {deliveredProduct && (
           <Card
             sx={{
               borderRadius: "24px",
@@ -168,11 +154,7 @@ function ReviewOfProducts() {
               <Grid size={{ xs: 12, md: 5 }}>
                 <CardMedia
                   component="img"
-                  image={
-                    Array.isArray(deliveredProduct?.image)
-                      ? deliveredProduct.image[0]
-                      : deliveredProduct?.image || "/no-image.png"
-                  }
+                  image={deliveredProduct?.image || "/no-image.png"}
                   alt={deliveredProduct?.name || "Product"}
                   sx={{
                     width: "100%",
@@ -190,86 +172,10 @@ function ReviewOfProducts() {
                       fontWeight: 800,
                       color: "#2D1457",
                       mb: 1,
-                     }}
+                    }}
                   >
                     {deliveredProduct?.name || "Product"}
                   </Typography>
-
-                  <Typography sx={{ color: "#7a738f", mb: 3, lineHeight: 1.7 }}>
-                    Share your experience with this product by giving a rating
-                    and writing a short review.
-                  </Typography>
-
-                  <Typography
-                    variant="h6"
-                    sx={{ mb: 2, fontWeight: 600, color: "#3E1A89" }}
-                  >
-                    Previous Reviews
-                  </Typography>
-
-                  <Stack spacing={2}>
-                    {reviews.length > 0 ? (
-                      reviews.slice(0, 3).map((item) => (
-                        <Box
-                          key={item._id}
-                          sx={{
-                            p: 2,
-                            border: "1px solid #ece7f5",
-                            borderRadius: 3,
-                            backgroundColor: "#faf8ff",
-                          }}
-                        >
-                          <Stack
-                            direction={{ xs: "column", sm: "row" }}
-                            justifyContent="space-between"
-                            alignItems={{ xs: "flex-start", sm: "center" }}
-                            spacing={1}
-                          >
-                            <Rating
-                              value={Number(item?.rating) || 0}
-                              readOnly
-                              size="small"
-                            />
-                            <Typography
-                              variant="body2"
-                              sx={{ color: "#7a738f", fontSize: "0.85rem" }}
-                            >
-                              {item?.createdAt
-                                ? new Date(item.createdAt).toLocaleDateString()
-                                : ""}
-                            </Typography>
-                          </Stack>
-
-                          <Typography
-                            variant="body2"
-                            sx={{ mt: 1, color: "#5b5470", fontWeight: 600 }}
-                          >
-                            {item?.userId?.name || "Customer"}
-                          </Typography>
-
-                          {item?.review ? (
-                            <Typography sx={{ mt: 1.2, color: "#4b5563" }}>
-                              {item.review}
-                            </Typography>
-                          ) : (
-                            <Typography
-                              sx={{
-                                mt: 1.2,
-                                color: "#9aa1ad",
-                                fontStyle: "italic",
-                              }}
-                            >
-                              No written comment provided.
-                            </Typography>
-                          )}
-                        </Box>
-                      ))
-                    ) : (
-                      <Typography sx={{ color: "#7a738f" }}>
-                        No reviews yet. Be the first to rate this product.
-                      </Typography>
-                    )}
-                  </Stack>
 
                   <Divider sx={{ my: 3 }} />
 
@@ -286,9 +192,9 @@ function ReviewOfProducts() {
                         Your Rating *
                       </Typography>
                       <Rating
-                        value={rating}
+                        value={ratingRef.current}
                         onChange={(event, newValue) => {
-                          setRating(newValue || 0);
+                          ratingRef.current = newValue || 0;
                         }}
                       />
                     </Box>
@@ -298,13 +204,12 @@ function ReviewOfProducts() {
                       multiline
                       rows={4}
                       fullWidth
-                      value={reviewText}
-                      onChange={(e) => setReviewText(e.target.value)}
+                      inputRef={reviewRef}
                     />
 
                     <Button
                       variant="contained"
-                      onClick={handleSubmitReview}
+                      onClick={handleAddReview}
                       disabled={loading}
                       sx={{
                         backgroundColor: "#3E1A89",
@@ -326,24 +231,6 @@ function ReviewOfProducts() {
               </Grid>
             </Grid>
           </Card>
-        ) : (
-          <Box
-            sx={{
-              textAlign: "center",
-              py: 8,
-              mb: 4,
-              borderRadius: "18px",
-              backgroundColor: "#fff",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.05)",
-            }}
-          >
-            <Typography variant="h6" sx={{ color: "#3E1A89", mb: 1 }}>
-              Product not available
-            </Typography>
-            <Typography sx={{ color: "#7a738f" }}>
-              Reviews could not load a product preview.
-            </Typography>
-          </Box>
         )}
 
         {submitted && (
