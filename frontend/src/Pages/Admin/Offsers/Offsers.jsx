@@ -25,6 +25,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { useDispatch, useSelector } from "react-redux";
 import { getOffer } from "../../../Redux/Slices/OffserSlice";
 import api from "../../../api/axiosConfig";
+import axios from "axios";
+import token from "../../../api/axiosConfig";
+
 
 const backgroundOptions = [
   {
@@ -152,32 +155,47 @@ function Offers() {
   };
 
   const handleSubmit = async () => {
-    try {
-      setLoading(true);
+  if (!title || !code || !description) {
+    alert("Please fill all required fields (title, code, description).");
+    return;
+  }
 
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("description", description);
-      formData.append("code", code);
-      formData.append("status", status);
-      formData.append("background", selectedBg.name);
+  if (images.length === 0) {
+    alert("Please upload at least one image.");
+    return;
+  }
 
-      images.forEach((img) => {
-        formData.append("image", img);
-      });
+  try {
+    setLoading(true);
 
-      await api.post("/offer/setOffer", formData);
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("code", code);
+    formData.append("description", description);
+    formData.append("status", status);
+    formData.append("background", selectedBg.name);
 
-      resetForm();
-      fetchOffers();
-    } catch (error) {
-      console.error("POST ERROR:", error?.response?.data || error.message);
-      alert(error?.response?.data?.message || "Offer save failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+    images.forEach((img) => {
+      formData.append("image", img);
+    });
 
+    const authToken = localStorage.getItem("token");
+
+    const res = await api.post("/offer/setOffer", formData, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+
+    console.log(res.data);
+    resetForm();
+    fetchOffers();
+  } catch (error) {
+    console.error("POST ERROR:", error?.response?.data || error.message);
+  } finally {
+    setLoading(false);
+  }
+};
   const handleDelete = async (id) => {
     try {
       await api.delete(`/offer/deleteOffer/${id}`);
