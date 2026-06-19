@@ -21,12 +21,16 @@ import AdminProducts from "./Pages/Admin/Products/AdminProducts";
 import ProtectedRoutes from "./Routes/ProtectedRoutes";
 import CustomerDashboard from "./Pages/Customer/Layout/CustomerDashboard";
 import Overview from "./Pages/Admin/Home/AdminHome";
-import CustomerEditProfile from "./Pages/Customer/CustomerEditProfile";
 import CustomerProducts from "./Pages/Customer/CustomerProducts/CustomerProducts";
 import ProductPage from "./Pages/Customer/CustomerProducts/ProductPage";
 import CustomerCart from "./Pages/Customer/Cart/CustomerCart";
 import OrderList from "./Pages/Customer/CustomerOrder/OrderList";
-import CustomerProfile from "./Pages/Customer/CustomerProfiles";
+import CustomerProfile from "./Pages/Customer/Profile/CustomerProfiles";
+import CustomerEditProfile from "./Pages/Customer/Profile/CustomerEditProfile";
+import CustomerEditAddress from "./Pages/Customer/Profile/CustomerEditAddress";
+import EmailVerify from "./Pages/Common/EmailVerify";
+import Offsers from "./Pages/Admin/Offsers/Offsers"
+import ReviewOfProducts from "./Pages/Customer/CustomerOrder/ReviewOfProducts";
 
 
 function App() {
@@ -38,7 +42,8 @@ function App() {
         <Route path ="/" element={<LandingPageLayout/>}>
         <Route index element={<LandingPage/>}/>
         <Route path ="/register" element={<Register/>}/>
-        <Route path ="/verifyOtp/:id" element={<VerifyOtp/>}/>
+        <Route path ="/verify-email" element={<EmailVerify/>}/>
+        <Route path ="/verify-otp" element={<VerifyOtp/>}/>
         <Route path ="/login" element={<Login/>}/>
         
         <Route path ="/forget" element={<ForgotPassword/>}/>
@@ -54,6 +59,7 @@ function App() {
         <Route path ="/admin/customers" element={<UserDetails/>}/>
         <Route path="/admin/products" element={<AdminProducts/>}/>
         <Route path="/admin/products/updateProduct/:id" element={<UpdateProducts/>}/>
+        <Route path="/admin/offsers" element={<Offsers/>}/>
         </Route>
 
         <Route path ="/customer" element={<ProtectedRoutes role="customer"><CustomerDashboard/></ProtectedRoutes>}>
@@ -65,8 +71,10 @@ function App() {
         <Route path="/customer/productpage/:id" element={<ProductPage/>}/>
         <Route path="/customer/cart" element={<CustomerCart/>}/>
         <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
-        <Route path ="/customer/editprofile/:id" element={<CustomerEditProfile/>}/>
+        <Route path ="/customer/editaddress" element={<CustomerEditAddress/>}/>
+        <Route path ="/customer/editaddress/:id" element={<CustomerEditAddress/>}/>
         <Route path ="/customer/orderlist" element={<OrderList/>}/>
+        <Route path ="/customer/reviews/:id" element={<ReviewOfProducts/>}/>
         </Route>
 
       </Routes>

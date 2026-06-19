@@ -38,7 +38,12 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
               display: 'flex',
               alignItems: 'center',
               gap: 1,
+              cursor: 'pointer',
+              '&:hover': {
+                textDecoration: 'underline',
+              },
             }}
+            onClick={() => navigate('/admin')}
           >
             🍔 <span style={{ color: '#A78BFA' }}>PowerBites</span>
           </Typography>
@@ -87,7 +92,8 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
                     justifyContent: 'center',
                     '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
                   }}
-                  onClick={() =>  console.log(`${item.text} clicked`)}
+                  onClick={() => navigate(`/admin/${item.text.toLowerCase()}`)}
+                 
                 >
                   <ListItemIcon sx={{ color: '#C4B5FD', minWidth: 40, display: 'flex', justifyContent: 'center' }}>
                     {item.icon}

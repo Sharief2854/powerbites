@@ -21,6 +21,7 @@ const productSchema = new mongoose.Schema(
             required: true,
             default: 0,
         },
+
         image: {
             type: [String],
             required: true,
@@ -43,6 +44,10 @@ const productSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
+        category: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "ProductCategory"
+        }
     },
     {
         timestamps: true,

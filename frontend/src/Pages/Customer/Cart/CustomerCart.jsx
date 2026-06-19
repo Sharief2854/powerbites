@@ -1,6 +1,7 @@
 import {
   Box,
   Card,
+  Chip,
   CardContent,
   IconButton,
   CardMedia,
@@ -43,6 +44,19 @@ import {
 } from "../../../Redux/Slices/CM_CartSlice";
 import PaymentButton from "../Payments/PaymentButton";
 
+const style1 = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 500,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  pt: 2,
+  px: 4,
+  pb: 3,
+};
 const style = {
   position: 'absolute',
   top: '50%',
@@ -169,7 +183,6 @@ function AddressModal() {
         setOtherLabel(isPredefined ? "" : currentAddr.label);
       }
     } else {
-      // Clear form when in "Add Mode" (no ID in params)
       setAddressForm({
         label: "",
         street: "",
@@ -207,7 +220,6 @@ function AddressModal() {
 
   
 
-  // Save / Update Address
   const handleSaveAddress = async (e) => {
     e.preventDefault();
     setSavingAddress(true);
@@ -268,8 +280,15 @@ function AddressModal() {
         onClose={handleClose}
         aria-labelledby="child-modal-title"
         aria-describedby="child-modal-description"
+  //       PaperProps={{
+  //   sx: {
+  //     width: "900px",
+  //     maxWidth: "90vw",
+  //     borderRadius: 4,
+  //   },
+  // }}
       >
-        <Box sx={{ ...style, width: 200 }}>
+        <Box sx={{ ...style1, width: 400 }}>
           <form onSubmit={handleSaveAddress}>
             <Typography
               variant="subtitle1"
@@ -345,7 +364,7 @@ function AddressModal() {
                     displayEmpty
                     disabled={!addressForm.country}
                   >
-                    {/* <MenuItem value="">Select State</MenuItem> */}
+                    <MenuItem value="">Select State</MenuItem>
                     {availableStates.map((state) => (
                       <MenuItem key={state} value={state}>
                         {state}
@@ -416,7 +435,7 @@ export default function CustomerCart() {
   let decodeId = jwtDecode(token).id;
   const [qty, setQty] = useState(1);
   const [addresses, setAddress] = useState([]);
-  const [totalPrice, setTotalPrice] = useState(300);
+  const [totalPrice, setTotalPrice] = useState();
   const [open, setOpen] = React.useState(false);
   const [updateAddress, setUpdateAddress] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -426,6 +445,8 @@ export default function CustomerCart() {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+const [selectedCartId, setSelectedCartId] = useState(null);
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -435,17 +456,21 @@ export default function CustomerCart() {
   };
   const subtotal =
     cartItems.reduce((total, item) => {
-      const priceInPaise = Math.round(Number(item.price) * 100);
+      const priceInPaise = Math.round(Number(item?.product?.price) * 100);
 
-      return total + priceInPaise * item.quantity;
+      return total + priceInPaise * item?.product?.quantity;
     }, 0) || 0;
-  console.log(subtotal);
-
-  const shipping = subtotal > 50000 ? 0 : 999; // ₹49.99
+  const shipping = subtotal > 5000 ? 999 : 0;
 
   const grandTotal = subtotal + shipping;
 
   const formatPrice = (amountInPaise) => (amountInPaise / 100).toFixed(2);
+  const confirmDelete = async () => {
+  await deleteCart(selectedCartId);
+
+  setOpenDeleteDialog(false);
+  setSelectedCartId(null);
+};
   //   const round2 = (num) => Math.round(num * 100) / 100;
 
   // function calculateCart(cartItems, shipping = 49.99, discount = 0) {
@@ -527,7 +552,7 @@ export default function CustomerCart() {
 
   async function deleteCart(cartId) {
     try {
-      const res = await api.delete(`/cart/${cartId}`);
+      const res = await api.delete(`/cart/deleteItem/${cartId}`);
 
       dispatch(addToCart(res.data.data));
 
@@ -572,6 +597,8 @@ export default function CustomerCart() {
       ? updateAddress
       : [addresses] || [];
 
+      console.log(address);
+      
   useEffect(() => {
     getCart();
     getAddress();
@@ -609,10 +636,11 @@ export default function CustomerCart() {
       setUpdateAddress(defaultAddress);
     }
   }, [addresses]);
-  console.log(cartItems);
   if (loading) {
     Skeleton.count = 4;
   }
+  console.log(cartItems);
+  
 
   return (
     <Box sx={{ p: 3 }}>
@@ -623,8 +651,45 @@ export default function CustomerCart() {
       >
         My Cart
       </Typography>
+      <Dialog
+  open={openDeleteDialog}
+  onClose={() => setOpenDeleteDialog(false)}
+  maxWidth="xs"
+  fullWidth
+>
+  <DialogTitle
+    sx={{
+      fontWeight: 700,
+      color: "#3E1A89",
+    }}
+  >
+    Remove Item
+  </DialogTitle>
 
-      <Grid container spacing={17}>
+  <DialogContent>
+    <Typography>
+      Are you sure you want to remove this item from your cart?
+    </Typography>
+  </DialogContent>
+
+  <DialogActions sx={{ p: 2 }}>
+    <Button
+      variant="outlined"
+      onClick={() => setOpenDeleteDialog(false)}
+    >
+      Cancel
+    </Button>
+
+    <Button
+      color="error"
+      variant="contained"
+      onClick={confirmDelete}
+    >
+      Remove
+    </Button>
+  </DialogActions>
+</Dialog>
+      <Grid container spacing={3}>
         <Grid size={{ xs: 12, sm: 8, md: 8 }}>
           <Stack spacing={2}>
             <Card elevation={1}>
@@ -646,12 +711,12 @@ export default function CustomerCart() {
                           `${updateAddress.street}, ${updateAddress.city}, ${updateAddress.state}, ${updateAddress.country}, ${updateAddress.pincode}`}
                       </Typography>
                     ) : (
-                      ""
+                      "No Address Found"
                     )}
+                    {address ?
                   <IconButton onClick={handleClickOpen}>
-                    
-                    <EditIcon />
-                  </IconButton>
+                    <EditIcon /></IconButton>:(<PrimaryButton onClick={() => navigate("/customer/profile")}>Add Address</PrimaryButton>)
+                  }
                 </Stack>
               </CardContent>
             </Card>
@@ -661,17 +726,23 @@ export default function CustomerCart() {
               open={open}
               onClose={handleClose}
               aria-labelledby="responsive-dialog-title"
+              
+  paperprops={{
+    sx: {
+      width: "100%",
+      maxWidth: 900,
+      margin: "auto",
+    },
+  }}
             >
               <DialogTitle id="responsive-dialog-title">
-               <AddressModal/>
+               <AddressModal sx={{width:"400px"}}/>
                 <Typography variant="body1" color="initial">
                   or select from below
                 </Typography>
               </DialogTitle>
               <DialogContent>
-                {addresses.map((item) => {
-                  console.log(openAddress);
-
+                {addresses?addresses.map((item) => {
                   return (
                     <Box key={item._id}>
                       <Checkbox
@@ -683,93 +754,188 @@ export default function CustomerCart() {
                       </DialogContentText>
                     </Box>
                   );
-                })}
+                }):"No Address Found"}
               </DialogContent>
               <DialogActions>
                 <Button autoFocus onClick={handleClose}>
-                  Close
+                  Done
                 </Button>
               </DialogActions>
             </Dialog>
             {cartItems?.map((item) => (
-              <Card key={item._id} elevation={1}>
-                <CardContent>
-                  <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, sm: 3, md: 2 }}>
-                      <CardMedia
-                        component="img"
-                        image={
-                          item?.product?.image?.[0]
-                            ? `http://localhost:4500/${item.product.image[0].replace(/\\/g, "/").replace(/^\/+/, "")}`
-                            : "/no-image.png"
-                        }
-                        alt={item?.product?.productName}
-                        sx={{
-                          height: 120,
-                          borderRadius: 1,
-                          bgcolor: "background.default",
-                        }}
-                      />
-                    </Grid>
+              <Card
+  key={item._id}
+  sx={{
+    mb: 2,
+    borderRadius: 4,
+    p: 1.5,
+    display: "flex",
+    flexDirection: { xs: "column", sm: "row" },
+    alignItems: "center",
+    gap: 2,
+    background:
+      "linear-gradient(135deg,#fff,#f8f9ff)",
+    border: "1px solid rgba(62,26,137,0.10)",
+    boxShadow: "0 8px 25px rgba(0,0,0,0.06)",
+    transition: "0.25s",
+    "&:hover": {
+      transform: "translateY(-3px)",
+      boxShadow: "0 18px 40px rgba(62,26,137,0.12)",
+    },
+  }}
+>
+  {/* IMAGE */}
+  <Box
+    component="img"
+    src={
+      item?.product?.image?.[0]
+        ? `http://localhost:4500/${item.product.image[0]
+            .replace(/\\/g, "/")
+            .replace(/^\/+/, "")}`
+        : "/no-image.png"
+    }
+    sx={{
+      width: 90,
+      height: 90,
+      borderRadius: 3,
+      objectFit: "cover",
+      border: "2px solid rgba(62,26,137,0.08)",
+      flexShrink: 0,
+    }}
+  />
 
-                    <Grid size={{ xs: 12, sm: 3, md: 3 }}>
-                      <Stack spacing={1}>
-                        <Typography variant="subtitle1">
-                          {item?.product?.productName}
-                        </Typography>
+  {/* DETAILS */}
+  <Box sx={{ flex: 1, minWidth: 0 }}>
+    <Typography
+      sx={{
+        fontWeight: 700,
+        fontSize: "1rem",
+        color: "#111827",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      }}
+    >
+      {item?.product?.name}
+    </Typography>
 
-                        <Typography variant="body2" color="text.secondary">
-                          {item?.product?.description}
-                        </Typography>
-                        </Stack>
-                        </Grid>
+    <Typography
+      sx={{
+        fontSize: "0.85rem",
+        color: "#6B7280",
+        display: { xs: "none", sm: "block" },
+      }}
+    >
+      {item?.product?.description}
+    </Typography>
 
-                    <Grid size={{ xs: 12, sm: 3, md: 3 }}>
-                        <Stack spacing={1}>
-                          <Typography variant="body1" align="center" color="initial">Quantity</Typography>
-                        <Select
-                          size="small"
-                          value={item.quantity}
-                          onChange={(e) =>
-                            handleChange(item._id, e.target.value)
-                          }
-                          // sx={{ width: 100 }}
-                        >
-                          {[1, 2, 3, 4, 5].map((qty) => (
-                            <MenuItem key={qty} value={qty}>
-                              {qty}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </Stack>
-                    </Grid>
+    <Chip
+      size="small"
+      label="In Cart"
+      sx={{
+        mt: 1,
+        bgcolor: "rgba(62,26,137,0.08)",
+        color: "#3E1A89",
+        fontWeight: 600,
+      }}
+    />
+  </Box>
 
-                    <Grid size={{ xs: 12, sm: 3, md: 2 }}>
-                      <Typography variant="h6">₹{item.price}</Typography>
-                    </Grid>
+  <Box sx={{ textAlign: "center" }}>
+    <Typography
+      sx={{
+        fontSize: "0.75rem",
+        color: "#6B7280",
+        fontWeight: 600,
+        mb: 0.5,
+      }}
+    >
+      Qty
+    </Typography>
 
-                    <Grid size={{ xs: 12, sm: 3, md: 2 }}>
-                      <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                        <Button
-                          size="small"
-                          color="error"
-                          onClick={() => deleteCart(item._id)}
-                        >
-                          Delete
-                        </Button>
+    <Select
+      value={item?.quantity}
+      onChange={(e) =>
+        handleChange(item._id, e.target.value)
+      }
+      size="small"
+      sx={{
+        borderRadius: 3,
+        minWidth: 70,
+        fontSize: "0.85rem",
+        bgcolor: "#fff",
+      }}
+    >
+      {[...Array(10)].map((_, i) => (
+        <MenuItem key={i + 1} value={i + 1}>
+          {i + 1}
+        </MenuItem>
+      ))}
 
-                        <Button
-                          size="small"
-                          color="primary"
-                          onClick={() => saveForLater(item._id)}
-                        >
-                          Save for Later
-                        </Button>
-                      </Stack>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
+    </Select>
+  </Box>
+
+  <Box sx={{ textAlign: "center", minWidth: 90 }}>
+    <Typography
+      sx={{
+        fontSize: "0.75rem",
+        color: "#6B7280",
+        fontWeight: 600,
+      }}
+    >
+      Price
+    </Typography>
+
+    <Typography
+      sx={{
+        fontSize: "1.2rem",
+        fontWeight: 800,
+        color: "#3E1A89",
+      }}
+    >
+      ₹{item?.product?.price * item?.quantity}
+    </Typography>
+  </Box>
+
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: { xs: "row", sm: "column" },
+      gap: 1,
+    }}
+  >
+    <Button
+      size="small"
+      variant="outlined"
+      color="error"
+      sx={{
+        borderRadius: 99,
+        textTransform: "none",
+        fontSize: "0.75rem",
+        px: 2,
+      }}
+      onClick={() => deleteCart(item._id)}
+    >
+      Remove
+    </Button>
+
+    <Button
+      size="small"
+      variant="contained"
+      sx={{
+        borderRadius: 99,
+        textTransform: "none",
+        fontSize: "0.75rem",
+        px: 2,
+        bgcolor: "#3E1A89",
+        "&:hover": { bgcolor: "#2C1265" },
+      }}
+      onClick={() => saveForLater(item._id)}
+    >
+      Save
+    </Button>
+  </Box>
+</Card>
             ))}
           </Stack>
         </Grid>
@@ -844,7 +1010,7 @@ export default function CustomerCart() {
               </Grid>
 
 
-              <PaymentButton addressId={address?._id} amount={totalPrice} />
+              <PaymentButton addressId={updateAddress?._id} amount={grandTotal} />
             </CardContent>
           </Card>
         </Grid>
