@@ -193,7 +193,7 @@ async function getCustomerProfile(req, res) {
 //         }
 //         console.log("File received:", req.file);
 //         const rawpath = req.file.path;
-//         const usefullUrl = rawpath.replace(/\\/g, "/");
+//         const usefullUrl = rawpath;
 //         const photo = await photoModel.findOne({ userId });
 //         if (!photo) {
 //             const newPhoto = new photoModel({
@@ -240,11 +240,8 @@ async function postCustomerPhoto(req, res) {
     
         const rawpath = req.file.path;
 
-        // convert \ to /
-        const usefullPath = rawpath.replace(/\\/g, "/");
-
         const baseUrl = `${req.protocol}://${req.get("host")}`;
-        const imageUrl = `${baseUrl}/${usefullPath}`;
+        const imageUrl = `${baseUrl}/${rawpath}`;
 
         const updatedUser = await userModel.findByIdAndUpdate(
             userId,

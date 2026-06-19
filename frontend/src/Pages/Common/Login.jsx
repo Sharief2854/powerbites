@@ -25,11 +25,16 @@ function Login() {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+
   };
+
+ 
+
 
   // Validation Checks
   const emailError = formData.email ? validateEmail(formData.email) : "";
@@ -49,6 +54,7 @@ function Login() {
 
     setLoading(true);
     try {
+      formData.email =formData.email.toLowerCase();
       console.log("Logging in with:", formData);
       // TODO: Integrate your actual API Authentication call here
     let response = await api.post("/auth/login",formData);
@@ -203,7 +209,7 @@ function Login() {
                   cursor: "pointer",
                   "&:hover": { textDecoration: "underline" },
                 }}
-                onClick={() => navigate("/register")} // Assuming register route name
+                onClick={() => navigate("/verify-email")} // Assuming register route name
               >
                 Sign Up
               </Typography>

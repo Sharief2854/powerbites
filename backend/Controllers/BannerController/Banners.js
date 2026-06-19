@@ -6,7 +6,7 @@ const bannerModel = require("../../Model/bannerSchema");
 async function allBanners(req, res) {
     try {
 
-        let banners = await bannerModel.find();
+        let banners = await bannerModel.find().populate("product offer coupon");
         if (!banners) {
             return res.status(400).json({
                 message: "No banners found"
@@ -27,90 +27,57 @@ async function allBanners(req, res) {
 
 }
 
-// async function setBanner(req, res) {
-//     try{
-//         const body = req.body;
-
-//         if (!req.files || req.files.length === 0) {
-//             return res.status(400).json({ message: "At least one banner image is required." });
-//         }
-
-        // const imagePaths = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path}`);
-
-//         const bannerData = {
-//             ...body,
-//             image: imagePaths
-//         };
-
-//         const newBanner = await bannerModel.create(bannerData);
-//         if(!newBanner){
-//             return res.status(400).json({
-//                 message:"Something went wrong while creating the banner."
-//             })
-//         }
-//         res.status(201).json({
-//             message:"Banner added successfully",
-//             newBanner
-//         })
-//     }
-//     catch(err){
-//         res.status(500).json({
-//             message: "Error creating banner", error: err.message
-//         })
-//     }
-    
-// }
-
-
-async function setProductBanner(req, res) {
-    try{
-        const productId = req.params.Id;
+async function setBanner(req, res) {
+    try {
         const body = req.body;
-        if(!body){
-            return res.status(400).json({
-                message:"All fields are required"
-            })
+
+        // Clean up accidental spaces in keys sent by frontend FormData
+        Object.keys(body).forEach(key => {
+            const trimmedKey = key.trim();
+            if (trimmedKey !== key) {
+                body[trimmedKey] = body[key];
+                delete body[key];
+            }
+        });
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: "At least one banner image is required." });
+        }
+        
+
+        if (!body.title || !body.name || !body.description || !body.user) {
+            return res.status(400).json({ 
+                message: "Missing required fields: 'name', 'title', 'description', and 'user' are required." 
+            });
         }
 
-        let product = await productModel.findById(productId);
+        const imagePaths = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path}`);
 
-        if(!product){
-            return res.status(404).json({
-                message:"Product not found"
-            })
-
-        }
-
-        let bannerData = {
+        const bannerData = {
             ...body,
-            name: product.name,
-            image: product.image,
-            discount: product.discount
+            image: imagePaths
         };
 
-        let banner = await bannerModel.create(bannerData);
+        // Prevent CastError if frontend sends empty strings or "undefined" for ObjectIds
+        if (!bannerData.product || bannerData.product === "undefined") delete bannerData.product;
+        if (!bannerData.offer || bannerData.offer === "undefined") delete bannerData.offer;
+        if (!bannerData.coupon || bannerData.coupon === "undefined") delete bannerData.coupon;
 
-        if (!banner) {
+        const newBanner = await bannerModel.create(bannerData);
+        if (!newBanner) {
             return res.status(400).json({
                 message: "Something went wrong while creating the banner."
             });
         }
-
         res.status(201).json({
             message: "Banner added successfully",
-            banner
-        })
-
-
-
-    }
-    catch(err){
+            newBanner
+        });
+    } catch (err) {
         res.status(500).json({
             message: "Error creating banner", error: err.message
-        })
+        });
     }
-
-
 }
 
 
@@ -217,4 +184,4 @@ async function bannerStatus(req,res){
 
 
 
-module.exports = { allBanners, setProductBanner, deleteBanner, updateBanner, bannerStatus};
+module.exports = { allBanners, setBanner, deleteBanner, updateBanner, bannerStatus};
