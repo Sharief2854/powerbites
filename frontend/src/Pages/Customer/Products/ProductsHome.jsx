@@ -27,6 +27,7 @@ export default function CustomerProducts() {
   const fetchProducts = async () => {
     try {
       const response = await api.get("/products/all");
+      console.log(response.data.data)
       dispatch(getProducts(response.data.data));
     } catch (error) {
       console.err("Fetch error:", error);
@@ -84,13 +85,7 @@ export default function CustomerProducts() {
 
               <Grid container spacing={{ xs: 2, sm: 3 }} alignItems="stretch">
         {filterProducts.length > 0 ? (
-          filterProducts.map((product) => {
-            const imageUrl = `http://localhost:4500/${product.image[0]
-              .replace(/\\/g, "/")
-              .replace(/\/{2,}/g, "/")
-              .replace(/^\/+/, "")}`;
-      
-            return (
+          filterProducts.map((product) => (  
         <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
         <Card
           sx={{
@@ -120,10 +115,7 @@ export default function CustomerProducts() {
           >
             <CardMedia
               component="img"
-              image={`http://localhost:4500/${product.image[0]
-                .replace(/\\/g, "/")
-                .replace(/\/{2,}/g, "/")
-                .replace(/^\/+/, "")}`}
+              src={product.image[0]}
               alt={product.name}
               sx={{
                 width: "100%",
@@ -157,20 +149,6 @@ export default function CustomerProducts() {
               >
                 {product.name}
               </Typography>
-      
-              {(product.isAvailable === true ||
-                product.isAvailable === "true" ||
-                Number(product.stock) > 0) && (
-                <Chip
-                  label="In Stock"
-                  size="small"
-                  sx={{
-                    backgroundColor: "#e8f7ec",
-                    color: "#1b7a38",
-                    fontWeight: 600,
-                  }}
-                />
-              )}
             </Stack>
       
             <Typography
@@ -217,8 +195,7 @@ export default function CustomerProducts() {
           </CardContent>
         </Card>
       </Grid>
-            );
-          })
+          ))
         ) :  (
             <Grid item xs={12}>
               <Box

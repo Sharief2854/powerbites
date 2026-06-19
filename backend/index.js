@@ -29,6 +29,7 @@ const ordersRouter = require('./Routes/Orders/ordersRouter');
 const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD');
 const orderStatusRouter = require('./Routes/OrderStatus/orderStatusUpdating');
 const dashboardRouter = require('./Routes/Dashboard/dashboardRoute')
+const productfiltering = require('./Routes/Products/ProdutsRouter')
 
 
 
@@ -71,6 +72,8 @@ app.use("/updateCustomerProfile", isCustomer,customerProfileRouter)
 app.use("/developer",DeveloperRouter)
 app.use("/review",reviewRouter)
 app.use("/orderStatus",orderStatusRouter)
+app.use("/dashboard",isAdmin,dashboardRouter)
+app.use("/product",productfiltering)
 app.use("/dashboard",dashboardRouter)
 
 
