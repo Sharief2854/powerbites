@@ -44,6 +44,19 @@ import {
 } from "../../../Redux/Slices/CM_CartSlice";
 import PaymentButton from "../Payments/PaymentButton";
 
+const style1 = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 500,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  pt: 2,
+  px: 4,
+  pb: 3,
+};
 const style = {
   position: 'absolute',
   top: '50%',
@@ -170,7 +183,6 @@ function AddressModal() {
         setOtherLabel(isPredefined ? "" : currentAddr.label);
       }
     } else {
-      // Clear form when in "Add Mode" (no ID in params)
       setAddressForm({
         label: "",
         street: "",
@@ -208,7 +220,6 @@ function AddressModal() {
 
   
 
-  // Save / Update Address
   const handleSaveAddress = async (e) => {
     e.preventDefault();
     setSavingAddress(true);
@@ -269,8 +280,15 @@ function AddressModal() {
         onClose={handleClose}
         aria-labelledby="child-modal-title"
         aria-describedby="child-modal-description"
+  //       PaperProps={{
+  //   sx: {
+  //     width: "900px",
+  //     maxWidth: "90vw",
+  //     borderRadius: 4,
+  //   },
+  // }}
       >
-        <Box sx={{ ...style, width: 200 }}>
+        <Box sx={{ ...style1, width: 400 }}>
           <form onSubmit={handleSaveAddress}>
             <Typography
               variant="subtitle1"
@@ -346,7 +364,7 @@ function AddressModal() {
                     displayEmpty
                     disabled={!addressForm.country}
                   >
-                    {/* <MenuItem value="">Select State</MenuItem> */}
+                    <MenuItem value="">Select State</MenuItem>
                     {availableStates.map((state) => (
                       <MenuItem key={state} value={state}>
                         {state}
@@ -427,6 +445,8 @@ export default function CustomerCart() {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+const [selectedCartId, setSelectedCartId] = useState(null);
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -436,17 +456,21 @@ export default function CustomerCart() {
   };
   const subtotal =
     cartItems.reduce((total, item) => {
-      const priceInPaise = Math.round(Number(item.price) * 100);
+      const priceInPaise = Math.round(Number(item?.product?.price) * 100);
 
-      return total + priceInPaise * item.quantity;
+      return total + priceInPaise * item?.product?.quantity;
     }, 0) || 0;
-  console.log(subtotal);
-
-  const shipping = subtotal > 50000 ? 0 : 999; // ₹49.99
+  const shipping = subtotal > 5000 ? 999 : 0;
 
   const grandTotal = subtotal + shipping;
 
   const formatPrice = (amountInPaise) => (amountInPaise / 100).toFixed(2);
+  const confirmDelete = async () => {
+  await deleteCart(selectedCartId);
+
+  setOpenDeleteDialog(false);
+  setSelectedCartId(null);
+};
   //   const round2 = (num) => Math.round(num * 100) / 100;
 
   // function calculateCart(cartItems, shipping = 49.99, discount = 0) {
@@ -573,6 +597,8 @@ export default function CustomerCart() {
       ? updateAddress
       : [addresses] || [];
 
+      console.log(address);
+      
   useEffect(() => {
     getCart();
     getAddress();
@@ -610,10 +636,11 @@ export default function CustomerCart() {
       setUpdateAddress(defaultAddress);
     }
   }, [addresses]);
-  console.log(cartItems);
   if (loading) {
     Skeleton.count = 4;
   }
+  console.log(cartItems);
+  
 
   return (
     <Box sx={{ p: 3 }}>
@@ -624,7 +651,44 @@ export default function CustomerCart() {
       >
         My Cart
       </Typography>
+      <Dialog
+  open={openDeleteDialog}
+  onClose={() => setOpenDeleteDialog(false)}
+  maxWidth="xs"
+  fullWidth
+>
+  <DialogTitle
+    sx={{
+      fontWeight: 700,
+      color: "#3E1A89",
+    }}
+  >
+    Remove Item
+  </DialogTitle>
 
+  <DialogContent>
+    <Typography>
+      Are you sure you want to remove this item from your cart?
+    </Typography>
+  </DialogContent>
+
+  <DialogActions sx={{ p: 2 }}>
+    <Button
+      variant="outlined"
+      onClick={() => setOpenDeleteDialog(false)}
+    >
+      Cancel
+    </Button>
+
+    <Button
+      color="error"
+      variant="contained"
+      onClick={confirmDelete}
+    >
+      Remove
+    </Button>
+  </DialogActions>
+</Dialog>
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, sm: 8, md: 8 }}>
           <Stack spacing={2}>
@@ -647,12 +711,12 @@ export default function CustomerCart() {
                           `${updateAddress.street}, ${updateAddress.city}, ${updateAddress.state}, ${updateAddress.country}, ${updateAddress.pincode}`}
                       </Typography>
                     ) : (
-                      ""
+                      "No Address Found"
                     )}
+                    {address ?
                   <IconButton onClick={handleClickOpen}>
-                    
-                    <EditIcon />
-                  </IconButton>
+                    <EditIcon /></IconButton>:(<PrimaryButton onClick={() => navigate("/customer/profile")}>Add Address</PrimaryButton>)
+                  }
                 </Stack>
               </CardContent>
             </Card>
@@ -662,17 +726,23 @@ export default function CustomerCart() {
               open={open}
               onClose={handleClose}
               aria-labelledby="responsive-dialog-title"
+              
+  paperprops={{
+    sx: {
+      width: "100%",
+      maxWidth: 900,
+      margin: "auto",
+    },
+  }}
             >
               <DialogTitle id="responsive-dialog-title">
-               <AddressModal/>
+               <AddressModal sx={{width:"400px"}}/>
                 <Typography variant="body1" color="initial">
                   or select from below
                 </Typography>
               </DialogTitle>
               <DialogContent>
-                {addresses.map((item) => {
-                  console.log(openAddress);
-
+                {addresses?addresses.map((item) => {
                   return (
                     <Box key={item._id}>
                       <Checkbox
@@ -684,11 +754,11 @@ export default function CustomerCart() {
                       </DialogContentText>
                     </Box>
                   );
-                })}
+                }):"No Address Found"}
               </DialogContent>
               <DialogActions>
                 <Button autoFocus onClick={handleClose}>
-                  Close
+                  Done
                 </Button>
               </DialogActions>
             </Dialog>
@@ -697,202 +767,174 @@ export default function CustomerCart() {
   key={item._id}
   sx={{
     mb: 2,
-    borderRadius: 5,
-    overflow: "hidden",
+    borderRadius: 4,
+    p: 1.5,
+    display: "flex",
+    flexDirection: { xs: "column", sm: "row" },
+    alignItems: "center",
+    gap: 2,
     background:
-      "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,249,255,0.95))",
-    backdropFilter: "blur(20px)",
-    border: "1px solid rgba(62,26,137,0.12)",
-    boxShadow: "0 10px 40px rgba(62,26,137,0.08)",
-    transition: "all .3s ease",
+      "linear-gradient(135deg,#fff,#f8f9ff)",
+    border: "1px solid rgba(62,26,137,0.10)",
+    boxShadow: "0 8px 25px rgba(0,0,0,0.06)",
+    transition: "0.25s",
     "&:hover": {
-      transform: "translateY(-4px)",
-      boxShadow: "0 20px 50px rgba(62,26,137,0.15)",
+      transform: "translateY(-3px)",
+      boxShadow: "0 18px 40px rgba(62,26,137,0.12)",
     },
   }}
 >
-  <CardContent sx={{ p: 1 }}>
-    <Grid
-      container
-      spacing={2}
-      alignItems="center"
+  {/* IMAGE */}
+  <Box
+    component="img"
+    src={
+      item?.product?.image?.[0]
+        ? `http://localhost:4500/${item.product.image[0]
+            .replace(/\\/g, "/")
+            .replace(/^\/+/, "")}`
+        : "/no-image.png"
+    }
+    sx={{
+      width: 90,
+      height: 90,
+      borderRadius: 3,
+      objectFit: "cover",
+      border: "2px solid rgba(62,26,137,0.08)",
+      flexShrink: 0,
+    }}
+  />
+
+  {/* DETAILS */}
+  <Box sx={{ flex: 1, minWidth: 0 }}>
+    <Typography
+      sx={{
+        fontWeight: 700,
+        fontSize: "1rem",
+        color: "#111827",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      }}
     >
-      
-      <Grid size={{ xs: 3, sm: 4, md: 2 }}>
-        <Box
-          sx={{
-            position: "relative",
-            width: "100%",
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <Box
-            component="img"
-            src={
-              item?.product?.image?.[0]
-                ? `http://localhost:4500/${item?.product?.image[0]
-                    .replace(/\\/g, "/")
-                    .replace(/^\/+/, "")}`
-                : "/no-image.png"
-            }
-            alt={item?.product?.productName}
-            sx={{
-              width: {
-                xs: 50,
-                md: 120,
-              },
-              height: {
-                xs: 70,
-                md: 120,
-              },
-              objectFit: "cover",
-              borderRadius: 4,
-              border: "2px solid rgba(62,26,137,.08)",
-              backgroundColor: "#fff",
-            }}
-          />
-        </Box>
-      </Grid>
+      {item?.product?.name}
+    </Typography>
 
-      <Grid size={{ xs: 2, sm: 8, md: 4 }}>
-        <Stack spacing={1}>
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 700,
-              color: "#111827",
-            }}
-          >
-            {item?.product?.productName}
-          </Typography>
+    <Typography
+      sx={{
+        fontSize: "0.85rem",
+        color: "#6B7280",
+        display: { xs: "none", sm: "block" },
+      }}
+    >
+      {item?.product?.description}
+    </Typography>
 
-          <Typography
-            variant="body2"
-            sx={{
-              color: "#6B7280",
-              lineHeight: 1.6,
-            }}
-          >
-            {item?.product?.description}
-          </Typography>
+    <Chip
+      size="small"
+      label="In Cart"
+      sx={{
+        mt: 1,
+        bgcolor: "rgba(62,26,137,0.08)",
+        color: "#3E1A89",
+        fontWeight: 600,
+      }}
+    />
+  </Box>
 
-          <Chip
-            label="In Cart"
-            size="small"
-            sx={{
-              width: "fit-content",
-              bgcolor: "rgba(62,26,137,.08)",
-              color: "#3E1A89",
-              fontWeight: 600,
-            }}
-          />
-        </Stack>
-      </Grid>
+  <Box sx={{ textAlign: "center" }}>
+    <Typography
+      sx={{
+        fontSize: "0.75rem",
+        color: "#6B7280",
+        fontWeight: 600,
+        mb: 0.5,
+      }}
+    >
+      Qty
+    </Typography>
 
+    <Select
+      value={item?.quantity}
+      onChange={(e) =>
+        handleChange(item._id, e.target.value)
+      }
+      size="small"
+      sx={{
+        borderRadius: 3,
+        minWidth: 70,
+        fontSize: "0.85rem",
+        bgcolor: "#fff",
+      }}
+    >
+      {[...Array(10)].map((_, i) => (
+        <MenuItem key={i + 1} value={i + 1}>
+          {i + 1}
+        </MenuItem>
+      ))}
 
-      <Grid size={{ xs: 2, md: 2 }}>
-        <Stack spacing={1}>
-          <Typography
-            variant="caption"
-            sx={{
-              color: "#6B7280",
-              fontWeight: 600,
-            }}
-          >
-            QUANTITY
-          </Typography>
+    </Select>
+  </Box>
 
-          <Select
-            value={item.quantity}
-            onChange={(e) =>
-              handleChange(item._id, e.target.value)
-            }
-            size="small"
-            sx={{
-              borderRadius: 3,
-              bgcolor: "#fff",
-              maxWidth: 42,
-              "& fieldset": {
-                borderColor: "rgba(62,26,137,.15)",
-              },
-            }}
-          >
-            {[1, 2, 3, 4, 5].map((qty) => (
-              <MenuItem key={qty} value={qty}>
-                {qty}
-              </MenuItem>
-            ))}
-          </Select>
-        </Stack>
-      </Grid>
+  <Box sx={{ textAlign: "center", minWidth: 90 }}>
+    <Typography
+      sx={{
+        fontSize: "0.75rem",
+        color: "#6B7280",
+        fontWeight: 600,
+      }}
+    >
+      Price
+    </Typography>
 
-      <Grid size={{ xs: 2, md: 2 }}>
-        <Stack spacing={0.5}>
-          <Typography
-            variant="caption"
-            sx={{
-              color: "#6B7280",
-              fontWeight: 600,
-            }}
-          >
-            TOTAL
-          </Typography>
+    <Typography
+      sx={{
+        fontSize: "1.2rem",
+        fontWeight: 800,
+        color: "#3E1A89",
+      }}
+    >
+      ₹{item?.product?.price * item?.quantity}
+    </Typography>
+  </Box>
 
-          <Typography
-            sx={{
-              fontSize: "1.8rem",
-              fontWeight: 800,
-              background:
-                "linear-gradient(90deg,#3E1A89,#6C47FF)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            ₹{item?.product?.price}
-          </Typography>
-        </Stack>
-      </Grid>
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: { xs: "row", sm: "column" },
+      gap: 1,
+    }}
+  >
+    <Button
+      size="small"
+      variant="outlined"
+      color="error"
+      sx={{
+        borderRadius: 99,
+        textTransform: "none",
+        fontSize: "0.75rem",
+        px: 2,
+      }}
+      onClick={() => deleteCart(item._id)}
+    >
+      Remove
+    </Button>
 
-      <Grid size={{ xs: 2, md: 2 }}>
-        <Stack
-          direction={{
-            xs: "row",
-            md: "column",
-          }}
-          spacing={1}
-          justifyContent="center"
-        >
-          <Button
-            variant="outlined"
-            color="error"
-            onClick={() => deleteCart(item._id)}
-            sx={{
-              borderRadius: 99,
-              textTransform: "none",
-            }}
-          >
-            Delete
-          </Button>
-
-          <Button
-            variant="contained"
-            onClick={() => saveForLater(item._id)}
-            sx={{
-              borderRadius: 99,
-              textTransform: "none",
-              bgcolor: "#3E1A89",
-              "&:hover": {
-                bgcolor: "#2C1265",
-              },
-            }}
-          >
-            Save Later
-          </Button>
-        </Stack>
-      </Grid>
-    </Grid>
-  </CardContent>
+    <Button
+      size="small"
+      variant="contained"
+      sx={{
+        borderRadius: 99,
+        textTransform: "none",
+        fontSize: "0.75rem",
+        px: 2,
+        bgcolor: "#3E1A89",
+        "&:hover": { bgcolor: "#2C1265" },
+      }}
+      onClick={() => saveForLater(item._id)}
+    >
+      Save
+    </Button>
+  </Box>
 </Card>
             ))}
           </Stack>

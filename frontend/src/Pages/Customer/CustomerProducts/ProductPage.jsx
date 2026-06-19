@@ -77,7 +77,6 @@ export default function ProductPage() {
 }
 const handleAddToCart = async () => {
   await addItem();
-  setQuantity(1);
 };
 
 const handleIncrease = () => {

@@ -153,7 +153,9 @@ const handleCloseCategoryModal = () => {
   const [maxPrice, setMaxPrice] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [inStockOnly, setInStockOnly] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
+  
   const openAddProductModal = () => {
     setOpenModal(true);
   };
@@ -275,6 +277,7 @@ const handleDeleteCategory = async (_id) => {
     setSortBy("");
     setInStockOnly(false);
   };
+  
 
   const getCategories = async () => {
     try {

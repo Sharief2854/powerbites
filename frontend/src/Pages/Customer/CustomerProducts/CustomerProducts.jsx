@@ -263,8 +263,8 @@ export default function CustomerProducts() {
     <Box>
 <Grid
   container
-  alignItems="center"
-  justifyContent="space-between"
+  // alignItems="center"
+  // justifyContent="space-between"
   spacing={3}
   sx={{
     mb: 3,
@@ -420,7 +420,6 @@ export default function CustomerProducts() {
     },
   }}
 >
-  {/* IMAGE SECTION */}
   <Box
     sx={{
       position: "relative",
@@ -466,7 +465,7 @@ export default function CustomerProducts() {
         }));
       }}
     >
-      {item.images?.map((img, index) => (
+      {item?.image?.map((img, index) => (
         <Box
           key={index}
           sx={{
@@ -484,7 +483,7 @@ export default function CustomerProducts() {
         >
           <Box
             component="img"
-            src={`${BASE_URL}/${img}`}
+            src={`${img}`}
             alt={item.name}
             sx={{
               width: "100%",
@@ -496,7 +495,6 @@ export default function CustomerProducts() {
       ))}
     </Box>
 
-    {/* DOT INDICATORS */}
     <Box
       sx={{
         mt: 1.5,
