@@ -33,7 +33,7 @@ function Login() {
 
   };
 
-  formData.email =formData.email.toLowerCase();
+ 
 
 
   // Validation Checks
@@ -54,6 +54,7 @@ function Login() {
 
     setLoading(true);
     try {
+      formData.email =formData.email.toLowerCase();
       console.log("Logging in with:", formData);
       // TODO: Integrate your actual API Authentication call here
     let response = await api.post("/auth/login",formData);

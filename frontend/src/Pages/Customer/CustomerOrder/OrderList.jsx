@@ -562,6 +562,7 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
+import api from "../../../api/axiosConfig";
 
 const ExpandMoreIcon = () => <span style={{ fontSize: "10px", marginLeft: "4px" }}>▼</span>;
 const ExpandLessIcon = () => <span style={{ fontSize: "10px", marginLeft: "4px" }}>▲</span>;
@@ -612,6 +613,17 @@ function OrderList() {
     setRatingDialogOpen(false);
     setSelectedProduct(null);
   };
+async function getData() {
+  try {
+    let response = await api.get("/orders/getOrders")
+
+    console.log("response order done :",response.data);
+
+  } catch (err) {
+    console.log("error",err);
+  }
+}
+  getData();
 
   // Sample Orders Data with full price, offers, coupons, and discount keys included
   const orders = [
