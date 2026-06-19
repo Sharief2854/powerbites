@@ -562,6 +562,7 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
+import api from "../../../api/axiosConfig";
 
 const ExpandMoreIcon = () => <span style={{ fontSize: "10px", marginLeft: "4px" }}>▼</span>;
 const ExpandLessIcon = () => <span style={{ fontSize: "10px", marginLeft: "4px" }}>▲</span>;
@@ -612,6 +613,17 @@ function OrderList() {
     setRatingDialogOpen(false);
     setSelectedProduct(null);
   };
+async function getData() {
+  try {
+    let response = await api.get("/orders/getOrders")
+
+    console.log("response order done :",response.data);
+
+  } catch (err) {
+    console.log("error",err);
+  }
+}
+  getData();
 
   // Sample Orders Data with full price, offers, coupons, and discount keys included
   const orders = [
@@ -627,7 +639,7 @@ function OrderList() {
           discounted_price: 960,
           coupon: { title: "HEADPHONE20" },
           offer: "Buy 2 Get 1 Free",
-          image: "https://via.placeholder.com/48",
+          image: "https://placehold.co/48x48.png",
           quantity: 3,
         }
       ],
@@ -657,7 +669,7 @@ function OrderList() {
           discounted_price: 3750,
           coupon: { title: "WATCH25" },
           offer: "Festival Sale",
-          image: "https://via.placeholder.com/48",
+          image: "https://placehold.co/48x48.png",
           quantity: 1,
         },
         {
@@ -667,7 +679,7 @@ function OrderList() {
           discounted_price: 1800,
           coupon: { title: "SPEAKER10" },
           offer: "Extra 10% Off",
-          image: "https://via.placeholder.com/48",
+          image: "https://placehold.co/48x48.png",
           quantity: 2,
         },
       ],
@@ -962,13 +974,13 @@ function OrderList() {
               {/* FOOTER PANELS */}
               <Box sx={{ mt: 2, bgcolor: "#f8fafc", borderRadius: 3, p: 2, border: "1px solid #f1f5f9" }}>
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={7}>
+                  <Grid size={{ xs: 12, sm: 7 }}>
                     <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, display: "block", mb: 0.5 }}>DELIVERY DESTINATION</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 500, color: "#334155" }}>
                       {`${order.address.fullName}, ${order.address.house}, ${order.address.street}, ${order.address.city}, ${order.address.state} - ${order.address.pincode}, ${order.address.country}`}
                     </Typography>
                   </Grid>
-                  <Grid item xs={12} sm={5}>
+                  <Grid size={{ xs: 12, sm: 5 }}>
                     <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, display: "block", mb: 0.5 }}>TRANSACTION METHOD</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 600, color: "#0f172a" }}>{order.paymentID}</Typography>
                   </Grid>

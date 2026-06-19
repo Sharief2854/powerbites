@@ -209,7 +209,7 @@ function ReviewOfProducts() {
           }}
         >
           <Grid container>
-            <Grid item xs={12} md={5}>
+            <Grid size={{ xs: 12, md: 5 }}>
               <CardMedia
                 component="img"
                 image={deliveredProduct.image}
@@ -222,7 +222,7 @@ function ReviewOfProducts() {
               />
             </Grid>
 
-            <Grid item xs={12} md={7}>
+            <Grid size={{ xs: 12, md: 7 }}>
               <CardContent sx={{ p: { xs: 3, md: 4 } }}>
                 <Typography
                   variant="h4"
@@ -407,7 +407,7 @@ function ReviewOfProducts() {
         {reviews.length > 0 ? (
           <Grid container spacing={3}>
             {reviews.map((review) => (
-              <Grid item xs={12} md={6} key={review._id}>
+              <Grid size={{ xs: 12, md: 6 }} key={review._id}>
                 <ReviewCard review={review} />
               </Grid>
             ))}

@@ -23,9 +23,10 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Sidebar from './SideNavBar';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 
 export default function DashboardLayout() {
+  const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -50,6 +51,8 @@ export default function DashboardLayout() {
 
   const handleLogout = () => {
     handleClose();
+    localStorage.removeItem("token");
+    navigate("/");
     console.log("Logged out");
   };
 
