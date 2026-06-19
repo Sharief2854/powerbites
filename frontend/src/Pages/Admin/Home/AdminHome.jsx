@@ -1,7 +1,29 @@
 import { Grid, Paper, Typography } from '@mui/material'
-import React from 'react'
+import React, { useEffect } from 'react'
+import api from '../../../api/axiosConfig'
 
 function Overview() {
+
+
+  async function getData() {
+
+    try {
+
+      let response = await api.get("/dashboard/getTotalDashboard");
+      console.log("Admin Dashboard Data",response.data)
+      
+    } catch (err) {
+
+      console.log(err)
+      
+    }
+    
+  }
+  useEffect(()=>{
+    getData();
+
+  },[])
+
   return (
     <>
     <Grid container spacing={3}>

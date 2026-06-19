@@ -449,7 +449,7 @@ function CustomerEditAddress() {
         <Paper
           elevation={0}
           sx={{
-            maxWidth: 720,
+            maxWidth: '100%',
             mx: "auto",
             p: { xs: 2.5, sm: 5 },
             borderRadius: 4,

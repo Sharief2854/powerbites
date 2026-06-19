@@ -28,6 +28,7 @@ import OrderList from "./Pages/Customer/CustomerOrder/OrderList";
 import CustomerProfile from "./Pages/Customer/Profile/CustomerProfiles";
 import CustomerEditProfile from "./Pages/Customer/Profile/CustomerEditProfile";
 import CustomerEditAddress from "./Pages/Customer/Profile/CustomerEditAddress";
+import EmailVerify from "./Pages/Common/EmailVerify";
 
 
 
@@ -40,7 +41,8 @@ function App() {
         <Route path ="/" element={<LandingPageLayout/>}>
         <Route index element={<LandingPage/>}/>
         <Route path ="/register" element={<Register/>}/>
-        <Route path ="/verifyOtp/:id" element={<VerifyOtp/>}/>
+        <Route path ="/verify-email" element={<EmailVerify/>}/>
+        <Route path ="/verify-otp" element={<VerifyOtp/>}/>
         <Route path ="/login" element={<Login/>}/>
         
         <Route path ="/forget" element={<ForgotPassword/>}/>

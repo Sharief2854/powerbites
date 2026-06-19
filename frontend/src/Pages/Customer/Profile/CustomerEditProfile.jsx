@@ -101,7 +101,7 @@ function CustomerEditProfile() {
         <Paper
           elevation={0}
           sx={{
-            maxWidth: 760,
+            maxWidth: '100%',
             mx: "auto",
             p: { xs: 3, sm: 4 },
             borderRadius: 4,
@@ -127,7 +127,7 @@ function CustomerEditProfile() {
             </Typography>
             
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Full Name"
@@ -137,7 +137,7 @@ function CustomerEditProfile() {
                   autoComplete="name"
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Email"
@@ -147,7 +147,7 @@ function CustomerEditProfile() {
                   autoComplete="username"
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Phone Number"
@@ -157,7 +157,7 @@ function CustomerEditProfile() {
                   autoComplete="tel"
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <PasswordField
                   fullWidth
                   label="Password"

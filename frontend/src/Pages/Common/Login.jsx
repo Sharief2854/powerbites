@@ -25,11 +25,16 @@ function Login() {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+
   };
+
+  formData.email =formData.email.toLowerCase();
+
 
   // Validation Checks
   const emailError = formData.email ? validateEmail(formData.email) : "";
@@ -203,7 +208,7 @@ function Login() {
                   cursor: "pointer",
                   "&:hover": { textDecoration: "underline" },
                 }}
-                onClick={() => navigate("/register")} // Assuming register route name
+                onClick={() => navigate("/verify-email")} // Assuming register route name
               >
                 Sign Up
               </Typography>
