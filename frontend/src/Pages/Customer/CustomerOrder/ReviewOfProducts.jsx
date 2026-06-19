@@ -38,7 +38,7 @@ function ReviewOfProducts() {
         rating: ratingRef.current,
         review: reviewRef.current.value,
       };
-
+      
       if (!payload.rating) {
         alert("Please select rating");
         return;
