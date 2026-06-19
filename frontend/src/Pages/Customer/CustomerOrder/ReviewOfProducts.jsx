@@ -12,7 +12,7 @@ import {
   Divider,
   Container,
 } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { useDispatch, useSelector } from "react-redux";
 import { getReviews } from "../../../Redux/Slices/ReviewSlice";
 import api from "../../../api/axiosConfig";

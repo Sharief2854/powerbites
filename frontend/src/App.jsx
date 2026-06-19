@@ -29,7 +29,8 @@ import CustomerProfile from "./Pages/Customer/Profile/CustomerProfiles";
 import CustomerEditProfile from "./Pages/Customer/Profile/CustomerEditProfile";
 import CustomerEditAddress from "./Pages/Customer/Profile/CustomerEditAddress";
 import EmailVerify from "./Pages/Common/EmailVerify";
-
+import Offsers from "./Pages/Admin/Offsers/Offsers"
+import ReviewOfProducts from "./Pages/Customer/CustomerOrder/ReviewOfProducts";
 
 
 function App() {
