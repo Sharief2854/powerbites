@@ -60,7 +60,7 @@ export default function ProductCard({product}) {
         <CardMedia
           component="img"
           height="140"
-          image={product.image[0].replace(/\\/g, '/').replace(/^\/+/, '')}
+          image={product?.image[0].replace(/\\/g, '/').replace(/^\/+/, '')}
           alt="No Image Found"
           sx={{ objectFit: 'cover' }}
         />
@@ -86,7 +86,7 @@ export default function ProductCard({product}) {
         <PrimaryButton onClick={()=>(toggleUpdate(product._id))} size="small" color="primary">
           Update
         </PrimaryButton>
-        <PrimaryButton onClick={()=>(onClick=handleClickOpen(product._id))} size="small" color="primary">
+        <PrimaryButton onClick={()=>(handleClickOpen(product._id))} size="small" color="primary">
           Delete
         </PrimaryButton>
       </CardActions>

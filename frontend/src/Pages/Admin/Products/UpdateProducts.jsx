@@ -166,7 +166,7 @@ export default function UpdateProducts() {
 
     try {
       let response = await api.put(
-        `admin/updateProduct/${product._id}`,
+        `products/updateProduct/${product._id}`,
         formData,
       );
 
@@ -182,7 +182,7 @@ export default function UpdateProducts() {
   }
 async function getById(params) {
       try {
-        let response = await api.get(`admin/getprd/${id}`);
+        let response = await api.get(`product/getprd/${id}`);
         console.log(response.data);
         
         dispatch(getProducts(response.data.data));

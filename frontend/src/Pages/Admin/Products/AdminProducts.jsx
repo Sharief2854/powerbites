@@ -176,6 +176,7 @@ const handleCloseCategoryModal = () => {
 
     setPhotos([]);
   };
+  
   const handleSaveCategory = async () => {
   if (!categoryName.trim()) return;
 
@@ -334,9 +335,6 @@ const handleDeleteCategory = async (_id) => {
       }
 
       const response = await api.post("/products/addProduct", formData);
-
-      console.log(response.data);
-
       dispatch(postProducts(response.data.Product));
       closeAddProductModal();
     } catch (error) {

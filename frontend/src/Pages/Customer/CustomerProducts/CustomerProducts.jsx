@@ -572,19 +572,18 @@ export default function CustomerProducts() {
       >
         ₹{item.price}
       </Typography>
-
+{/* 
       <Typography
         sx={{
           color: "#9CA3AF",
           fontSize: ".85rem",
         }}
       >
-        Available: {item.stock}
-      </Typography>
+        {item.stock}
+      </Typography> */}
     </Box>
   </CardContent>
 
-  {/* ACTIONS */}
   <CardActions
     sx={{
       p: 2,
