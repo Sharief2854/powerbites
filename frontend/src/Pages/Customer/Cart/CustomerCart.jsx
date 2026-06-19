@@ -457,12 +457,13 @@ const [selectedCartId, setSelectedCartId] = useState(null);
   const subtotal =
     cartItems.reduce((total, item) => {
       const priceInPaise = Math.round(Number(item?.product?.price) * 100);
-
-      return total + priceInPaise * item?.product?.quantity;
-    }, 0) || 0;
+  
+      return (total + priceInPaise * item?.quantity)
+    }, 0) ;
   const shipping = subtotal > 5000 ? 999 : 0;
-
+  
   const grandTotal = subtotal + shipping;
+  console.log(subtotal,grandTotal);
 
   const formatPrice = (amountInPaise) => (amountInPaise / 100).toFixed(2);
   const confirmDelete = async () => {
@@ -803,8 +804,7 @@ const [selectedCartId, setSelectedCartId] = useState(null);
       flexShrink: 0,
     }}
   />
-
-  {/* DETAILS */}
+  
   <Box sx={{ flex: 1, minWidth: 0 }}>
     <Typography
       sx={{
@@ -1010,7 +1010,7 @@ const [selectedCartId, setSelectedCartId] = useState(null);
               </Grid>
 
 
-              <PaymentButton addressId={updateAddress?._id} amount={grandTotal} />
+              <PaymentButton addressId={updateAddress?._id} amount={formatPrice(grandTotal)} />
             </CardContent>
           </Card>
         </Grid>

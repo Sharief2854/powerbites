@@ -197,7 +197,7 @@ async function getById(params) {
   useEffect(() => {
     if (product) {
       setProductData(product);
-      setExistingPhotos(product.image.map((e) => e) || []);
+      setExistingPhotos(product?.image?.map((e) => e) || []);
       getById();
     }
   }, []);

@@ -19,8 +19,6 @@ export default function PaymentButton({
           amount
         }
       );
-      console.log(order);
-      
 
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
