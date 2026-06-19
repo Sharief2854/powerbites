@@ -1,6 +1,6 @@
 
-
-
+const offerModel = require("../../Model/offerModel");
+const mongoose = require('mongoose');
 
 async function getOffers(req,res){
     try{
@@ -9,13 +9,14 @@ async function getOffers(req,res){
 
         if(!offers){
             return res.status(400).json({
-                message:"No offers found"
+                message:"Could not fetch offers"
             })
 
         }
         res.status(200).json({
             message:"Offers fetched successfully",
-            offers
+            count: offers.length,
+            data: offers
         })
 
 
@@ -36,22 +37,38 @@ async function setOffer(req,res){
 
         let body = req.body;
 
-        let offer = await offerModel.create(body);
-
-        if(!offer){
+        if(!body.title || !body.code || !body.description){
             return res.status(400).json({
-                message:"Something went wrong"
+                message:"Title, code, and description are required"
             })
         }
-        res.status(200).json({
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: "At least one offer image is required." });
+        }
+
+        const imagePaths = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path}`);
+
+        const offerData = {
+            ...body,
+            user: req.userId, // From isAdmin middleware
+            image: imagePaths
+        };
+
+        let offer = await offerModel.create(offerData);
+
+        res.status(201).json({
             message:"Offer created successfully",
-            offer
+            data: offer
         })
 
     
 
     }
     catch(err){
+        if (err.code === 11000) { // Handle duplicate code error
+            return res.status(409).json({ message: "An offer with this code already exists." });
+        }
         res.status(500).json({
             message:"Internal Server Error",
             error:err.message
@@ -69,13 +86,13 @@ async function deleteOffer(req,res){
         let offer = await offerModel.findByIdAndDelete(id);
 
         if(!offer){
-            return res.status(400).json({
+            return res.status(404).json({
                 message:"Offer not found"
             })
         }
         res.status(200).json({
             message:"Offer deleted successfully",
-            offer
+            data: offer
         })
 
     }
@@ -93,11 +110,15 @@ async function updateOffer(req,res){
 
         let id = req.params.id;
         let body = req.body;
+        
+        if (req.files && req.files.length > 0) {
+            body.image = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path}`);
+        }
 
         let offer = await offerModel.findByIdAndUpdate(id,body,{new:true,runValidators:true});
 
         if(!offer){
-            return res.status(400).json({
+            return res.status(404).json({
                 message:"Offer not found"
             })
         
@@ -105,7 +126,7 @@ async function updateOffer(req,res){
 
         res.status(200).json({
             message:"Offer updated successfully",
-            offer
+            data: offer
         })
 
     }
@@ -118,4 +139,31 @@ async function updateOffer(req,res){
     }
 }
 
-module.exports = {getOffers,setOffer,deleteOffer,updateOffer}
+async function updateStatus(req,res){
+    try{
+        let id = req.params.id;
+        let status = req.body.status;
+
+        let updatedStatus = await offerModel.findByIdAndUpdate(id,{status},{new:true});
+
+        if(!updatedStatus){
+            return res.status(404).json({
+                message:"Offer not found"
+            })
+        }
+
+        res.status(200).json({
+            message:"Status updated successfully",
+            data: updatedStatus
+        })
+
+    }
+    catch(err){
+        res.status(500).json({
+            message:"Internal Server Error",
+            error:err.message
+        })
+    }
+}
+
+module.exports = {getOffers,setOffer,deleteOffer,updateOffer,updateStatus}

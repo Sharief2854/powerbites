@@ -7,7 +7,8 @@ async function allProduct(req, res) {
     try {
         const data = await ProductModel.find().populate({ path: "category" }).sort({ createdAt: -1 });
 
-        if (!data || data.length === 0) {
+        const Productdata = await ProductModel.find().sort({ updatedAt:-1});
+        if (!data) {
             return res.status(400).json({
                 message: "No products found"
             });

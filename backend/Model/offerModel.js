@@ -11,7 +11,8 @@ const offerSchema = new mongoose.Schema({
     },
     code: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -26,7 +27,7 @@ const offerSchema = new mongoose.Schema({
   
     status:{
         type:String,
-        default:"InActive",
+        default:"inActive",
         enum:["Active","inActive"]
     },
 

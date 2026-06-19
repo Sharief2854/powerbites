@@ -11,6 +11,7 @@ const ProductRouter = require("./Routes/Products/ProdutsRouter")
 const isAdmin = require('./MiddleWare/adminAuth');
 const CartRouter = require('./Routes/Cart/cartRouter');
 const bannerRouter = require('./Routes/Banner/bannerRoutes');
+const offerRouter = require('./Routes/Offer/offerRouter');
 const multer = require('multer');
 
 const couponRouter = require('./Routes/Coupon/couponRouter');
@@ -27,6 +28,7 @@ const ordersRouter = require('./Routes/Orders/ordersRouter');
 
 const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD');
 const orderStatusRouter = require('./Routes/OrderStatus/orderStatusUpdating');
+const dashboardRouter = require('./Routes/Dashboard/dashboardRoute')
 
 
 
@@ -55,6 +57,7 @@ app.use("/crudAdmin",isAdmin,adminRouter)
 app.use("/cart",isCustomer,CartRouter)
 app.use("/products",ProductRouter)
 app.use("/banner",bannerRouter)
+app.use("/offer",offerRouter)
 
 
 app.use("/orders",ordersRouter)
@@ -68,6 +71,7 @@ app.use("/updateCustomerProfile", isCustomer,customerProfileRouter)
 app.use("/developer",DeveloperRouter)
 app.use("/review",reviewRouter)
 app.use("/orderStatus",orderStatusRouter)
+app.use("/dashboard",isAdmin,dashboardRouter)
 
 
 
