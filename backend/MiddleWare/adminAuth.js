@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 
 function isAdmin(req, res, next) {
 
-    console.log("Headers:", req.headers);
+    // console.log("Headers:", req.headers);
 
     let head = req.headers.authorization;
 
@@ -14,7 +14,7 @@ function isAdmin(req, res, next) {
 
     let token = head.split(" ")[1];
 
-    console.log("Token:", token);
+    // console.log("Token:", token);
 
     if (!token) {
         return res.status(401).json({
@@ -29,6 +29,8 @@ function isAdmin(req, res, next) {
             message: "Admin access only"
         });
     }
+
+    req.userId = decoded.id;
 
     next();
 }
