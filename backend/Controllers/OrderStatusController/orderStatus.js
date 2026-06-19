@@ -32,8 +32,7 @@ async function updateOrderStatus(req, res) {
             "order placed",
             "preparing order",
             "order shipped",
-            "order delivered",
-            "order cancelled"
+            "order delivered"
         ];
 
         if (!allowedStatuses.includes(status)) {
@@ -49,8 +48,7 @@ async function updateOrderStatus(req, res) {
         );
 
         // 2. Fetch fresh updated order
-        const updatedOrder = await ordersModel.findById(orderId)
-            .populate("customer");
+        const updatedOrder = await ordersModel.findById(orderId).populate("customer").populate("products.product");
 
         if (!updatedOrder) {
             return res.status(404).json({
@@ -58,9 +56,55 @@ async function updateOrderStatus(req, res) {
             });
         }
 
-        // 3. Email content
         let subject = "";
         let html = "";
+        let productsHtml = "";
+
+        updatedOrder.products.forEach(item => {
+            productsHtml += `
+            <div style="
+            display:flex;
+            align-items:center;
+            border:1px solid #ddd;
+            padding:10px;
+            margin-bottom:10px;
+            border-radius:8px;
+        ">
+            <img
+                src="${item.image}"
+                alt="${item.product?.name || 'Product'}"
+                style="
+                    width:80px;
+                    height:80px;
+                    object-fit:cover;
+                    border-radius:8px;
+                    margin-right:15px;
+                "
+            />
+
+            <div>
+                <h4 style="margin:0;">
+                    ${item.product?.name || "Product"}
+                </h4>
+
+                <p style="margin:5px 0;">
+                    Quantity: ${item.quantity}
+                </p>
+
+                <p style="margin:5px 0;">
+                    Price: ₹${item.price}
+                </p>
+
+                ${item.discounted_price
+                    ? `<p style="margin:5px 0;">
+                        Discounted Price: ₹${item.discounted_price}
+                       </p>`
+                    : ""
+                }
+            </div>
+        </div>
+            `
+        })
 
         switch (status) {
             case "order placed":
@@ -74,33 +118,45 @@ async function updateOrderStatus(req, res) {
                         <h2>Hello ${updatedOrder.customer?.name || "Customer"}</h2>
                         <p>Your order has been placed successfully.</p>
                         <p><b>Order ID:</b> ${updatedOrder._id}</p>
-                        <a href="http://http://localhost:5173//orders/${updatedOrder._id}"
-     style="
-        display:inline-block;
-        padding:12px 20px;
-        margin-top:10px;
-        background:#28a745;
-        color:white;
-        text-decoration:none;
-        border-radius:5px;
-        font-weight:bold;
-     ">
-     Track Your Order
-  </a>
-   <a href="http://http://localhost:5173//"
-     style="
-        display:inline-block;
-        padding:12px 20px;
-        margin-top:10px;
-        background:#28a745;
-        color:white;
-        text-decoration:none;
-        border-radius:5px;
-        font-weight:bold;
-     ">
-     Visit site
-  </a>
-                    </div>
+                        <hr>
+                        <h3>products you orders</h3>
+                        ${productsHtml}
+                        <hr/>
+                        <a
+                         href="http://localhost:5173/orders/${updatedOrder._id}"
+                          style="
+                display:inline-block;
+                padding:12px 20px;
+                margin-top:10px;
+                background:#28a745;
+                color:white;
+                text-decoration:none;
+                border-radius:5px;
+                font-weight:bold;
+            "
+        >
+            Track Your Order
+        </a>
+
+        &nbsp;
+
+        <a
+            href="http://localhost:5173"
+            style="
+                display:inline-block;
+                padding:12px 20px;
+                margin-top:10px;
+                background:#007bff;
+                color:white;
+                text-decoration:none;
+                border-radius:5px;
+                font-weight:bold;
+            "
+        >
+            Visit Website
+        </a>
+
+    </div>
                 `;
                 break;
 
@@ -114,33 +170,44 @@ async function updateOrderStatus(req, res) {
                         <h2>Hello ${updatedOrder.customer?.name || "Customer"}</h2>
                         <p>Your order is currently being prepared.</p>
                         <p><b>Order ID:</b> ${updatedOrder._id}</p>
-                         <a href="http://http://localhost:5173//orders/${updatedOrder._id}"
-     style="
-        display:inline-block;
-        padding:12px 20px;
-        margin-top:10px;
-        background:#28a745;
-        color:white;
-        text-decoration:none;
-        border-radius:5px;
-        font-weight:bold;
-     ">
-     Track Your Order
-  </a>
-   <a href="http://http://localhost:5173//"
-     style="
-        display:inline-block;
-        padding:12px 20px;
-        margin-top:10px;
-        background:#28a745;
-        color:white;
-        text-decoration:none;
-        border-radius:5px;
-        font-weight:bold;
-     ">
-     Visit site
-  </a>
-                    </div>
+                         <h3>products you orders</h3>
+                        ${productsHtml}
+                        <hr/>
+                        <a
+                         href="http://localhost:5173/orders/${updatedOrder._id}"
+                          style="
+                display:inline-block;
+                padding:12px 20px;
+                margin-top:10px;
+                background:#28a745;
+                color:white;
+                text-decoration:none;
+                border-radius:5px;
+                font-weight:bold;
+            "
+        >
+            Track Your Order
+        </a>
+
+        &nbsp;
+
+        <a
+            href="http://localhost:5173"
+            style="
+                display:inline-block;
+                padding:12px 20px;
+                margin-top:10px;
+                background:#007bff;
+                color:white;
+                text-decoration:none;
+                border-radius:5px;
+                font-weight:bold;
+            "
+        >
+            Visit Website
+        </a>
+
+    </div>
                 `;
                 break;
 
@@ -155,33 +222,44 @@ async function updateOrderStatus(req, res) {
                         <h2>Hello ${updatedOrder.customer?.name || "Customer"}</h2>
                         <p>Your order has been shipped and is on the way.</p>
                         <p><b>Order ID:</b> ${updatedOrder._id}</p>
-                         <a href="http://http://localhost:5173//orders/${updatedOrder._id}"
-     style="
-        display:inline-block;
-        padding:12px 20px;
-        margin-top:10px;
-        background:#28a745;
-        color:white;
-        text-decoration:none;
-        border-radius:5px;
-        font-weight:bold;
-     ">
-     Track Your Order
-  </a>
-   <a href="http://http://localhost:5173//"
-     style="
-        display:inline-block;
-        padding:12px 20px;
-        margin-top:10px;
-        background:#28a745;
-        color:white;
-        text-decoration:none;
-        border-radius:5px;
-        font-weight:bold;
-     ">
-     Visit site
-  </a>
-                    </div>
+                        <h3>products you orders</h3>
+                        ${productsHtml}
+                        <hr/>
+                        <a
+                         href="http://localhost:5173/orders/${updatedOrder._id}"
+                          style="
+                display:inline-block;
+                padding:12px 20px;
+                margin-top:10px;
+                background:#28a745;
+                color:white;
+                text-decoration:none;
+                border-radius:5px;
+                font-weight:bold;
+            "
+        >
+            Track Your Order
+        </a>
+
+        &nbsp;
+
+        <a
+            href="http://localhost:5173"
+            style="
+                display:inline-block;
+                padding:12px 20px;
+                margin-top:10px;
+                background:#007bff;
+                color:white;
+                text-decoration:none;
+                border-radius:5px;
+                font-weight:bold;
+            "
+        >
+            Visit Website
+        </a>
+
+    </div>
                 `;
                 break;
 
@@ -196,50 +274,48 @@ async function updateOrderStatus(req, res) {
                         <h2>Hello ${updatedOrder.customer?.name || "Customer"}</h2>
                         <p>Your order has been delivered successfully.</p>
                         <p><b>Order ID:</b> ${updatedOrder._id}</p>
-                         <a href="http://http://localhost:5173//orders/${updatedOrder._id}"
-     style="
-        display:inline-block;
-        padding:12px 20px;
-        margin-top:10px;
-        background:#28a745;
-        color:white;
-        text-decoration:none;
-        border-radius:5px;
-        font-weight:bold;
-     ">
-     Track Your Order
-  </a>
-   <a href="http://http://localhost:5173//"
-     style="
-        display:inline-block;
-        padding:12px 20px;
-        margin-top:10px;
-        background:#28a745;
-        color:white;
-        text-decoration:none;
-        border-radius:5px;
-        font-weight:bold;
-     ">
-     Visit site
-  </a>
-                    </div>
+                         <h3>products you orders</h3>
+                        ${productsHtml}
+                        <hr/>
+                        <a
+                         href="http://localhost:5173/orders/${updatedOrder._id}"
+                          style="
+                display:inline-block;
+                padding:12px 20px;
+                margin-top:10px;
+                background:#28a745;
+                color:white;
+                text-decoration:none;
+                border-radius:5px;
+                font-weight:bold;
+            "
+        >
+            Track Your Order
+        </a>
+
+        &nbsp;
+
+        <a
+            href="http://localhost:5173"
+            style="
+                display:inline-block;
+                padding:12px 20px;
+                margin-top:10px;
+                background:#007bff;
+                color:white;
+                text-decoration:none;
+                border-radius:5px;
+                font-weight:bold;
+            "
+        >
+            Visit Website
+        </a>
+
+    </div>
                 `;
                 break;
 
-            case "order cancelled":
-                subject = "Order Cancelled ❌";
-                html = `
-                    <div style="font-family:Arial;padding:20px">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIZmP2iJmKKDGP2QGEaW4Ylfqv4ZiKrRWSrw&s" 
-                    alt="Order placed" 
-                    style="width:100%;max-width:600px;border-radius:10px" 
-                    />
-                        <h2>Hello ${updatedOrder.customer?.name || "Customer"}</h2>
-                        <p>Your order has been cancelled.</p>
-                        <p><b>Order ID:</b> ${updatedOrder._id}</p>
-                    </div>
-                `;
-                break;
+
             default:
                 return res.status(400).json({
                     message: "Invalid status"
@@ -270,4 +346,366 @@ async function updateOrderStatus(req, res) {
     }
 }
 
-module.exports = updateOrderStatus;
+//customer cancelling the order
+
+async function customerCancellingOrder(req, res) {
+    try {
+        const orderId = req.params.id;
+        const userId = req.userId;
+
+        const order = await ordersModel.findById(orderId)
+            .populate("customer")
+            .populate("products.product");
+
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        // ensure only owner can cancel
+        if (order.customer._id.toString() !== userId) {
+            return res.status(403).json({
+                message: "You can only cancel your own order"
+            });
+        }
+
+        // prevent cancellation after shipping
+        if (["order shipped", "order delivered"].includes(order.orderStatus)) {
+            return res.status(400).json({
+                message: "Order cannot be cancelled at this stage"
+            });
+        }
+
+        const reason = req.body.reason || "Cancelled by customer";
+
+        order.orderStatus = "order cancelled";
+        order.cancelledBy = "customer";
+        order.cancelReason = reason;
+        order.cancelledAt = new Date();
+
+        await ordersModel.updateOne(
+            { _id: orderId },
+            {
+                $set: {
+                    orderStatus: "order cancelled",
+                    cancelledBy: "customer",
+                    cancelReason: reason,
+                    cancelledAt: new Date()
+                }
+            }
+        );
+
+
+
+        let productsHtml = "";
+
+        order.products.forEach(p => {
+            productsHtml += `
+                <div 
+                style=
+                "display:flex;
+                align-items:center;
+                margin-bottom:10px;
+                border:1px solid #eee;
+                padding:10px;
+                border-radius:8px;">
+                    <img src="${p.image}" 
+                    style=
+                    "width:70px;
+                    height:70px;
+                    object-fit:cover;
+                    border-radius:8px;
+                    margin-right:10px;" />
+                    <div>
+                        <h4 style="margin:0;">${p.product?.name}</h4>
+                        <p style="margin:2px 0;">Qty: ${p.quantity}</p>
+                        <p style="margin:2px 0;">Price: ₹${p.price}</p>
+                    </div>
+                </div>
+            `;
+        });
+
+        const html = `
+        <div
+        style="font-family:Arial;
+        max-width:700px;
+        margin:auto;
+        border:1px solid #ffcccc;
+        border-radius:10px;
+        overflow:hidden">
+
+            <div 
+            style="background:#dc3545;
+            color:white;
+            padding:20px;
+            text-align:center">
+             <h1>❌ Order Cancelled</h1>
+            </div>
+
+            <div style="padding:20px">
+
+                <h2 style="color:#dc3545;">
+                    Hello ${order.customer.name}
+                </h2>
+
+                <p>Your order has been cancelled successfully.</p>
+
+                <p><b>Order ID:</b> ${order._id}</p>
+
+                <div style=
+                "background:#fff5f5;
+                border-left:5px solid #dc3545;
+                padding:10px;
+                margin:15px 0;">
+                    <b style="color:#dc3545;">Cancellation Reason:</b><br/>
+                    ${reason}
+                </div>
+
+                <h3>Products</h3>
+                ${productsHtml}
+
+                <hr/>
+
+                <p><b>Total:</b> ₹${order.total}</p>
+                <p><b>Final Price:</b> ₹${order.final_price}</p>
+
+                <a href="http://localhost:5173/orders/${order._id}"
+                    style="display:inline-block;
+                    background:#dc3545;
+                    color:white;
+                    padding:12px 20px;
+                    text-decoration:none;
+                    border-radius:5px;
+                    margin-top:10px;">
+                    View Order
+                </a>
+
+                <a href="http://localhost:5173"
+                    style="display:inline-block;
+                    background:#6c757d;color:white;
+                    padding:12px 20px;
+                    text-decoration:none;
+                    border-radius:5px;
+                    margin-top:10px;
+                    margin-left:10px;">
+                    Visit Website
+                </a>
+
+            </div>
+        </div>
+        `;
+
+        await transporter.sendMail({
+            from: process.env.EMAIL,
+            to: order.customer.email,
+            subject: "Order Cancelled ❌",
+            html
+        });
+
+        res.json({
+            message: "Order cancelled and email sent successfully",
+            order
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+}
+
+//admin cancelling the order
+async function cancelOrderByAdmin(req, res) {
+    try {
+        const orderId = req.params.id;
+
+        if (!orderId) {
+            return res.status(400).json({
+                message: "Order ID is required"
+            });
+        }
+
+        const order = await ordersModel.findById(orderId)
+            .populate("customer")
+            .populate("products.product")
+            .populate("address");
+
+        if (!order) {
+            return res.status(404).json({
+                message: "Order not found"
+            });
+        }
+
+        if (order.orderStatus === "order cancelled") {
+            return res.status(400).json({
+                message: "Order is already cancelled"
+            });
+        }
+
+        const reason = req.body.reason || "Cancelled by admin";
+
+
+        order.orderStatus = "order cancelled";
+        order.cancelledBy = "admin";
+        order.cancelReason = reason;
+        order.cancelledAt = new Date();
+
+        await ordersModel.updateOne(
+            { _id: orderId },
+            {
+                $set: {
+                    orderStatus: "order cancelled",
+                    cancelledBy: "customer",
+                    cancelReason: reason,
+                    cancelledAt: new Date()
+                }
+            }
+        );
+
+        let productsHtml = "";
+
+        order.products.forEach(p => {
+            productsHtml += `
+                <div style="
+                    display:flex;
+                    align-items:center;
+                    margin-bottom:10px;
+                    border:1px solid #eee;
+                    padding:10px;
+                    border-radius:8px;
+                ">
+                    <img src="${p.image}"
+                        style="
+                            width:70px;
+                            height:70px;
+                            object-fit:cover;
+                            border-radius:8px;
+                            margin-right:10px;
+                        "
+                    />
+
+                    <div>
+                        <h4 style="margin:0;">
+                            ${p.product?.name || "Product"}
+                        </h4>
+                        <p style="margin:2px 0;">Qty: ${p.quantity}</p>
+                        <p style="margin:2px 0;">Price: ₹${p.price}</p>
+                    </div>
+                </div>
+            `;
+        });
+
+        const html = `
+        <div style="
+            font-family:Arial;
+            max-width:700px;
+            margin:auto;
+            border:1px solid #ffe0e0;
+            border-radius:10px;
+            overflow:hidden;
+        ">
+
+            <!-- HEADER -->
+            <div style="
+                background:#b02a37;
+                color:white;
+                padding:20px;
+                text-align:center;
+            ">
+                <h1>🚫 Order Cancelled by Admin</h1>
+            </div>
+
+            <!-- BODY -->
+            <div style="padding:20px">
+
+                <h2 style="color:#b02a37;">
+                    Hello ${order.customer?.name || "Customer"}
+                </h2>
+
+                <p>
+                    Your order has been cancelled by our team.
+                </p>
+
+                <p><b>Order ID:</b> ${order._id}</p>
+
+                <!-- REASON -->
+                <div style="
+                    background:#fff0f0;
+                    border-left:5px solid #b02a37;
+                    padding:10px;
+                    margin:15px 0;
+                ">
+                    <b style="color:#b02a37;">Cancellation Reason:</b><br/>
+                    ${reason}
+                </div>
+
+                <!-- PRODUCTS -->
+                <h3>Products</h3>
+                ${productsHtml}
+
+                <hr/>
+
+                <p><b>Total:</b> ₹${order.total}</p>
+                <p><b>Final Price:</b> ₹${order.final_price}</p>
+
+                <!-- BUTTONS -->
+                <a href="http://localhost:5173/orders/${order._id}"
+                    style="
+                        display:inline-block;
+                        background:#b02a37;
+                        color:white;
+                        padding:12px 20px;
+                        text-decoration:none;
+                        border-radius:5px;
+                        margin-top:10px;
+                    ">
+                    View Order
+                </a>
+
+                <a href="http://localhost:5173"
+                    style="
+                        display:inline-block;
+                        background:#6c757d;
+                        color:white;
+                        padding:12px 20px;
+                        text-decoration:none;
+                        border-radius:5px;
+                        margin-top:10px;
+                        margin-left:10px;
+                    ">
+                    Visit Website
+                </a>
+
+            </div>
+
+        </div>
+        `;
+
+
+        if (order.customer?.email) {
+            await transporter.sendMail({
+                from: process.env.EMAIL,
+                to: order.customer.email,
+                subject: "Order Cancelled by Admin 🚫",
+                html
+            });
+        }
+
+        return res.status(200).json({
+            message: "Order cancelled by admin and email sent successfully",
+            order
+        });
+
+    } catch (error) {
+        console.error("Admin cancel error:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+}
+
+
+
+
+module.exports = { updateOrderStatus, customerCancellingOrder, cancelOrderByAdmin }
