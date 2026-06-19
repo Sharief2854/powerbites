@@ -6,6 +6,10 @@ import {
   CardContent,
   Chip,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   FormControl,
   Grid,
@@ -22,12 +26,8 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useDispatch, useSelector } from "react-redux";
-import { getOffer } from "../../../Redux/Slices/OffserSlice";
+import EditIcon from "@mui/icons-material/Edit";
 import api from "../../../api/axiosConfig";
-import axios from "axios";
-import token from "../../../api/axiosConfig";
-
 
 const backgroundOptions = [
   {
@@ -92,37 +92,307 @@ const backgroundOptions = [
   },
 ];
 
-function Offers() {
-  const dispatch = useDispatch();
-  const offers = useSelector((state) => state.Offer?.offers) || [];
+function AutoCarousel({
+  images = [],
+  editable = false,
+  existingImages = [],
+  onRemoveExistingImage,
+  onRemoveNewImage,
+}) {
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % images.length);
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  useEffect(() => {
+    if (images.length === 0) {
+      setCurrent(0);
+      return;
+    }
+
+    if (current >= images.length) {
+      setCurrent(0);
+    }
+  }, [images.length, current]);
+
+  if (!images.length) {
+    return (
+      <Box
+        sx={{
+          width: "100%",
+          height: { xs: 240, sm: 300, md: 340 },
+          borderRadius: 4,
+          bgcolor: "rgba(255,255,255,0.92)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          px: 3,
+        }}
+      >
+        <Typography color="text.secondary" fontWeight={700}>
+          Upload images to preview the moving banner here
+        </Typography>
+      </Box>
+    );
+  }
+
+  const isExisting = current < existingImages.length;
+  const newIndex = current - existingImages.length;
+
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        width: "100%",
+        height: { xs: 240, sm: 300, md: 340 },
+        borderRadius: 4,
+        overflow: "hidden",
+        bgcolor: "#fff",
+        boxShadow: "0 10px 28px rgba(0,0,0,0.14)",
+      }}
+    >
+      <Box
+        component="img"
+        src={images[current]}
+        alt={`slide-${current}`}
+        sx={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          display: "block",
+        }}
+      />
+
+      {editable && isExisting && (
+        <IconButton
+          onClick={() => onRemoveExistingImage(current)}
+          sx={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            bgcolor: "rgba(255,255,255,0.95)",
+            "&:hover": { bgcolor: "#fff" },
+          }}
+        >
+          <DeleteIcon color="error" />
+        </IconButton>
+      )}
+
+      {editable && !isExisting && newIndex >= 0 && (
+        <IconButton
+          onClick={() => onRemoveNewImage(newIndex)}
+          sx={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            bgcolor: "rgba(255,255,255,0.95)",
+            "&:hover": { bgcolor: "#fff" },
+          }}
+        >
+          <DeleteIcon color="error" />
+        </IconButton>
+      )}
+
+      {images.length > 1 && (
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            position: "absolute",
+            bottom: 12,
+            left: "50%",
+            transform: "translateX(-50%)",
+            bgcolor: "rgba(0,0,0,0.25)",
+            px: 1.2,
+            py: 0.7,
+            borderRadius: 10,
+          }}
+        >
+          {images.map((_, index) => (
+            <Box
+              key={index}
+              onClick={() => setCurrent(index)}
+              sx={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                cursor: "pointer",
+                bgcolor:
+                  current === index ? "#fff" : "rgba(255,255,255,0.45)",
+              }}
+            />
+          ))}
+        </Stack>
+      )}
+    </Box>
+  );
+}
+
+function OfferPreviewBanner({
+  offer,
+  backgroundOptions,
+  actions,
+  editable = false,
+  existingImages = [],
+  onRemoveExistingImage = () => {},
+  onRemoveNewImage = () => {},
+}) {
+  const selectedBg =
+    backgroundOptions.find((item) => item.name === offer.background) ||
+    backgroundOptions[0];
+
+  const images = Array.isArray(offer?.images) ? offer.images : [];
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        borderRadius: 5,
+        overflow: "hidden",
+        background: selectedBg.bg,
+        color: selectedBg.textColor,
+        p: { xs: 2, sm: 3, md: 4 },
+        border: `1px solid ${selectedBg.borderColor}`,
+      }}
+    >
+      <Grid container spacing={3} alignItems="center">
+        <Grid item xs={12} md={7}>
+          <Stack spacing={2}>
+            <Stack direction="row" spacing={1} flexWrap="wrap">
+              <Chip
+                icon={
+                  <LocalOfferIcon
+                    sx={{ color: `${selectedBg.chipColor} !important` }}
+                  />
+                }
+                label={offer?.status || "inactive"}
+                sx={{
+                  bgcolor: selectedBg.chipBg,
+                  color: selectedBg.chipColor,
+                  fontWeight: 700,
+                }}
+              />
+              <Chip
+                label={offer?.background || selectedBg.name}
+                sx={{
+                  bgcolor: selectedBg.chipBg,
+                  color: selectedBg.chipColor,
+                  fontWeight: 700,
+                }}
+              />
+            </Stack>
+
+            <Typography
+              variant="h3"
+              fontWeight={900}
+              sx={{
+                fontSize: { xs: "2rem", sm: "2.6rem", md: "3.2rem" },
+                lineHeight: 1.1,
+              }}
+            >
+              {offer?.title || "Special Offer Title"}
+            </Typography>
+
+            <Typography
+              sx={{
+                color: selectedBg.subTextColor,
+                fontSize: { xs: "0.95rem", md: "1.05rem" },
+                maxWidth: "60ch",
+              }}
+            >
+              {offer?.description || "Offer description will appear here."}
+            </Typography>
+
+            <Box
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                width: "fit-content",
+                px: 2.2,
+                py: 1.2,
+                borderRadius: 3,
+                bgcolor: selectedBg.offerBg,
+                color: selectedBg.offerText,
+                fontWeight: 900,
+                fontSize: { xs: "1rem", md: "1.1rem" },
+              }}
+            >
+              Use Code: {offer?.code || "SAVE20"}
+            </Box>
+
+            {actions && (
+              <Stack direction="row" spacing={1.5} flexWrap="wrap" sx={{ pt: 1 }}>
+                {actions}
+              </Stack>
+            )}
+          </Stack>
+        </Grid>
+
+        <Grid item xs={12} md={5}>
+          <AutoCarousel
+            images={images}
+            editable={editable}
+            existingImages={existingImages}
+            onRemoveExistingImage={onRemoveExistingImage}
+            onRemoveNewImage={onRemoveNewImage}
+          />
+        </Grid>
+      </Grid>
+    </Paper>
+  );
+}
+
+export default function Offers() {
+  const [offers, setOffers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [code, setCode] = useState("");
-  const [status, setStatus] = useState("inActive");
-  const [images, setImages] = useState([]);
+  const [status, setStatus] = useState("inactive");
   const [selectedBg, setSelectedBg] = useState(backgroundOptions[0]);
-  const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState([]);
+
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [existingImages, setExistingImages] = useState([]);
+  const [newImages, setNewImages] = useState([]);
 
   const previewUrls = useMemo(() => {
-    return images.map((file) => ({
-      file,
-      url: URL.createObjectURL(file),
-    }));
+    return images.map((file) => URL.createObjectURL(file));
   }, [images]);
+
+  const editPreviewUrls = useMemo(() => {
+    return newImages.map((file) => URL.createObjectURL(file));
+  }, [newImages]);
 
   useEffect(() => {
     return () => {
-      previewUrls.forEach((item) => URL.revokeObjectURL(item.url));
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
     };
   }, [previewUrls]);
 
+  useEffect(() => {
+    return () => {
+      editPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [editPreviewUrls]);
+
   const fetchOffers = async () => {
     try {
-      const response = await api.get("/offer/getOffer");
-      dispatch(getOffer(response.data.offers || []));
+      const res = await api.get("/offer/getOffers");
+      setOffers(res?.data?.data || []);
     } catch (error) {
       console.error("GET ERROR:", error?.response?.data || error.message);
+      setOffers([]);
     }
   };
 
@@ -130,7 +400,28 @@ function Offers() {
     fetchOffers();
   }, []);
 
-  const handleImageChange = (e) => {
+  const resetCreateForm = () => {
+    setTitle("");
+    setDescription("");
+    setCode("");
+    setStatus("inactive");
+    setImages([]);
+    setSelectedBg(backgroundOptions[0]);
+  };
+
+  const resetEditForm = () => {
+    setOpenEdit(false);
+    setEditId(null);
+    setExistingImages([]);
+    setNewImages([]);
+    setTitle("");
+    setDescription("");
+    setCode("");
+    setStatus("inactive");
+    setSelectedBg(backgroundOptions[0]);
+  };
+
+  const handleCreateImages = (e) => {
     const files = Array.from(e.target.files || []).filter((file) =>
       file.type.startsWith("image/")
     );
@@ -139,64 +430,51 @@ function Offers() {
     setImages(merged);
   };
 
-  const removeImage = (index) => {
-    const updated = [...images];
-    updated.splice(index, 1);
-    setImages(updated);
-  };
-
-  const resetForm = () => {
-    setTitle("");
-    setDescription("");
-    setCode("");
-    setStatus("inActive");
-    setImages([]);
-    setSelectedBg(backgroundOptions[0]);
+  const removeCreateImage = (index) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async () => {
-  if (!title || !code || !description) {
-    alert("Please fill all required fields (title, code, description).");
-    return;
-  }
+    if (!title || !description || !code) {
+      alert("Please fill title, description and code");
+      return;
+    }
 
-  if (images.length === 0) {
-    alert("Please upload at least one image.");
-    return;
-  }
+    if (images.length === 0) {
+      alert("Please upload at least one image");
+      return;
+    }
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("code", code);
-    formData.append("description", description);
-    formData.append("status", status);
-    formData.append("background", selectedBg.name);
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("code", code);
+      formData.append("status", status);
+      formData.append("background", selectedBg.name);
 
-    images.forEach((img) => {
-      formData.append("image", img);
-    });
+      images.forEach((file) => {
+        formData.append("file", file);
+      });
 
-    const authToken = localStorage.getItem("token");
+      await api.post("/offer/setOffer", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-    const res = await api.post("/offer/setOffer", formData, {
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
-    });
+      resetCreateForm();
+      fetchOffers();
+    } catch (error) {
+      console.error("CREATE ERROR:", error?.response?.data || error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    console.log(res.data);
-    resetForm();
-    fetchOffers();
-  } catch (error) {
-    console.error("POST ERROR:", error?.response?.data || error.message);
-  } finally {
-    setLoading(false);
-  }
-};
-  const handleDelete = async (id) => {
+  const handleDeleteOffer = async (id) => {
     try {
       await api.delete(`/offer/deleteOffer/${id}`);
       fetchOffers();
@@ -205,313 +483,253 @@ function Offers() {
     }
   };
 
+  const handleOpenEdit = (offer) => {
+    setEditId(offer._id);
+    setTitle(offer.title || "");
+    setDescription(offer.description || "");
+    setCode(offer.code || "");
+    setStatus((offer.status || "inactive").toLowerCase());
+    setSelectedBg(
+      backgroundOptions.find((bg) => bg.name === offer.background) ||
+        backgroundOptions[0]
+    );
+    setExistingImages(Array.isArray(offer.image) ? offer.image : []);
+    setNewImages([]);
+    setOpenEdit(true);
+  };
+
+  const handleEditImageChange = (e) => {
+    const files = Array.from(e.target.files || []).filter((file) =>
+      file.type.startsWith("image/")
+    );
+
+    const total = existingImages.length + newImages.length + files.length;
+
+    if (total > 5) {
+      alert("Maximum 5 images allowed");
+      return;
+    }
+
+    setNewImages((prev) => [...prev, ...files]);
+  };
+
+  const removeExistingImage = (index) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeEditNewImage = (index) => {
+    setNewImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateOffer = async () => {
+    if (!title || !description || !code) {
+      alert("Please fill title, description and code");
+      return;
+    }
+
+    if (existingImages.length + newImages.length === 0) {
+      alert("At least one image is required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("code", code);
+      formData.append("status", status);
+      formData.append("background", selectedBg.name);
+      formData.append("existingImages", JSON.stringify(existingImages));
+
+      newImages.forEach((file) => {
+        formData.append("file", file);
+      });
+
+      await api.put(`/offer/updateOffer/${editId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      resetEditForm();
+      fetchOffers();
+    } catch (error) {
+      console.error("UPDATE ERROR:", error?.response?.data || error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createPreviewOffer = {
+    title,
+    description,
+    code,
+    status,
+    background: selectedBg.name,
+    images: previewUrls,
+  };
+
+  const editPreviewOffer = {
+    title,
+    description,
+    code,
+    status,
+    background: selectedBg.name,
+    images: [...existingImages, ...editPreviewUrls],
+  };
+
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f6f7fb", py: { xs: 3, md: 5 } }}>
       <Container maxWidth="xl">
         <Typography variant="h4" fontWeight={800} sx={{ mb: 1 }}>
-          Offer Banner Creator
+          Offer Banner Management
         </Typography>
 
         <Typography color="text.secondary" sx={{ mb: 4 }}>
-          Create and manage responsive offer banners with up to 5 images.
+          Create, preview, edit and display offers in the same banner UI.
         </Typography>
 
-        <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 2, md: 3 },
-                borderRadius: 4,
-                border: "1px solid #e6e8ef",
-                bgcolor: "#fff",
-              }}
-            >
-              <Stack spacing={2}>
-                <Typography variant="h6" fontWeight={700}>
-                  Select Background
-                </Typography>
+       <Grid container spacing={3} alignItems="flex-start">
+  <Grid item xs={12} md={4}>
+    <Paper
+      elevation={0}
+      sx={{
+        p: { xs: 2, md: 3 },
+        borderRadius: 4,
+        border: "1px solid #e7e9f0",
+        bgcolor: "#fff",
+      }}
+    >
+      <Stack spacing={2}>
+        <Typography variant="h6" fontWeight={700}>
+          Create Offer
+        </Typography>
 
-                {backgroundOptions.map((item) => (
-                  <Card
-                    key={item.id}
-                    onClick={() => setSelectedBg(item)}
-                    sx={{
-                      cursor: "pointer",
-                      borderRadius: 3,
-                      background: item.bg,
-                      color: item.textColor,
-                      border:
-                        selectedBg.id === item.id
-                          ? `3px solid ${item.borderColor}`
-                          : "2px solid transparent",
-                      transform: selectedBg.id === item.id ? "scale(1.02)" : "scale(1)",
-                      transition: "all 0.25s ease",
-                    }}
-                  >
-                    <CardContent sx={{ py: 2 }}>
-                      <Typography fontWeight={700}>{item.name}</Typography>
-                    </CardContent>
-                  </Card>
-                ))}
+        {backgroundOptions.map((item) => (
+          <Card
+            key={item.id}
+            onClick={() => setSelectedBg(item)}
+            sx={{
+              cursor: "pointer",
+              borderRadius: 3,
+              background: item.bg,
+              color: item.textColor,
+              border:
+                selectedBg.id === item.id
+                  ? `3px solid ${item.borderColor}`
+                  : "2px solid transparent",
+              transition: "0.25s ease",
+              transform:
+                selectedBg.id === item.id ? "scale(1.02)" : "scale(1)",
+            }}
+          >
+            <CardContent sx={{ py: 2 }}>
+              <Typography fontWeight={700}>{item.name}</Typography>
+            </CardContent>
+          </Card>
+        ))}
 
-                <Divider sx={{ my: 1 }} />
+        <Divider sx={{ my: 1 }} />
 
-                <TextField
-                  label="Offer Title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  fullWidth
-                />
+        <TextField
+          fullWidth
+          label="Offer Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
 
-                <TextField
-                  label="Description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  fullWidth
-                  multiline
-                  rows={4}
-                />
+        <TextField
+          fullWidth
+          multiline
+          rows={4}
+          label="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
 
-                <TextField
-                  label="Offer Code"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  fullWidth
-                />
+        <TextField
+          fullWidth
+          label="Offer Code"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+        />
 
-                <FormControl fullWidth>
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    value={status}
-                    label="Status"
-                    onChange={(e) => setStatus(e.target.value)}
-                  >
-                    <MenuItem value="Active">Active</MenuItem>
-                    <MenuItem value="inActive">InActive</MenuItem>
-                  </Select>
-                </FormControl>
+        <FormControl fullWidth>
+          <InputLabel>Status</InputLabel>
+          <Select
+            value={status}
+            label="Status"
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <MenuItem value="active">Active</MenuItem>
+            <MenuItem value="inactive">Inactive</MenuItem>
+          </Select>
+        </FormControl>
 
-                <Button
-                  component="label"
-                  variant="outlined"
-                  startIcon={<CloudUploadIcon />}
-                  sx={{
-                    borderRadius: 3,
-                    textTransform: "none",
-                    py: 1.2,
-                    width: "fit-content",
-                  }}
-                >
-                  Upload Images
-                  <input
-                    hidden
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                </Button>
+        <Button
+          component="label"
+          variant="outlined"
+          startIcon={<CloudUploadIcon />}
+          sx={{ borderRadius: 3, textTransform: "none", py: 1.2 }}
+        >
+          Upload Images
+          <input
+            hidden
+            multiple
+            type="file"
+            accept="image/*"
+            onChange={handleCreateImages}
+          />
+        </Button>
 
-                <Typography variant="body2" color="text.secondary">
-                  {images.length > 0
-                    ? `${images.length} image(s) selected`
-                    : "No image selected"}
-                </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {images.length
+            ? `${images.length} image(s) selected`
+            : "No images selected"}
+        </Typography>
 
-                <Button
-                  variant="contained"
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  sx={{
-                    borderRadius: 3,
-                    py: 1.3,
-                    textTransform: "none",
-                    fontWeight: 700,
-                  }}
-                >
-                  {loading ? "Saving..." : "Save Offer"}
-                </Button>
-              </Stack>
-            </Paper>
-          </Grid>
+        <Button
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={loading}
+          sx={{ borderRadius: 3, py: 1.3, textTransform: "none" }}
+        >
+          {loading ? "Saving..." : "Save Offer"}
+        </Button>
+      </Stack>
+    </Paper>
+  </Grid>
 
-          <Grid size={{ xs: 12, md: 8 }}>
-            <Paper
-              elevation={0}
-              sx={{
-                width: "100%",
-                overflow: "hidden",
-                background: selectedBg.bg,
-                boxShadow: "0 12px 35px rgba(0,0,0,0.10)",
-                borderRadius: 4,
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: { xs: "column", md: "row" },
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  minHeight: { xs: "auto", md: 380 },
-                }}
-              >
-                <Box
-                  sx={{
-                    flex: 1,
-                    width: "100%",
-                    px: { xs: 3, sm: 5, md: 7 },
-                    py: { xs: 4, sm: 5, md: 4 },
-                    textAlign: { xs: "center", md: "left" },
-                  }}
-                >
-                  <Chip
-                    icon={<LocalOfferIcon sx={{ color: selectedBg.chipColor }} />}
-                    label={status}
-                    sx={{
-                      mb: 2,
-                      bgcolor: selectedBg.chipBg,
-                      color: selectedBg.chipColor,
-                      fontWeight: 700,
-                      "& .MuiChip-icon": {
-                        color: selectedBg.chipColor,
-                      },
-                    }}
-                  />
-
-                  <Typography
-                    sx={{
-                      fontSize: { xs: "2rem", sm: "2.6rem", md: "3.4rem" },
-                      fontWeight: 800,
-                      color: selectedBg.textColor,
-                      lineHeight: 1.1,
-                      mb: 1,
-                    }}
-                  >
-                    {title || "Exclusive Offer"}
-                  </Typography>
-
-                  <Typography
-                    sx={{
-                      fontSize: { xs: "1rem", sm: "1.2rem", md: "1.35rem" },
-                      fontWeight: 500,
-                      color: selectedBg.subTextColor,
-                      mb: 3,
-                      maxWidth: 520,
-                    }}
-                  >
-                    {description || "Add your description here to preview the banner design."}
-                  </Typography>
-
-                  <Box
-                    sx={{
-                      display: "inline-block",
-                      backgroundColor: selectedBg.offerBg,
-                      color: selectedBg.offerText,
-                      px: { xs: 2.5, sm: 3.5, md: 4 },
-                      py: { xs: 1.5, sm: 2, md: 2.2 },
-                      borderRadius: 3,
-                      boxShadow: "0 10px 25px rgba(0,0,0,0.18)",
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontSize: { xs: "1.1rem", sm: "1.3rem", md: "1.5rem" },
-                        fontWeight: 800,
-                        lineHeight: 1.1,
-                      }}
-                    >
-                      Use Code
-                    </Typography>
-
-                    <Typography
-                      sx={{
-                        fontSize: { xs: "1.4rem", sm: "1.8rem", md: "2.2rem" },
-                        fontWeight: 800,
-                        mt: 0.5,
-                      }}
-                    >
-                      {code || "OFF2026"}
-                    </Typography>
-                  </Box>
-                </Box>
-
-                <Box
-                  sx={{
-                    flex: 1,
-                    width: "100%",
-                    px: { xs: 2, sm: 3, md: 4 },
-                    pb: { xs: 4, md: 0 },
-                  }}
-                >
-                  <Grid container spacing={2}>
-                    {previewUrls.length > 0 ? (
-                      previewUrls.map((item, index) => (
-                        <Grid size={{ xs: 6, sm: 4, md: 6 }} key={index}>
-                          <Box
-                            sx={{
-                              position: "relative",
-                              height: { xs: 130, sm: 150, md: 160 },
-                              borderRadius: 3,
-                              overflow: "hidden",
-                              bgcolor: "#fff",
-                              boxShadow: "0 10px 24px rgba(0,0,0,0.15)",
-                            }}
-                          >
-                            <Box
-                              component="img"
-                              src={item.url}
-                              alt={`preview-${index}`}
-                              sx={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover",
-                                display: "block",
-                              }}
-                            />
-                            <IconButton
-                              onClick={() => removeImage(index)}
-                              sx={{
-                                position: "absolute",
-                                top: 8,
-                                right: 8,
-                                bgcolor: "rgba(255,255,255,0.95)",
-                                "&:hover": {
-                                  bgcolor: "#fff",
-                                },
-                              }}
-                            >
-                              <DeleteIcon color="error" />
-                            </IconButton>
-                          </Box>
-                        </Grid>
-                      ))
-                    ) : (
-                      <Grid size={{ xs: 12 }}>
-                        <Box
-                          sx={{
-                            minHeight: 260,
-                            borderRadius: 4,
-                            bgcolor: "rgba(255,255,255,0.92)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            px: 3,
-                            textAlign: "center",
-                          }}
-                        >
-                          <Typography color="text.secondary" fontWeight={600}>
-                            Upload up to 5 images to preview here
-                          </Typography>
-                        </Box>
-                      </Grid>
-                    )}
-                  </Grid>
-                </Box>
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
+  <Grid
+  item
+  xs={12}
+  md={8}
+  sx={{
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+  }}
+>
+    <Box
+      sx={{
+        width: "100%",
+        alignSelf: "flex-start",
+        mt: 0,
+      }}
+    >
+      <OfferPreviewBanner
+        offer={createPreviewOffer}
+        backgroundOptions={backgroundOptions}
+        editable
+        existingImages={[]}
+        onRemoveExistingImage={() => {}}
+        onRemoveNewImage={removeCreateImage}
+      />
+    </Box>
+  </Grid>
+</Grid>
 
         <Divider sx={{ my: 5 }} />
 
@@ -519,83 +737,154 @@ function Offers() {
           Saved Offers
         </Typography>
 
-        <Grid container spacing={3}>
+        <Stack spacing={4}>
           {offers.map((offer) => (
-            <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={offer._id}>
-              <Paper
-                elevation={0}
-                sx={{
-                  borderRadius: 4,
-                  overflow: "hidden",
-                  border: "1px solid #e6e8ef",
-                  bgcolor: "#fff",
-                }}
-              >
-                <Box
-                  sx={{
-                    p: 2,
-                    background:
-                      backgroundOptions.find((bg) => bg.name === offer.background)?.bg ||
-                      "linear-gradient(135deg, #1f3c88 0%, #7b4397 100%)",
-                    color: "#fff",
-                  }}
-                >
-                  <Typography variant="h6" fontWeight={800}>
-                    {offer.title}
-                  </Typography>
-                  <Typography variant="body2">
-                    {offer.description}
-                  </Typography>
-                </Box>
-
-                <Box sx={{ p: 2 }}>
-                  {Array.isArray(offer.image) && offer.image.length > 0 && (
-                    <Grid container spacing={1} sx={{ mb: 2 }}>
-                      {offer.image.slice(0, 5).map((img, index) => (
-                        <Grid size={{ xs: 6 }} key={index}>
-                          <Box
-                            component="img"
-                            src={img}
-                            alt={`${offer.title}-${index}`}
-                            sx={{
-                              width: "100%",
-                              height: 120,
-                              objectFit: "cover",
-                              borderRadius: 2,
-                            }}
-                          />
-                        </Grid>
-                      ))}
-                    </Grid>
-                  )}
-
-                  <Typography fontWeight={700}>Code: {offer.code}</Typography>
-
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    Status: {offer.status}
-                  </Typography>
+            <OfferPreviewBanner
+              key={offer._id}
+              offer={{
+                title: offer.title,
+                description: offer.description,
+                code: offer.code,
+                status: offer.status,
+                background: offer.background,
+                images: Array.isArray(offer.image) ? offer.image : [],
+              }}
+              backgroundOptions={backgroundOptions}
+              actions={
+                <>
+                  <Button
+                    variant="contained"
+                    startIcon={<EditIcon />}
+                    onClick={() => handleOpenEdit(offer)}
+                    sx={{ borderRadius: 2.5, textTransform: "none" }}
+                  >
+                    Edit
+                  </Button>
 
                   <Button
-                    color="error"
                     variant="outlined"
+                    color="error"
                     startIcon={<DeleteOutlineIcon />}
-                    onClick={() => handleDelete(offer._id)}
-                    sx={{
-                      mt: 2,
-                      borderRadius: 2.5,
-                      textTransform: "none",
-                    }}
+                    onClick={() => handleDeleteOffer(offer._id)}
+                    sx={{ borderRadius: 2.5, textTransform: "none" }}
                   >
                     Delete
                   </Button>
-                </Box>
-              </Paper>
-            </Grid>
+                </>
+              }
+            />
           ))}
-        </Grid>
+        </Stack>
+
+        <Dialog open={openEdit} onClose={resetEditForm} fullWidth maxWidth="lg">
+          <DialogTitle>Edit Offer</DialogTitle>
+
+          <DialogContent dividers>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={4}>
+                <Stack spacing={2}>
+                  <TextField
+                    fullWidth
+                    label="Offer Title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
+
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={4}
+                    label="Description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+
+                  <TextField
+                    fullWidth
+                    label="Offer Code"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                  />
+
+                  <FormControl fullWidth>
+                    <InputLabel>Status</InputLabel>
+                    <Select
+                      value={status}
+                      label="Status"
+                      onChange={(e) => setStatus(e.target.value)}
+                    >
+                      <MenuItem value="active">Active</MenuItem>
+                      <MenuItem value="inactive">Inactive</MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  <FormControl fullWidth>
+                    <InputLabel>Background</InputLabel>
+                    <Select
+                      value={selectedBg.name}
+                      label="Background"
+                      onChange={(e) => {
+                        const found = backgroundOptions.find(
+                          (item) => item.name === e.target.value
+                        );
+                        setSelectedBg(found || backgroundOptions[0]);
+                      }}
+                    >
+                      {backgroundOptions.map((item) => (
+                        <MenuItem key={item.id} value={item.name}>
+                          {item.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    startIcon={<CloudUploadIcon />}
+                    sx={{ borderRadius: 3, textTransform: "none" }}
+                  >
+                    Add More Images
+                    <input
+                      hidden
+                      multiple
+                      type="file"
+                      accept="image/*"
+                      onChange={handleEditImageChange}
+                    />
+                  </Button>
+
+                  <Typography variant="body2" color="text.secondary">
+                    Old images stay, new images are added. Maximum 5 images total.
+                  </Typography>
+                </Stack>
+              </Grid>
+
+              <Grid item xs={12} md={8}>
+                <OfferPreviewBanner
+                  offer={editPreviewOffer}
+                  backgroundOptions={backgroundOptions}
+                  editable
+                  existingImages={existingImages}
+                  onRemoveExistingImage={removeExistingImage}
+                  onRemoveNewImage={removeEditNewImage}
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+
+          <DialogActions sx={{ px: 3, py: 2 }}>
+            <Button onClick={resetEditForm}>Cancel</Button>
+            <Button
+              variant="contained"
+              onClick={handleUpdateOffer}
+              disabled={loading}
+            >
+              {loading ? "Updating..." : "Update Offer"}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </Box>
   );
 }
-
-export default Offers;
