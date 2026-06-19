@@ -25,7 +25,7 @@ import { Link } from "react-router-dom";
 const pages = [
   { name: "Login", path: "/login", icon: <LoginIcon fontSize="small" /> },
   {
-    name: "Registration",path: "/register",icon: <PersonAddAlt1Icon fontSize="small" />,
+    name: "Registration",path: "/verify-email",icon: <PersonAddAlt1Icon fontSize="small" />,
   },
 ];
 
