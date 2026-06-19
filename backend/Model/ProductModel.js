@@ -44,11 +44,10 @@ const productSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
-        category: {
+        category: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: "ProductCategory",
-            required: true,
-        },
+            ref: "ProductCategory"
+        }]
     },
     {
         timestamps: true,
