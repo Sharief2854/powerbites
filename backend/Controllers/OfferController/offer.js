@@ -1,6 +1,7 @@
 
 const offerModel = require("../../Model/offerModel");
 const mongoose = require('mongoose');
+
 async function getOffers(req,res){
     try{
 

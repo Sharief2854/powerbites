@@ -10,7 +10,7 @@ router.get("/admin/getAllOrders", isAdmin, getAllOrders);
 
 router.put("/admin/updateOrder/:id", isAdmin, updateOrderStatus);
 
-router.delete("/deleteOrder/:id",  deleteOrder);
+router.delete("/deleteOrder/:id", isAdmin, deleteOrder);
 
 
 module.exports = router;   
