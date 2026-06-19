@@ -21,14 +21,15 @@ import { useNavigate } from "react-router-dom";
 export default function HomemadeFoodGrid() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const products = useSelector((state) => state.product.products);
+  const products = useSelector((state) => state.product.products) || [];
+  console.log("products", products)
   const cart =useSelector((state)=>state.cart.cartValue)
   const [search, setSearch] = useState("");
-  console.log(products)
 
   const fetchProducts = async () => {
     try {
       const response = await api.get("/products/all");
+      console.log(response.data.data);
       dispatch(getProducts(response.data.data));
     } catch (error) {
       console.err("Fetch error:", error);
@@ -97,13 +98,7 @@ export default function HomemadeFoodGrid() {
 
         <Grid container spacing={{ xs: 2, sm: 3 }} alignItems="stretch">
   {filterProducts.length > 0 ? (
-    filterProducts.map((product) => {
-      const imageUrl = `http://localhost:4500/${product.image[0]
-        .replace(/\\/g, "/")
-        .replace(/\/{2,}/g, "/")
-        .replace(/^\/+/, "")}`;
-
-      return (
+    filterProducts.map((product) => (
   <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
   <Card
     sx={{
@@ -133,10 +128,7 @@ export default function HomemadeFoodGrid() {
     >
       <CardMedia
         component="img"
-        image={`http://localhost:4500/${product.image[0]
-          .replace(/\\/g, "/")
-          .replace(/\/{2,}/g, "/")
-          .replace(/^\/+/, "")}`}
+        src={product.image}
         alt={product.name}
         sx={{
           width: "100%",
@@ -170,20 +162,6 @@ export default function HomemadeFoodGrid() {
         >
           {product.name}
         </Typography>
-
-        {(product.isAvailable === true ||
-          product.isAvailable === "true" ||
-          Number(product.stock) > 0) && (
-          <Chip
-            label="In Stock"
-            size="small"
-            sx={{
-              backgroundColor: "#e8f7ec",
-              color: "#1b7a38",
-              fontWeight: 600,
-            }}
-          />
-        )}
       </Stack>
 
       <Typography
@@ -230,8 +208,7 @@ export default function HomemadeFoodGrid() {
     </CardContent>
   </Card>
 </Grid>
-      );
-    })
+    ))
   ) : (
     <Grid item xs={12}>
       <Box
