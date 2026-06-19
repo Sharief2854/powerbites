@@ -16,6 +16,7 @@ import {
   Typography, IconButton,
   ImageListItem,
   ImageListItemBar,
+  Checkbox,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { PrimaryButton } from "../../../Components/Common/Buttons";
@@ -79,9 +80,7 @@ const Android12Switch = styled(Switch)(({ theme }) => ({
 export default function UpdateProducts() {
   let allProducts = useSelector((state) => state?.product?.products);
   let { id } = useParams();
-  let product = allProducts?.find((e) => {
-    return e._id == id;
-  });
+  let product = allProducts
   console.log(allProducts);
 
   const [productData, setProductData] = useState({
@@ -91,9 +90,11 @@ export default function UpdateProducts() {
     stock: product?.stock,
     discount: product?.discount,
     isAvailable: product?.isAvailable,
+    sendUpdates: product?.sendUpdates,
+    category: product?.category?._id,
   });
 
-  const [selectedFile, setSelectedFile] = useState([]);
+  const [filteredFile, setFilteredFile] = useState([]);
   const [existingPhotos, setExistingPhotos] = useState([]);
   const [photos, setPhotos] = useState([]);
   let token = localStorage.getItem("token");
@@ -104,8 +105,24 @@ export default function UpdateProducts() {
   const { name, value, files } = e.target;
 
   if (name === "photo") {
-    const uploadedFiles = Array.from(files);
-    setPhotos((prev) => [...prev, ...uploadedFiles]);
+    const imgFile = Array.from(files);
+    setPhotos((prev) => {
+    const newFiles = imgFile.filter(
+      (file) =>
+        !prev.some(
+          (p) =>
+            p.file.name === file.name &&
+            p.file.size === file.size
+        )
+    );
+    return [
+      ...prev,
+      ...newFiles.map((file) => ({
+        file,
+        preview: URL.createObjectURL(file),
+      })),
+    ];
+  });
   } else {
     setProductData((prev) => ({
       ...prev,
@@ -114,23 +131,24 @@ export default function UpdateProducts() {
   }
 }
 
+
   function removeFile(index) {
-    setSelectedFile((prev) => prev.filter((_, i) => i !== index));
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
   }
   function removeExisting(index) {
-    setExistingPhotos((prev) => prev.filter((_, i) => i !== index));
-  }
-    async function getById(params) {
-      try {
-        let response = await api.get(`admin/all/${product._id}`);
-        dispatch(getProducts(response.data.data));
-      } catch (error) {}
-    }
+  setExistingPhotos((prev) =>
+    prev.filter((_, i) => i !== index)
+  );
+}
+    
 
   async function updateProducts(e) {
     e.preventDefault();
 
-    const formData = new FormData();
+  const formData = new FormData();
+  formData.forEach((photo) => {
+    console.log(photo.value);
+  });
 
     formData.append("name", productData.name);
     formData.append("price", productData.price);
@@ -138,11 +156,12 @@ export default function UpdateProducts() {
     formData.append("stock", productData.stock);
     formData.append("discount", productData.discount);
     formData.append("isAvailable", productData.isAvailable);
+    formData.append("category", productData.category);
+    formData.append("sendUpdates", productData.sendUpdates);
+    formData.append("existingPhotos", JSON.stringify(existingPhotos))
 
-    formData.append("existingPhotos", JSON.stringify(existingPhotos));
-
-    selectedFile.forEach((file) => {
-      formData.append("file", file);
+    photos.forEach((photo) => {
+      formData.append("file", photo.photo);
     });
 
     try {
@@ -161,14 +180,27 @@ export default function UpdateProducts() {
       enqueueSnackbar("Failed to update", { variant: "error" });
     }
   }
-
+async function getById(params) {
+      try {
+        let response = await api.get(`admin/getprd/${id}`);
+        console.log(response.data);
+        
+        dispatch(getProducts(response.data.data));
+      } catch (error) {console.log(error.message);
+      }
+    }
+    useEffect(() => {
+      getById()
+    
+    }, [])
+    
   useEffect(() => {
     if (product) {
       setProductData(product);
       setExistingPhotos(product.image.map((e) => e) || []);
       getById();
     }
-  }, [product]);
+  }, []);
   console.log(product, existingPhotos);
 
   return (
@@ -255,7 +287,7 @@ export default function UpdateProducts() {
                             }}
                           >
            {existingPhotos.map((img, index) => {
-                img = img.replace(/\\/g, "/").replace(/^\/+/, "")
+                // img = img.replace(/\\/g, "/").replace(/^\/+/, "")
                       return (
                         <ImageListItem
                           key={`new-${index}`}
@@ -270,7 +302,7 @@ export default function UpdateProducts() {
                           }}
                         >
                           <img
-                            src={`http://localhost:4500/${img}`}
+                            src={img}
                             alt="Upload"
                             style={{
                               width: "100%",
@@ -289,7 +321,7 @@ export default function UpdateProducts() {
                                   m: 0.5,
                                 }}
                                 size="small"
-                                onClick={() => removeFile(index)}
+                                onClick={() => removeExisting(index)}
                               >
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
@@ -410,12 +442,22 @@ export default function UpdateProducts() {
               id="stock"
               type="number"
               label="Stock"
-              inputProps={{ min: 0 }}                   
+              inputProps={{ min: 0 }} 
+              onWheel={(e)=>e.target.value}                  
               value={productData.stock}
               onChange={handleChange}
               name="stock"
             />
           </FormControl>
+          <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={productData.sendUpdates}
+                    name="sendUpdates"
+                    onChange={handleChange} />
+                }
+                label="Send updates to Customers"
+              />
           <PrimaryButton type="submit">Update</PrimaryButton>
         </Stack>
       </Box>

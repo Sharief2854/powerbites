@@ -1,6 +1,7 @@
 import {
   Box,
   Card,
+  Chip,
   CardContent,
   IconButton,
   CardMedia,
@@ -416,7 +417,7 @@ export default function CustomerCart() {
   let decodeId = jwtDecode(token).id;
   const [qty, setQty] = useState(1);
   const [addresses, setAddress] = useState([]);
-  const [totalPrice, setTotalPrice] = useState(300);
+  const [totalPrice, setTotalPrice] = useState();
   const [open, setOpen] = React.useState(false);
   const [updateAddress, setUpdateAddress] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -527,7 +528,7 @@ export default function CustomerCart() {
 
   async function deleteCart(cartId) {
     try {
-      const res = await api.delete(`/cart/${cartId}`);
+      const res = await api.delete(`/cart/deleteItem/${cartId}`);
 
       dispatch(addToCart(res.data.data));
 
@@ -624,7 +625,7 @@ export default function CustomerCart() {
         My Cart
       </Typography>
 
-      <Grid container spacing={17}>
+      <Grid container spacing={3}>
         <Grid size={{ xs: 12, sm: 8, md: 8 }}>
           <Stack spacing={2}>
             <Card elevation={1}>
@@ -692,84 +693,207 @@ export default function CustomerCart() {
               </DialogActions>
             </Dialog>
             {cartItems?.map((item) => (
-              <Card key={item._id} elevation={1}>
-                <CardContent>
-                  <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, sm: 3, md: 2 }}>
-                      <CardMedia
-                        component="img"
-                        image={
-                          item?.product?.image?.[0]
-                            ? `http://localhost:4500/${item.product.image[0].replace(/\\/g, "/").replace(/^\/+/, "")}`
-                            : "/no-image.png"
-                        }
-                        alt={item?.product?.productName}
-                        sx={{
-                          height: 120,
-                          borderRadius: 1,
-                          bgcolor: "background.default",
-                        }}
-                      />
-                    </Grid>
+              <Card
+  key={item._id}
+  sx={{
+    mb: 2,
+    borderRadius: 5,
+    overflow: "hidden",
+    background:
+      "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,249,255,0.95))",
+    backdropFilter: "blur(20px)",
+    border: "1px solid rgba(62,26,137,0.12)",
+    boxShadow: "0 10px 40px rgba(62,26,137,0.08)",
+    transition: "all .3s ease",
+    "&:hover": {
+      transform: "translateY(-4px)",
+      boxShadow: "0 20px 50px rgba(62,26,137,0.15)",
+    },
+  }}
+>
+  <CardContent sx={{ p: 1 }}>
+    <Grid
+      container
+      spacing={2}
+      alignItems="center"
+    >
+      
+      <Grid size={{ xs: 3, sm: 4, md: 2 }}>
+        <Box
+          sx={{
+            position: "relative",
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Box
+            component="img"
+            src={
+              item?.product?.image?.[0]
+                ? `http://localhost:4500/${item?.product?.image[0]
+                    .replace(/\\/g, "/")
+                    .replace(/^\/+/, "")}`
+                : "/no-image.png"
+            }
+            alt={item?.product?.productName}
+            sx={{
+              width: {
+                xs: 50,
+                md: 120,
+              },
+              height: {
+                xs: 70,
+                md: 120,
+              },
+              objectFit: "cover",
+              borderRadius: 4,
+              border: "2px solid rgba(62,26,137,.08)",
+              backgroundColor: "#fff",
+            }}
+          />
+        </Box>
+      </Grid>
 
-                    <Grid size={{ xs: 12, sm: 3, md: 3 }}>
-                      <Stack spacing={1}>
-                        <Typography variant="subtitle1">
-                          {item?.product?.productName}
-                        </Typography>
+      <Grid size={{ xs: 2, sm: 8, md: 4 }}>
+        <Stack spacing={1}>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 700,
+              color: "#111827",
+            }}
+          >
+            {item?.product?.productName}
+          </Typography>
 
-                        <Typography variant="body2" color="text.secondary">
-                          {item?.product?.description}
-                        </Typography>
-                        </Stack>
-                        </Grid>
+          <Typography
+            variant="body2"
+            sx={{
+              color: "#6B7280",
+              lineHeight: 1.6,
+            }}
+          >
+            {item?.product?.description}
+          </Typography>
 
-                    <Grid size={{ xs: 12, sm: 3, md: 3 }}>
-                        <Stack spacing={1}>
-                          <Typography variant="body1" align="center" color="initial">Quantity</Typography>
-                        <Select
-                          size="small"
-                          value={item.quantity}
-                          onChange={(e) =>
-                            handleChange(item._id, e.target.value)
-                          }
-                          // sx={{ width: 100 }}
-                        >
-                          {[1, 2, 3, 4, 5].map((qty) => (
-                            <MenuItem key={qty} value={qty}>
-                              {qty}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </Stack>
-                    </Grid>
+          <Chip
+            label="In Cart"
+            size="small"
+            sx={{
+              width: "fit-content",
+              bgcolor: "rgba(62,26,137,.08)",
+              color: "#3E1A89",
+              fontWeight: 600,
+            }}
+          />
+        </Stack>
+      </Grid>
 
-                    <Grid size={{ xs: 12, sm: 3, md: 2 }}>
-                      <Typography variant="h6">₹{item.price}</Typography>
-                    </Grid>
 
-                    <Grid size={{ xs: 12, sm: 3, md: 2 }}>
-                      <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                        <Button
-                          size="small"
-                          color="error"
-                          onClick={() => deleteCart(item._id)}
-                        >
-                          Delete
-                        </Button>
+      <Grid size={{ xs: 2, md: 2 }}>
+        <Stack spacing={1}>
+          <Typography
+            variant="caption"
+            sx={{
+              color: "#6B7280",
+              fontWeight: 600,
+            }}
+          >
+            QUANTITY
+          </Typography>
 
-                        <Button
-                          size="small"
-                          color="primary"
-                          onClick={() => saveForLater(item._id)}
-                        >
-                          Save for Later
-                        </Button>
-                      </Stack>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
+          <Select
+            value={item.quantity}
+            onChange={(e) =>
+              handleChange(item._id, e.target.value)
+            }
+            size="small"
+            sx={{
+              borderRadius: 3,
+              bgcolor: "#fff",
+              maxWidth: 42,
+              "& fieldset": {
+                borderColor: "rgba(62,26,137,.15)",
+              },
+            }}
+          >
+            {[1, 2, 3, 4, 5].map((qty) => (
+              <MenuItem key={qty} value={qty}>
+                {qty}
+              </MenuItem>
+            ))}
+          </Select>
+        </Stack>
+      </Grid>
+
+      <Grid size={{ xs: 2, md: 2 }}>
+        <Stack spacing={0.5}>
+          <Typography
+            variant="caption"
+            sx={{
+              color: "#6B7280",
+              fontWeight: 600,
+            }}
+          >
+            TOTAL
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: "1.8rem",
+              fontWeight: 800,
+              background:
+                "linear-gradient(90deg,#3E1A89,#6C47FF)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            ₹{item?.product?.price}
+          </Typography>
+        </Stack>
+      </Grid>
+
+      <Grid size={{ xs: 2, md: 2 }}>
+        <Stack
+          direction={{
+            xs: "row",
+            md: "column",
+          }}
+          spacing={1}
+          justifyContent="center"
+        >
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={() => deleteCart(item._id)}
+            sx={{
+              borderRadius: 99,
+              textTransform: "none",
+            }}
+          >
+            Delete
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={() => saveForLater(item._id)}
+            sx={{
+              borderRadius: 99,
+              textTransform: "none",
+              bgcolor: "#3E1A89",
+              "&:hover": {
+                bgcolor: "#2C1265",
+              },
+            }}
+          >
+            Save Later
+          </Button>
+        </Stack>
+      </Grid>
+    </Grid>
+  </CardContent>
+</Card>
             ))}
           </Stack>
         </Grid>
@@ -844,7 +968,7 @@ export default function CustomerCart() {
               </Grid>
 
 
-              <PaymentButton addressId={address?._id} amount={totalPrice} />
+              <PaymentButton addressId={updateAddress?._id} amount={grandTotal} />
             </CardContent>
           </Card>
         </Grid>

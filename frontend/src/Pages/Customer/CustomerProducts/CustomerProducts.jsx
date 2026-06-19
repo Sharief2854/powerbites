@@ -17,8 +17,12 @@ import {
   Switch,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { addToCart, addValue, getItems } from "../../../Redux/Slices/CM_CartSlice";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  addToCart,
+  addValue,
+  getItems,
+} from "../../../Redux/Slices/CM_CartSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { PrimaryButton } from "../../../Components/Common/Buttons";
@@ -27,6 +31,10 @@ import api from "../../../api/axiosConfig";
 import { useTheme } from "@mui/material/styles";
 import InputLabel from "@mui/material/InputLabel";
 import { enqueueSnackbar } from "notistack";
+import SearchIcon from "@mui/icons-material/Search";
+import {
+  InputAdornment,
+} from "@mui/material";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -51,6 +59,26 @@ export default function CustomerProducts() {
   const [isAvailableOnly, setIsAvailableOnly] = useState(false);
   const [selected, setSelected] = useState([]);
   const [category, setCategory] = React.useState([]);
+  const [currentImage, setCurrentImage] = useState({});
+    const [photos, setPhotos] = useState([]);
+    const [search, setSearch] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("");
+    const [minPrice, setMinPrice] = useState("");
+    const [maxPrice, setMaxPrice] = useState("");
+    const [sortBy, setSortBy] = useState("");
+    const [inStockOnly, setInStockOnly] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+  
+    
+    const clearFilters = () => {
+      setSearch("");
+      setSelectedCategory("");
+      setMinPrice("");
+      setMaxPrice("");
+      setSortBy("");
+      setInStockOnly(false);
+    };
+    
 
   const theme = useTheme();
   function getStyles(name, category, theme) {
@@ -62,7 +90,7 @@ export default function CustomerProducts() {
   const cartItems = useSelector((state) => state.cart.items);
 
   console.log(cartItems);
-  
+
   const handleChange = (event) => {
     const {
       target: { value },
@@ -79,9 +107,10 @@ export default function CustomerProducts() {
   async function addItem(params) {
     setLoading(true);
     try {
-      let res = await api.post(`/cart/setCart`, {customer: decodeId,
+      let res = await api.post(`/cart/setCart`, {
+        customer: decodeId,
         product: params,
-        quantity:1,
+        quantity: 1,
       });
       console.log(res.data);
 
@@ -108,31 +137,19 @@ export default function CustomerProducts() {
     }
   }
   const getCategory = async () => {
-      try {
-        setLoading(true);
-  
-        const response = await api.get("/category/allCategories");
-  
-        setCategory(response.data.categories || []);
-        console.log(response.data.categories);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-  // async function getCategory(params) {
-  //   setLoading(true);
-  //   try {
-  //     let res = await api.get(`/category/allCategories`);
-  //     setCategory(res.data.categories);
-  //     console.log(res.data.categories);
-  //   } catch (error) {
-  //     // enqueueSnackbar('')
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }
+    try {
+      setLoading(true);
+
+      const response = await api.get("/category/allCategories");
+
+      setCategory(response.data.categories || []);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   async function getCartItems(params) {
     setLoading(true);
     try {
@@ -146,35 +163,77 @@ export default function CustomerProducts() {
       setLoading(false);
     }
   }
-
-  const displayProducts = products
-    .filter((product) => {
-      const search = product.name
-        .toLowerCase()
-        .startsWith(searchProduct.toLowerCase());
-
-      let inStock = true;
-
-      if (isAvailableOnly) {
-        inStock =
-          product.isAvailable === true ||
-          product.isAvailable === "true" ||
-          Number(product.stock) > 0;
+  let displayProducts=useMemo(() => {
+      let filtered = products;
+      if (search.trim()) {
+        filtered = filtered.filter((product) =>
+          product?.name?.toLowerCase().includes(search.toLowerCase()),
+        );
       }
-
-      return search && inStock;
-    })
-    .sort((a, b) => {
-      if (range === "low") {
-        return a.price - b.price;
+  
+      if (selectedCategory) {
+        filtered = filtered.filter(
+          (product) => product.category?._id === selectedCategory,
+        );
       }
-
-      if (range === "high") {
-        return b.price - a.price;
+  
+      if (inStockOnly) {
+        filtered = filtered.filter((product) => Number(product.stock) > 0);
       }
+  
+      if (minPrice !== "") {
+        filtered = filtered.filter(
+          (product) => Number(product.price) >= Number(minPrice),
+        );
+      }
+  
+      if (maxPrice !== "") {
+        filtered = filtered.filter(
+          (product) => Number(product.price) <= Number(maxPrice),
+        );
+      }
+  
+      switch (sortBy) {
+        case "low":
+          filtered.sort((a, b) => a.price - b.price);
+          break;
+  
+        case "high":
+          filtered.sort((a, b) => b.price - a.price);
+          break;
+  
+        case "stock":
+          filtered.sort((a, b) => b.stock - a.stock);
+          break;
+  
+        case "newest":
+          filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          break;
+  
+        case "oldest":
+          filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+          break;
+  
+        case "name":
+          filtered.sort((a, b) => a.name.localeCompare(b.name));
+          break;
+  
+        default:
+          break;
+      }
+  
+      return filtered;
+    }, [
+      products,
+      search,
+      selectedCategory,
+      inStockOnly,
+      minPrice,
+      maxPrice,
+      sortBy,
+    ]);
+  
 
-      return a.name.localeCompare(b.name);
-    });
 
   useEffect(() => {
     getProducts();
@@ -182,101 +241,153 @@ export default function CustomerProducts() {
     getCategory();
   }, []);
   console.log(category);
-  
 
   if (loading) {
-    <Backdrop sx={{height:'100%',width:'100%', color: "#fff", zIndex: 1,display:'flex',justifyContent:'center',alignItems:'center' }} open={loading}>
+    <Backdrop
+      sx={{
+        height: "100%",
+        width: "100%",
+        color: "#fff",
+        zIndex: 1,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+      open={loading}
+    >
       <CircularProgress color="primary" />
     </Backdrop>;
     return;
   }
   return (
     <Box>
-      <Grid container spacing={2}>
-        <Grid size={5}>
-          {/* {<FormControl fullWidth>
-                              <OutlinedInput
-                                id="search"
-                                placeholder="Search product"
-                                onChange={(e) => setSearchProduct(e.target.value)}
-                                sx={{
-                                  borderRadius: "12px",
-                                  backgroundColor: "white",
-                                }}
-                              />
-                            </FormControl>} */}
+<Grid
+  container
+  alignItems="center"
+  justifyContent="space-between"
+  spacing={3}
+  sx={{
+    mb: 3,
+    p: 2,
+    bgcolor: "#fff",
+    borderRadius: 3,
+    boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+  }}
+>
 
-          <FormControl fullWidth sx={{ m: 1, width: 300 }}>
-            <InputLabel id="demo-multiple-chip-label">Category</InputLabel>
-            <Select
-              id="demo-multiple-chip"
-              value={selected}
-              defaultValue={''}
-              onChange={handleChange}
-              input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
-              renderValue={(selected) => (
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                  {selected.map((value) => (
-                    <Chip key={value} label={value} />
-                  ))}
-                </Box>
-              )}
-              MenuProps={MenuProps}
-              sx={{borderRadius:'12px'}}
-            >
-              {category?.map((name) => (
-                <MenuItem
-                  key={name}
-                  value={name}
-                  style={getStyles(name, theme)}
-                >
-                  {name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
+  <Grid size={{ xs: 12, md: 4 }}>
+    <Box
+      display="flex"
+      gap={2}
+      justifyContent={{ xs: "center", md: "flex-start" }}
+    >
+      
+                    <FormControl  sx={{ minWidth: 180,mr:1}}>
+                      <InputLabel>Category</InputLabel>
 
-        <Grid size={5}>
-          <FormControl fullWidth  sx={{ m: 1, width: 300 }}>
-            <Select
-              value={range}
-              defaultValue=""
-              displayEmpty
-              placeholder="Sort by price"
-              onChange={(e) => setRange(e.target.value)}
-              sx={{
-                borderRadius: "12px",
-                backgroundColor: "white",
-              }}
-            >
-              <MenuItem value="">--Sort--</MenuItem>
-              <MenuItem value={"low"}>Low to High</MenuItem>
-              <MenuItem value={"high"}>High to Low</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid size={{ md:2, lg:1}}>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={isAvailableOnly}
-                onChange={(e) => setIsAvailableOnly(e.target.checked)}
-                color="secondary"
-              />
+                      <Select
+                       sx={{ minWidth: 160,borderRadius:'16px' }}
+                        value={selectedCategory}
+                        label="Category"
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                      >
+                        <MenuItem value="">All Categories</MenuItem>
+
+                        {category.map((cat) => (
+                          <MenuItem key={cat._id} value={cat._id}>
+                            {cat.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+      <FormControl sx={{ minWidth: 160,borderRadius:'16px' }}>
+        <Select
+          value={range}
+           sx={{ minWidth: 160,borderRadius:'16px' }}
+          displayEmpty
+          onChange={(e) => sortBy(e.target.value)}
+        >
+          <MenuItem value="">Sort By</MenuItem>
+          <MenuItem value="low">Low → High</MenuItem>
+          <MenuItem value="high">High → Low</MenuItem>
+          <MenuItem value="stock">Stock</MenuItem>
+          <MenuItem value="name">Name</MenuItem>
+        </Select>
+      </FormControl>
+    </Box>
+  </Grid>
+
+  <Grid size={{ xs: 12, md: 4 }}>
+    <FormControl fullWidth>
+      <OutlinedInput
+        placeholder="Search products..."
+        onChange={(e) => setSearchProduct(e.target.value)}
+        startAdornment={
+          <InputAdornment position="start">
+            <SearchIcon color="action" />
+          </InputAdornment>
+        }
+        sx={{
+          height: 50,
+          borderRadius: 99,
+          bgcolor: "#fafafa",
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#ddd",
+          },
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#7C4DFF",
+          },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#7C4DFF",
+            borderWidth: 2,
+          },
+        }}
+      />
+    </FormControl>
+  </Grid>
+
+
+  <Grid size={{ xs: 12, md: 4 }}>
+    <Box
+      display="flex"
+      gap={2}
+      justifyContent={{ xs: "center", md: "flex-end" }}
+      alignItems="center"
+    >
+      <FormControlLabel
+        control={
+          <Switch
+            checked={isAvailableOnly}
+            onChange={(e) =>
+              setIsAvailableOnly(e.target.checked)
             }
-            label="In-Stock"
-            labelPlacement="bottom"
-            sx={{ color: "#3E1A89", ml: 1, whiteSpace: "nowrap" }}
+            color="secondary"
           />
-        </Grid>
-      </Grid>
+        }
+        label="In Stock"
+      />
+
+      <Button
+        variant="outlined"
+        color="secondary"
+        onClick={clearFilters}
+        sx={{
+          borderRadius: 99,
+          px: 3,
+          height: 42,
+          textTransform: "none",
+          fontWeight: 600,
+        }}
+      >
+        Clear Filters
+      </Button>
+    </Box>
+  </Grid>
+</Grid>
 
       <Grid container spacing={2}>
         {displayProducts.map((item) => {
-          const cartBtn = cartItems?.some(
-  (i) => i?.product === item._id
-);
+          const cartBtn = cartItems?.some((i) => i?.product === item._id);
           const imagePath = item.image[0]
             .replace(/\\/g, "/")
             .replace(/^\/+/, "");
@@ -290,181 +401,234 @@ export default function CustomerProducts() {
               }}
             >
               <Card
-                sx={{
-                  width: "100%",
-                  maxWidth: 320,
-                  mx: "auto",
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  borderRadius: 4,
-                  backgroundColor: "#fff",
-                  border: "1px solid #ececec",
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-                  overflow: "hidden",
-                  transition: "transform 0.25s ease, box-shadow 0.25s ease",
-                  "&:hover": {
-                    cursor: "pointer",
-                    boxShadow: "0 16px 30px rgba(0,0,0,0.10)",
-                  },
-                }}
-              >
-                <Box sx={{ position: "relative", px: 2, pt: 2 }}>
-                  <Box
-                    sx={{
-                      position: "relative",
-                      width: "100%",
-                      aspectRatio: "4 / 3",
-                      borderRadius: 3,
-                      overflow: "hidden",
-                      backgroundColor: "#f8f8f8",
-                    }}
-                    onClick={() =>
-                      navigate(`/customer/productpage/${item._id}`)
-                    }
-                  >
-                    <Box
-                      component="img"
-                      src={imagePath}
-                      alt={item.name}
-                      sx={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        display: "block",
-                      }}
-                    />
-                  </Box>
+  sx={{
+    width: "100%",
+    maxWidth: 340,
+    mx: "auto",
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+    borderRadius: 5,
+    overflow: "hidden",
+    background:
+      "linear-gradient(180deg,#ffffff 0%,#fafbff 100%)",
+    border: "1px solid #E5E7EB",
+    transition: "all .3s ease",
+    "&:hover": {
+      transform: "translateY(-8px)",
+      boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
+    },
+  }}
+>
+  {/* IMAGE SECTION */}
+  <Box
+    sx={{
+      position: "relative",
+      p: 2,
+      pb: 1,
+    }}
+  >
+    {/* Badge */}
+    <Chip
+      label={item.stock > 0 ? "In Stock" : "Out of Stock"}
+      size="small"
+      color={item.stock > 0 ? "success" : "error"}
+      sx={{
+        position: "absolute",
+        zIndex: 2,
+        top: 20,
+        left: 20,
+        fontWeight: 700,
+      }}
+    />
 
-                  {/* <Chip
-            // label="10% OFF"
-            size="small"
+    {/* IMAGE SLIDER */}
+    <Box
+      sx={{
+        display: "flex",
+        overflowX: "auto",
+        scrollSnapType: "x mandatory",
+        gap: 1,
+        borderRadius: 4,
+        scrollbarWidth: "none",
+        "&::-webkit-scrollbar": {
+          display: "none",
+        },
+      }}
+      onScroll={(e) => {
+        const index = Math.round(
+          e.target.scrollLeft / e.target.clientWidth
+        );
+
+        setCurrentImage((prev) => ({
+          ...prev,
+          [item._id]: index,
+        }));
+      }}
+    >
+      {item.images?.map((img, index) => (
+        <Box
+          key={index}
+          sx={{
+            minWidth: "100%",
+            scrollSnapAlign: "center",
+            height: 240,
+            borderRadius: 4,
+            overflow: "hidden",
+            background: "#f5f5f5",
+            cursor: "pointer",
+          }}
+          onClick={() =>
+            navigate(`/customer/productpage/${item._id}`)
+          }
+        >
+          <Box
+            component="img"
+            src={`${BASE_URL}/${img}`}
+            alt={item.name}
             sx={{
-              position: "absolute",
-              top: 28,
-              left: 28,
-              backgroundColor: "#ffffff",
-              color: "#111827",
-              fontWeight: 700,
-              borderRadius: 2,
-              boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
             }}
-          /> */}
-                </Box>
+          />
+        </Box>
+      ))}
+    </Box>
 
-                <CardContent
-                  sx={{
-                    flexGrow: 1,
-                    px: 2.5,
-                    pt: 2.5,
-                    pb: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                  onClick={() => navigate(`/customer/productpage/${item._id}`)}
-                >
-                  <Typography
-                    sx={{
-                      fontSize: "1.05rem",
-                      fontWeight: 700,
-                      color: "#111827",
-                      lineHeight: 1.4,
-                      minHeight: 48,
-                      textAlign: "center",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {item.name}
-                  </Typography>
+    {/* DOT INDICATORS */}
+    <Box
+      sx={{
+        mt: 1.5,
+        display: "flex",
+        justifyContent: "center",
+        gap: 0.75,
+      }}
+    >
+      {item.images?.map((_, index) => (
+        <Box
+          key={index}
+          sx={{
+            width:
+              currentImage[item._id] === index
+                ? 20
+                : 8,
+            height: 8,
+            borderRadius: 999,
+            transition: ".3s",
+            backgroundColor:
+              currentImage[item._id] === index
+                ? "#3E1A89"
+                : "#D1D5DB",
+          }}
+        />
+      ))}
+    </Box>
+  </Box>
 
-                  <Typography
-                    sx={{
-                      mt: 1,
-                      color: "#6b7280",
-                      fontSize: "0.92rem",
-                      lineHeight: 1.6,
-                      minHeight: 66,
-                      textAlign: "center",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {item.description}
-                  </Typography>
+  {/* CONTENT */}
+  <CardContent
+    sx={{
+      flexGrow: 1,
+      px: 3,
+      pt: 1,
+      display: "flex",
+      flexDirection: "column",
+    }}
+  >
+    <Typography
+      variant="h6"
+      sx={{
+        fontWeight: 700,
+        color: "#111827",
+        textAlign: "center",
+        mb: 1,
+      }}
+    >
+      {item.name}
+    </Typography>
 
-                  <Box sx={{ mt: 2, textAlign: "center" }}>
-                    <Typography
-                      sx={{
-                        color: "#9ca3af",
-                        fontSize: "0.9rem",
-                      }}
-                    >
-                      ₹{item.price}
-                    </Typography>
+    <Typography
+      sx={{
+        color: "#6B7280",
+        fontSize: "0.9rem",
+        textAlign: "center",
+        minHeight: 60,
+      }}
+    >
+      {item.description}
+    </Typography>
 
-                    {/* <Typography
-              sx={{
-                fontSize: "1.4rem",
-                fontWeight: 800,
-                color: "#111827",
-                mt: 0.5,
-              }}
-            >
-              ₹{item.offerPrice}
-            </Typography> */}
-                  </Box>
-                </CardContent>
+    <Box
+      sx={{
+        mt: "auto",
+        textAlign: "center",
+      }}
+    >
+      <Typography
+        sx={{
+          fontSize: "1.6rem",
+          fontWeight: 800,
+          color: "#3E1A89",
+        }}
+      >
+        ₹{item.price}
+      </Typography>
 
-                <CardActions sx={{ px: 2.5, pb: 2.5, pt: 0 }}>
-                  <PrimaryButton
-                    fullWidth
-                    variant="contained"
-                    onClick={()=>cartBtn? navigate(`/customer/cart`) : addItem(item._id)}
-                    sx={{
-                      backgroundColor: "primary",
-                      color: "#fff",
-                      borderRadius: 3,
-                      py: 1.1,
-                      textTransform: "none",
-                      fontWeight: 700,
-                      fontSize: "0.95rem",
-                      boxShadow: "none",
-                      "&:hover": {
-                        backgroundColor: "#000d51",
-                        boxShadow: "none",
-                      },
-                    }}
-                  >
-                    {cartBtn? "Go to Cart" : "Add to cart"}
-                  </PrimaryButton>
-                  <PrimaryButton
-                    fullWidth
-                    variant="contained"
-                    sx={{
-                      backgroundColor: "primary",
-                      color: "#fff",
-                      borderRadius: 3,
-                      py: 1.1,
-                      textTransform: "none",
-                      fontWeight: 700,
-                      fontSize: "0.95rem",
-                      boxShadow: "none",
-                      "&:hover": {
-                        backgroundColor: "#000",
-                        boxShadow: "none",
-                      },
-                    }}
-                    onClick={() =>
-                      navigate(`/customer/productpage/${item._id}`)
-                    }
-                  >
-                    View Product
-                  </PrimaryButton>
-                </CardActions>
-              </Card>
+      <Typography
+        sx={{
+          color: "#9CA3AF",
+          fontSize: ".85rem",
+        }}
+      >
+        Available: {item.stock}
+      </Typography>
+    </Box>
+  </CardContent>
+
+  {/* ACTIONS */}
+  <CardActions
+    sx={{
+      p: 2,
+      gap: 1,
+      flexDirection: "column",
+    }}
+  >
+    <PrimaryButton
+      fullWidth
+      onClick={() =>
+        cartBtn
+          ? navigate("/customer/cart")
+          : addItem(item._id)
+      }
+      sx={{
+        py: 1.2,
+        borderRadius: 3,
+        background:
+          "linear-gradient(135deg,#3E1A89,#5A2DC7)",
+      }}
+    >
+      {cartBtn ? "Go To Cart" : "Add To Cart"}
+    </PrimaryButton>
+
+    <Button
+      fullWidth
+      variant="outlined"
+      onClick={() =>
+        navigate(`/customer/productpage/${item._id}`)
+      }
+      sx={{
+        borderRadius: 3,
+        py: 1.2,
+        borderColor: "#3E1A89",
+        color: "#3E1A89",
+        fontWeight: 700,
+      }}
+    >
+      View Product
+    </Button>
+  </CardActions>
+</Card>
             </Grid>
           );
         })}

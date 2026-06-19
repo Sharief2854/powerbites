@@ -29,7 +29,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { enqueueSnackbar, SnackbarContent, SnackbarProvider } from "notistack";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { styled } from "@mui/material/styles";
 import Button from "@mui/material/Button";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -46,6 +46,9 @@ import { Chip } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import api from "../../../api/axiosConfig";
 import CloseIcon from "@mui/icons-material/Close";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import Divider from "@mui/material/Divider";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -91,6 +94,7 @@ const Android12Switch = styled(Switch)(({ theme }) => ({
   },
 }));
 
+
 export default function AdminProducts() {
   const dispatch = useDispatch();
   const product = useSelector((state) => state.product.products);
@@ -100,6 +104,36 @@ export default function AdminProducts() {
   const [openModal, setOpenModal] = useState(false);
 
   const [categories, setCategories] = useState([]);
+const [openCategoryModal, setOpenCategoryModal] = useState(false);
+const [categoryName, setCategoryName] = useState("");
+const mountedRef = useRef(true);
+
+useEffect(() => {
+  mountedRef.current = true;
+
+  getCategories();
+
+  return () => {
+    mountedRef.current = false;
+  };
+}, []);
+
+const handleOpenAddCategory = () => {
+  setSelectedCategory(null);
+  setCategoryName("");
+  setOpenCategoryModal(true);
+};
+const handleEditCategory = (category) => {
+  setSelectedCategory(category);
+  setCategoryName(category.name);
+  setOpenCategoryModal(true);
+};
+
+const handleCloseCategoryModal = () => {
+  setOpenCategoryModal(false);
+  setCategoryName("");
+  setSelectedCategory(null);
+};
 
   const [productData, setProductData] = useState({
     name: "",
@@ -107,7 +141,7 @@ export default function AdminProducts() {
     price: "",
     stock: "",
     sendUpdates: false,
-    category: "",
+    category: "i",
     discount: "",
     isAvailable: true,
   });
@@ -140,6 +174,61 @@ export default function AdminProducts() {
 
     setPhotos([]);
   };
+  const handleSaveCategory = async () => {
+  if (!categoryName.trim()) return;
+
+  try {
+    setLoading(true);
+
+    if (selectedCategory) {
+      await api.put(
+        `/category/updateProductCategory/${selectedCategory._id}`,
+        {
+          name: categoryName,
+        }
+      );
+    } else {
+      await api.post("/category/addProductCategory", {
+        name: categoryName,
+      });
+    }
+
+    await getCategories();
+    handleCloseCategoryModal();
+  } catch (error) {
+    console.error(error);
+  } finally {
+    if (mountedRef.current) {
+      setLoading(false);
+    }
+  }
+};
+const handleDeleteCategory = async (_id) => {
+  if (!selectedCategory) return;
+
+  const confirmDelete = window.confirm(
+    `Delete ${selectedCategory.name}?`
+  );
+
+  if (!confirmDelete) return;
+
+  try {
+    setLoading(true);
+
+    await api.delete(
+      `category/deleteProductCategory/${_id}`
+    );
+
+    await getCategories();
+    handleCloseCategoryModal();
+  } catch (error) {
+    console.error(error);
+  } finally {
+    if (mountedRef.current) {
+      setLoading(false);
+    }
+  }
+};
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -237,6 +326,9 @@ export default function AdminProducts() {
         formData.append("file", photo.file);
       });
       formData.append("sendUpdates", productData.sendUpdates);
+      if (productData=="i"||!formData) {
+        enqueueSnackbar("All fields are required",{variant:'error'})
+      }
 
       const response = await api.post("/products/addProduct", formData);
 
@@ -348,7 +440,8 @@ export default function AdminProducts() {
       }}
     >
       <SnackbarProvider />
-
+      <Grid container sx={{display:{xs:'grid',sm:'none'}}}>
+        <Grid size={{sx:12}}>
       <Typography
         align="center"
         variant="h4"
@@ -356,12 +449,33 @@ export default function AdminProducts() {
         sx={{
           color: "#3E1A89",
           fontWeight: 700,
-          mb: 4
+          mb: 4,
         }}
       >
         Product
       </Typography>
-      <Box sx={{ position: "absolute", top: 0, right: 0 }}>
+
+        </Grid>
+        <Grid size={{sx:12}}>
+        <PrimaryButton onClick={openAddProductModal} sx={{float:'left', margin: "20px", }}>
+          Add Product
+        </PrimaryButton></Grid>
+      </Grid>
+      <Typography
+        align="center"
+        variant="h4"
+        gutterBottom
+        sx={{
+          color: "#3E1A89",
+          fontWeight: 700,
+          mb: 4,
+          display:{xs:'none',sm:'block'}
+        }}
+      >
+        Product
+      </Typography>
+      <Box sx={{ position: "absolute",
+          display:{xs:'none',sm:'block'}, top: 0, right: 0 }}>
         <PrimaryButton onClick={openAddProductModal} sx={{ margin: "20px" }}>
           Add Product
         </PrimaryButton>
@@ -407,7 +521,7 @@ export default function AdminProducts() {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 2 }}>
+                  <Grid size={{ xs: 2, md: 2 }}>
                     <TextField
                       fullWidth
                       type="number"
@@ -417,7 +531,7 @@ export default function AdminProducts() {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 2 }}>
+                  <Grid size={{ xs: 2, md: 2 }}>
                     <TextField
                       fullWidth
                       type="number"
@@ -541,7 +655,6 @@ export default function AdminProducts() {
       spacing={2}
       sx={{
         p: 3,
-        maxHeight: "calc(90vh - 80px)",
         overflowY: "auto",
       }}
     >
@@ -720,23 +833,177 @@ export default function AdminProducts() {
   ))}
 </Box> */}
 
-      <FormControl fullWidth>
-        <InputLabel>Category</InputLabel>
-        <Select
-          name="category"
-          value={productData.category}
-          label="Category"
-          onChange={handleChange}
-          sx={{ borderRadius: "10px" }}
-        >
-          {categories.map((item) => (
-            <MenuItem key={item._id} value={item._id}>
-              {item.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+<Box
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    border: "1px solid",
+    borderColor: "divider",
+    borderRadius: 2,
+  }}
+>
+  <FormControl fullWidth >
+    <Select
+      name="category"
+      value={productData.category}
+      defaultValue={"i"}
+      label="Category"
+      onChange={handleChange}
+      sx={{
+        "& fieldset": {
+          border: "none",
+        },
+      }}
+    >
+      <MenuItem value="i" >--Select Category--</MenuItem>
+      {categories.map((item) => (
+        <MenuItem key={item._id} value={item._id}>
+          {item.name}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
 
+  <Divider orientation="vertical" flexItem />
+
+  <IconButton
+    color="primary"
+    onClick={handleOpenAddCategory}
+  >
+    <AddIcon />
+  </IconButton>
+
+  <IconButton
+    color="rgba(23, 75, 231, 0.8)"
+    disabled={!productData.category}
+    onClick={() => {
+      const category = categories.find(
+        (c) => c._id === productData.category
+      );
+
+      if (category) {
+        handleEditCategory(category);
+      }
+    }}
+  >
+    <EditIcon />
+  </IconButton>
+
+  <IconButton
+    color="error"
+    disabled={!productData.category}
+    onClick={() =>
+      handleDeleteCategory(productData.category)
+    }
+  >
+    <DeleteIcon />
+  </IconButton>
+</Box>
+{/* <Box display="flex" gap={1}>
+  <FormControl >
+  <InputLabel>Category</InputLabel>
+
+    <Select
+    name="category"
+    value={productData.category}
+    label="Category"
+    onChange={handleChange}
+  >
+    {categories.map((item) => (
+      <MenuItem
+        value={item.name}
+        key={item._id}
+      >
+        {item.name}
+      </MenuItem>
+      
+    ))}
+    <Divider />
+
+    <MenuItem
+      onClick={(e) => {
+        e.stopPropagation();
+        handleOpenAddCategory();
+      }}
+      sx={{
+        color: "primary.main",
+        fontWeight: 600,
+        display: "flex",
+        gap: 1,
+      }}
+    >
+      <AddIcon />
+      Add New Category
+    </MenuItem>
+  </Select>
+  </FormControl>
+
+  <IconButton
+    onClick={() => {
+      const category = categories.find(
+        (c) => c._id === productData.category
+      );
+
+      if (category){ handleEditCategory(category)};
+    }}
+  >
+    <EditIcon />
+  </IconButton>
+
+  <IconButton
+    color="error"
+    onClick={() =>
+      handleDeleteCategory(productData.category)
+    }
+  >
+    <DeleteIcon />
+  </IconButton>
+</Box> */}
+<Dialog
+  open={openCategoryModal}
+  onClose={handleCloseCategoryModal}
+  maxWidth="sm"
+  fullWidth
+>
+  <DialogTitle>
+    {selectedCategory
+      ? "Update Category"
+      : "Add Category"}
+  </DialogTitle>
+
+  <DialogContent>
+    <TextField
+      fullWidth
+      label="Category Name"
+      value={categoryName}
+      onChange={(e) =>
+        setCategoryName(e.target.value)
+      }
+      sx={{ mt: 1 }}
+    />
+  </DialogContent>
+
+  <DialogActions>
+    <Button
+      onClick={handleCloseCategoryModal}
+      disabled={loading}
+    >
+      Cancel
+    </Button>
+
+    <Button
+      variant="contained"
+      onClick={handleSaveCategory}
+      disabled={loading || !categoryName.trim()}
+    >
+      {loading
+        ? "Saving..."
+        : selectedCategory
+        ? "Update"
+        : "Add"}
+    </Button>
+  </DialogActions>
+</Dialog>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 4 }}>
           <FormControl fullWidth margin="normal">
@@ -747,6 +1014,8 @@ export default function AdminProducts() {
               name="price"
               value={productData.price}
               onChange={handleChange}
+              onWheel={(e)=>e.preventDefault()}
+              inputProps={{min:0}}
               startAdornment={
                 <InputAdornment position="start">
                   <span style={{ color: "#3E1A89" }}>₹</span>
@@ -771,6 +1040,8 @@ export default function AdminProducts() {
                 </InputAdornment>
               }
               label="Discount"
+              onWheel={(e)=>e.preventDefault()}
+              inputProps={{min:0}}
               sx={{ borderRadius: "10px" }}
             />
           </FormControl>
