@@ -5,8 +5,7 @@ const ordersModel = require("../../Model/orderModel");
 
 async function getTotalDashboard(req,res) {
     try {
-    const totalCustomers = await userModel.countDocuments({
-        removeListener
+    const totalCustomers = await userModel.countDocuments({role: "customer" 
     });
     const totalProducts = await ProductModel.countDocuments();
     const totalOrders = await ordersModel.countDocuments();
