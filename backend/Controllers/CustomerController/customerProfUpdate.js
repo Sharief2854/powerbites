@@ -320,51 +320,69 @@ async function deleteCustomerPhoto(req, res) {
 async function addingAddress(req, res) {
     try {
         let userId = req.userId;
-        console.log("User ID from token:", userId);
 
         if (!userId) {
             return res.status(401).json({
-                message: "Unauthorized: User ID missing in token"
+                message: "Unauthorized"
             });
         }
 
         let { label, street, city, state, pincode, country } = req.body;
+
         if (!label || !street || !city || !state || !pincode || !country) {
             return res.status(400).json({
                 message: "All fields are required"
             });
-        }       
+        }
+
+        // Check duplicate label for same user
+        const existingLabel = await addressModel.findOne({
+            userId,
+            label: {
+                $regex: new RegExp(`^${label.trim()}$`, "i")
+            }
+        });
+
+        if (existingLabel) {
+            return res.status(400).json({
+                message: `${label} address already exists`
+            });
+        }
+
         const count = await addressModel.countDocuments({ userId });
+
         const newAddress = new addressModel({
             userId,
-            label,
+            label: label.trim(),
             street,
-            city,   
+            city,
             state,
             pincode,
             country,
-            isDefault: count === 0 ? true : false
+            isDefault: count === 0
         });
+
         await newAddress.save();
 
-        if (count > 0) {
-            await addressModel.updateMany(
-                { userId, _id: { $ne: newAddress._id } },
-                { $set: { isDefault: false } }
-            );
-        }        
-        console.log("add address")           
         res.status(201).json({
             message: "Address added successfully",
             address: newAddress
         });
+
     } catch (error) {
-        console.error("Error adding address:", error);
+
+        if (error.code === 11000) {
+            return res.status(400).json({
+                message: "Address label already exists"
+            });
+        }
+
         res.status(500).json({
-            message: "Internal server error"
+            message: "Internal Server Error",
+            error: error.message
         });
-    }   
-};
+    }
+}
 
 // Customer delete address management controller functions
 async function deleteAddress(req, res) {
@@ -413,51 +431,90 @@ async function deleteAddress(req, res) {
 // Customer update address management controller functions
 async function updateAddress(req, res) {
     try {
+
         let userId = req.userId;
-        console.log("User ID from token:", userId);
 
         if (!userId) {
             return res.status(401).json({
-                message: "Unauthorized: User ID missing in token"
+                message: "Unauthorized"
             });
         }
+
         let addressId = req.params.id;
-        let { label, street, city, state, pincode } = req.body;
-        const address = await addressModel.findOne({ _id: addressId, userId });
+
+        let { label, street, city, state, pincode, country } = req.body;
+
+        const address = await addressModel.findOne({
+            _id: addressId,
+            userId
+        });
 
         if (!address) {
             return res.status(404).json({
-                message: "Address not found or does not belong to user",
+                message: "Address not found"
             });
         }
+
         if (label) {
-            address.label = label;
+
+            const existingLabel = await addressModel.findOne({
+                userId,
+                _id: { $ne: addressId },
+                label: {
+                    $regex: new RegExp(`^${label.trim()}$`, "i")
+                }
+            });
+
+            if (existingLabel) {
+                return res.status(400).json({
+                    message: "Label already exists"
+                });
+            }
+
+            address.label = label.trim();
         }
+
         if (street) {
             address.street = street;
         }
+
         if (city) {
             address.city = city;
         }
+
         if (state) {
             address.state = state;
         }
+
         if (pincode) {
             address.pincode = pincode;
         }
+
+        if (country) {
+            address.country = country;
+        }
+
         await address.save();
 
         res.status(200).json({
             message: "Address updated successfully",
-            address: address
+            address
         });
+
     } catch (error) {
+
+        if (error.code === 11000) {
+            return res.status(400).json({
+                message: "Address label already exists"
+            });
+        }
+
         res.status(500).json({
             message: "Internal Server Error",
             error: error.message
         });
     }
-};
+}
 
 // Customer get addresses controller function
 async function getCustomerAddresses (req, res) {
@@ -516,17 +573,11 @@ async function getCustomerAddressById(req, res) {
 
 async function setDefaultAddress(req, res) {
     try {
+
         let userId = req.userId;
-
-        if (!userId) {
-            return res.status(401).json({
-                message: "Unauthorized: User ID missing in token"
-            });
-        }
-
         let addressId = req.params.id;
 
-        let address = await addressModel.findOne({
+        const address = await addressModel.findOne({
             _id: addressId,
             userId
         });
@@ -537,13 +588,11 @@ async function setDefaultAddress(req, res) {
             });
         }
 
-        // Remove default from all addresses of this user
         await addressModel.updateMany(
             { userId },
             { $set: { isDefault: false } }
         );
 
-        // Set selected address as default
         address.isDefault = true;
         await address.save();
 
@@ -558,6 +607,8 @@ async function setDefaultAddress(req, res) {
         });
     }
 }
+
+
 module.exports = {
     updateCustomerProfile,
     deleteCustomerProfile,
