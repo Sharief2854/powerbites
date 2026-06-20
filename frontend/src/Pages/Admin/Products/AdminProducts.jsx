@@ -141,7 +141,7 @@ const handleCloseCategoryModal = () => {
     price: "",
     stock: "",
     sendUpdates: false,
-    category: "i",
+    category: "",
     discount: "",
     isAvailable: true,
   });
@@ -176,6 +176,7 @@ const handleCloseCategoryModal = () => {
 
     setPhotos([]);
   };
+
   const handleSaveCategory = async () => {
   if (!categoryName.trim()) return;
 
@@ -307,6 +308,53 @@ const handleDeleteCategory = async (_id) => {
 
   const handlePost = async (e) => {
     e.preventDefault();
+     if (!productData.name.trim()) {
+    return enqueueSnackbar("Product name is required", {
+      variant: "error",
+    });
+  }
+
+  if (!productData.description.trim()) {
+    return enqueueSnackbar("Description is required", {
+      variant: "error",
+    });
+  }
+
+  if (!productData.price || Number(productData.price) <= 0) {
+    return enqueueSnackbar("Enter a valid price", {
+      variant: "error",
+    });
+  }
+
+  if (!productData.stock || Number(productData.stock) < 0) {
+    return enqueueSnackbar("Enter valid stock quantity", {
+      variant: "error",
+    });
+  }
+
+  if (!productData.category) {
+    return enqueueSnackbar("Please select a category", {
+      variant: "error",
+    });
+  }
+
+  if (Number(productData.discount) < 0 || Number(productData.discount) > 100) {
+    return enqueueSnackbar(
+      "Discount must be between 0 and 100",
+      {
+        variant: "error",
+      }
+    );
+  }
+
+  if (photos.length === 0) {
+    return enqueueSnackbar(
+      "At least one product image is required",
+      {
+        variant: "error",
+      }
+    );
+  }
     try {
       const formData = new FormData();
       setLoading(true);
@@ -329,25 +377,22 @@ const handleDeleteCategory = async (_id) => {
         formData.append("file", photo.file);
       });
       formData.append("sendUpdates", productData.sendUpdates);
-      if (productData=="i"||!formData) {
+      if (productData==""||!formData) {
         enqueueSnackbar("All fields are required",{variant:'error'})
       }
 
       const response = await api.post("/products/addProduct", formData);
-
-      console.log(response.data);
-
       dispatch(postProducts(response.data.Product));
+      
       closeAddProductModal();
     } catch (error) {
       console.log(error);
+      enqueueSnackbar("Failed to add Product, Please tyr again",{variant:'error'})
     } finally {
       setLoading(false);
     }
   };
 
-  // console.log(product);
-  
   const displayProducts = useMemo(() => {
     let filtered = product;
     if (search.trim()) {
@@ -417,6 +462,7 @@ const handleDeleteCategory = async (_id) => {
     maxPrice,
     sortBy,
   ]);
+  console.log(displayProducts)
 
   useEffect(() => {
     getProductsData();
@@ -597,7 +643,7 @@ const handleDeleteCategory = async (_id) => {
             <Grid container spacing={2}>
               {displayProducts?.length > 0 ? (
                 displayProducts.map((product) => (
-                  <ProductCard key={product._id} product={product} />
+                  <ProductCard key={product?._id} product={product} />
                 ))
               ) : (
                 <Typography
@@ -627,7 +673,7 @@ const handleDeleteCategory = async (_id) => {
       bgcolor: "background.paper",
       borderRadius: 3,
       boxShadow: 24,
-      overflow: "hidden",
+      overflow: "auto",
     }}
   >
     
@@ -845,28 +891,30 @@ const handleDeleteCategory = async (_id) => {
     borderRadius: 2,
   }}
 >
-  <FormControl fullWidth >
-    <Select
-      name="category"
-      value={productData.category}
-      defaultValue={"i"}
-      label="Category"
-      onChange={handleChange}
-      sx={{
-        "& fieldset": {
-          border: "none",
-        },
-      }}
-    >
-      <MenuItem value="i" >--Select Category--</MenuItem>
-      {categories.map((item) => (
-        <MenuItem key={item._id} value={item._id}>
-          {item.name}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
 
+  <FormControl fullWidth>
+  <Select
+    name="category"
+    value={productData.category || ""}
+    onChange={handleChange}
+    displayEmpty
+    sx={{
+      "& fieldset": {
+        border: "none",
+      },
+    }}
+  >
+    <MenuItem value="">
+      --Select Category--
+    </MenuItem>
+
+    {categories.map((item) => (
+      <MenuItem key={item._id} value={item._id}>
+        {item.name}
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
   <Divider orientation="vertical" flexItem />
 
   <IconButton
@@ -902,66 +950,7 @@ const handleDeleteCategory = async (_id) => {
     <DeleteIcon />
   </IconButton>
 </Box>
-{/* <Box display="flex" gap={1}>
-  <FormControl >
-  <InputLabel>Category</InputLabel>
 
-    <Select
-    name="category"
-    value={productData.category}
-    label="Category"
-    onChange={handleChange}
-  >
-    {categories.map((item) => (
-      <MenuItem
-        value={item.name}
-        key={item._id}
-      >
-        {item.name}
-      </MenuItem>
-      
-    ))}
-    <Divider />
-
-    <MenuItem
-      onClick={(e) => {
-        e.stopPropagation();
-        handleOpenAddCategory();
-      }}
-      sx={{
-        color: "primary.main",
-        fontWeight: 600,
-        display: "flex",
-        gap: 1,
-      }}
-    >
-      <AddIcon />
-      Add New Category
-    </MenuItem>
-  </Select>
-  </FormControl>
-
-  <IconButton
-    onClick={() => {
-      const category = categories.find(
-        (c) => c._id === productData.category
-      );
-
-      if (category){ handleEditCategory(category)};
-    }}
-  >
-    <EditIcon />
-  </IconButton>
-
-  <IconButton
-    color="error"
-    onClick={() =>
-      handleDeleteCategory(productData.category)
-    }
-  >
-    <DeleteIcon />
-  </IconButton>
-</Box> */}
 <Dialog
   open={openCategoryModal}
   onClose={handleCloseCategoryModal}
@@ -1010,14 +999,14 @@ const handleDeleteCategory = async (_id) => {
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 4 }}>
           <FormControl fullWidth margin="normal">
-            <InputLabel>Price</InputLabel>
+            <InputLabel shrink>Price</InputLabel>
             <OutlinedInput
               label="Price"
               type="number"
               name="price"
               value={productData.price}
               onChange={handleChange}
-              onWheel={(e)=>e.preventDefault()}
+              onWheel={(e)=> e.target.blur()}
               inputProps={{min:0}}
               startAdornment={
                 <InputAdornment position="start">
@@ -1031,7 +1020,7 @@ const handleDeleteCategory = async (_id) => {
 
         <Grid size={{ xs: 12, md: 3 }}>
           <FormControl fullWidth margin="normal">
-            <InputLabel>Discount</InputLabel>
+            <InputLabel >Discount</InputLabel>
             <OutlinedInput
               type="number"
               name="discount"
@@ -1043,7 +1032,7 @@ const handleDeleteCategory = async (_id) => {
                 </InputAdornment>
               }
               label="Discount"
-              onWheel={(e)=>e.preventDefault()}
+              onWheel={(e)=> e.target.blur()}
               inputProps={{min:0}}
               sx={{ borderRadius: "10px" }}
             />
@@ -1052,10 +1041,11 @@ const handleDeleteCategory = async (_id) => {
       </Grid>
 
       <FormControl fullWidth>
-        <InputLabel>Stock</InputLabel>
+        <InputLabel >Stock</InputLabel>
         <OutlinedInput
           label="Stock"
           type="number"
+              onWheel={(e)=> e.target.blur()}
           name="stock"
           value={productData.stock}
           onChange={handleChange}
