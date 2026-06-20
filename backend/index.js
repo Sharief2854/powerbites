@@ -30,7 +30,7 @@ const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD');
 const orderStatusRouter = require('./Routes/OrderStatus/orderStatusUpdating');
 const dashboardRouter = require('./Routes/Dashboard/dashboardRoute')
 const productfiltering = require('./Routes/Products/ProdutsRouter')
-
+const adminToamin = require("./Routes/AdminToadmin/adminToadminCurd")
 
 
 
@@ -60,6 +60,7 @@ app.use("/products",ProductRouter)
 app.use("/banner",bannerRouter)
 app.use("/offer",offerRouter)
 
+app.use("/adminToadmin",isAdmin,adminToamin)
 
 app.use("/orders",ordersRouter)
 
