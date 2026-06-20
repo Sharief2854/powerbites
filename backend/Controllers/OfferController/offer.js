@@ -1,4 +1,3 @@
-
 const offerModel = require("../../Model/offerModel");
 const mongoose = require('mongoose');
 

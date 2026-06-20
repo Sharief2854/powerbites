@@ -61,13 +61,29 @@ const ordersSchema= new mongoose.Schema({
         type:Number,
         required:true
     },
+    //chnages made by anil for the cancelling the order from here
    orderStatus:{
     type:String,
     enum:["order placed","preparing order", "order shipped", 
         "order delivered", "order cancelled"],
-    default:""
+    default:"order not cancelled"
 
    },
+
+   cancelledBy: {
+    type: String,
+    enum: ["customer", "admin"],
+   },
+
+   cancelReason: {
+    type: String
+   },
+
+   cancelledAt: {
+    type: Date
+   },
+
+
    address:{
     type:mongoose.Schema.Types.ObjectId,
     ref:"Address",
