@@ -29,7 +29,7 @@ const ordersRouter = require('./Routes/Orders/ordersRouter');
 const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD');
 const orderStatusRouter = require('./Routes/OrderStatus/orderStatusUpdating');
 const dashboardRouter = require('./Routes/Dashboard/dashboardRoute')
-const productfiltering = require('./Routes/Products/ProdutsRouter')
+const productfiltering = require('./Routes/ProductfilteringRoutes/Productfiltering');
 
 
 

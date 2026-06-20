@@ -28,7 +28,6 @@ const ordersSchema= new mongoose.Schema({
         },
         discounted_price:{
             type:Number,
-            required:true
         },
         offer:{
             type:mongoose.Schema.Types.ObjectId,

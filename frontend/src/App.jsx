@@ -29,7 +29,9 @@ import CustomerProfile from "./Pages/Customer/Profile/CustomerProfiles";
 import CustomerEditProfile from "./Pages/Customer/Profile/CustomerEditProfile";
 import CustomerEditAddress from "./Pages/Customer/Profile/CustomerEditAddress";
 import EmailVerify from "./Pages/Common/EmailVerify";
-import Offsers from "./Pages/Admin/Offsers/Offsers"
+import OrderRecordsDashboard from "./Pages/Admin/Orders/OrderDetails";
+
+import Offers from "./Pages/Admin/Offers/Offers"
 import ReviewOfProducts from "./Pages/Customer/CustomerOrder/ReviewOfProducts";
 
 
@@ -57,9 +59,10 @@ function App() {
         <Route index element={<Overview/>}/>
         <Route path ="/admin/overview" element={<Overview/>}/>
         <Route path ="/admin/customers" element={<UserDetails/>}/>
+        <Route path="/admin/orders" element ={<OrderRecordsDashboard/>}/>
         <Route path="/admin/products" element={<AdminProducts/>}/>
         <Route path="/admin/products/updateProduct/:id" element={<UpdateProducts/>}/>
-        <Route path="/admin/offsers" element={<Offsers/>}/>
+        <Route path="/admin/offers" element={<Offers/>}/>
         </Route>
 
         <Route path ="/customer" element={<ProtectedRoutes role="customer"><CustomerDashboard/></ProtectedRoutes>}>
