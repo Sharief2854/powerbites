@@ -84,13 +84,19 @@ const verifyPayment = async (req, res) => {
             const productData = item.product;
 
             if (!productData || !productData._id) {
-                continue;
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid product in cart",
+                });
             }
 
             const product = await ProductModel.findById(productData._id);
 
             if (!product) {
-                continue;
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid product in cart",
+                });
             }
 
             if (product.stock < item.quantity) {
