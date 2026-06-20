@@ -14,11 +14,14 @@ import {
   Divider,
   Grid,
   IconButton,
+  Dialog,
   Paper,
   Stack,
   Typography,
   Chip,
   Rating,
+  Snackbar,
+  Button,
 } from "@mui/material";
 import { Add, DeleteOutlineRounded, Remove } from "@mui/icons-material";
 import Skeleton from "@mui/material/Skeleton";
@@ -35,6 +38,15 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(0);
   const [selectedImage, setSelectedImage] = useState(0);
   const [imageLoading, setImageLoading] = useState(true);
+  const [cartSnackbar,setCartSnackbar]= useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+
+const handleOpenImageModal = (index = 0) => {
+  setActiveImageIndex(index);
+  setImageModalOpen(true);
+};
 
   let token = localStorage.getItem("token");
   let decodeId = jwtDecode(token).id;
@@ -42,9 +54,20 @@ export default function ProductPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const handleNext = () => {
+  setActiveImageIndex((prev) =>
+    prev === images.length - 1 ? 0 : prev + 1
+  );
+};
+
+const handlePrev = () => {
+  setActiveImageIndex((prev) =>
+    prev === 0 ? images.length - 1 : prev - 1
+  );
+};
   async function getProduct() {
     try {
-      const res = await api.get(`/admin/getprd/${id}`);
+      const res = await api.get(`/product/getprd/${id}`);
       setProduct(res.data.data);
       console.log(res.data.data);
       
@@ -63,17 +86,20 @@ export default function ProductPage() {
 
   try {
     const res = await api.post("/cart/setCart", {
-      product,
+      product:id,
+      customer:decodeId,
       quantity: 1,
     });
-
-    dispatch(addToCart(res.data.data));
+    
+    dispatch(addToCart(res.data.cartItem));
     setQuantity(1);
+    setCartSnackbar(true)
   } catch (error) {
     console.log(error);
   } finally {
     setLoading(false);
-  }
+  
+    }
 }
 const handleAddToCart = async () => {
   await addItem();
@@ -147,7 +173,47 @@ const handleDecrease = () => {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 } }}>
+    <Box sx={{ p: { xs: 2, md: 4,transition:'0.3s' } }}>
+      <Snackbar
+  open={cartSnackbar}
+  autoHideDuration={5000}
+  onClose={() => setCartSnackbar(false)}
+  anchorOrigin={{
+    vertical: "top",
+    horizontal: "right",
+  }}
+  sx={{
+    top: "200px !important",
+  }}
+>
+  <Paper
+    elevation={6}
+    sx={{
+      px: 2,
+      py: 1.5,
+      borderRadius: 3,
+      display: "flex",
+      alignItems: "center",
+      gap: 2,
+    }}
+  >
+    <Typography fontWeight={600}>
+      Added to cart ✓
+    </Typography>
+
+    <Button
+      variant="contained"
+      size="small"
+      onClick={() => navigate("/customer/cart")}
+      sx={{
+        borderRadius: 2,
+        textTransform: "none",
+      }}
+    >
+      Go to Cart
+    </Button>
+  </Paper>
+</Snackbar>
       <Grid container spacing={4}>
         <Grid size={{xs:12,sm:6,md:6,lg:6}}>
           <Card
@@ -169,6 +235,7 @@ const handleDecrease = () => {
               src={images[selectedImage] || "/no-image.png"}
               alt={product?.name}
               onLoad={() => setImageLoading(false)}
+              onClick={()=>handleOpenImageModal(0)}
               sx={{
                 width: "100%",
                 height: { xs: 320, md: 550 },
@@ -225,6 +292,8 @@ const handleDecrease = () => {
 
                   {index === 3 && remaining > 0 && (
                     <Box
+                    
+              onClick={()=>handleOpenImageModal(index)}
                       sx={{
                         position: "absolute",
                         inset: 0,
@@ -251,7 +320,7 @@ const handleDecrease = () => {
               {product?.name}
             </Typography>
 
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack direction="row" spacing={2} >
               {/* <Rating value={4.5} precision={0.5} readOnly /> */}
               <Typography>(N/A Reviews)</Typography>
             </Stack>
@@ -369,6 +438,82 @@ const handleDecrease = () => {
           </Stack>
         </Grid>
       </Grid>
+      <Dialog
+  open={imageModalOpen}
+  onClose={() => setImageModalOpen(false)}
+  maxWidth="md"
+  fullWidth
+ PaperProps={{
+    sx: {
+      width: "80vw",
+      height: "80vh",
+      maxWidth: "80vw",
+      maxHeight: "80vh",
+      borderRadius: 2,
+      overflow: "hidden",
+      backgroundColor: "#000",
+    },
+  }}
+>
+  <Box sx={{ position: "relative", p: 2 }}>
+
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <img
+        src={images[activeImageIndex]}
+        style={{
+          maxHeight: "70vh",
+          maxWidth: "100%",
+          borderRadius: 10,
+        }}
+      />
+    </Box>
+
+    <IconButton
+      onClick={handlePrev}
+      sx={{
+        position: "absolute",
+        top: "50%",
+        left: 10,
+        transform: "translateY(-50%)",
+        background: "rgba(0,0,0,0.4)",
+        color: "primary",
+      }}
+    >
+      ‹
+    </IconButton>
+
+    <IconButton
+      onClick={handleNext}
+      sx={{
+        position: "absolute",
+        top: "50%",
+        right: 10,
+        transform: "translateY(-50%)",
+        background: "rgba(0,0,0,0.4)",
+        color: "primary",
+      }}
+    >
+      ›
+    </IconButton>
+
+    <Box
+      sx={{
+        display: "flex",
+        gap: 1,
+        mt: 2,
+        justifyContent: "center",
+        flexWrap: "wrap",
+      }}
+    >
+    </Box>
+  </Box>
+</Dialog>
 
       <Paper
         elevation={2}
@@ -383,21 +528,21 @@ const handleDecrease = () => {
         </Typography>
 
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{xs:12 , sm:6}}>
             <Typography fontWeight={600}>Category</Typography>
             <Typography color="text.secondary">
               {product?.category || "N/A"}
             </Typography>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{xs:12 , sm:6}}>
             <Typography fontWeight={600}>Weight</Typography>
             <Typography color="text.secondary">
               {product?.weight || "N/A"}
             </Typography>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{xs:12 , sm:6}}>
             <Typography fontWeight={600}>Material</Typography>
             <Typography color="text.secondary">
               {product?.material || "N/A"}
