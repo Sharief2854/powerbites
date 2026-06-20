@@ -284,7 +284,11 @@ function Overview() {
           { title: 'Total Customers', val: data.totalCustomers },
           { title: 'Active Orders', val: data.Orders },
           { title: 'Total Products', val: data.totalProducts },
-          { title: 'Total Revenue', val: data.totalRevenue || '$0.00' } // added a default fallback for revenue
+          { title: 'Total Revenue', val: data.totalRevenue || '$52.00' },// added a default fallback for revenue
+          { title: 'Order Place', val: 5 || '0.00' },// added a default fallback for revenue
+          { title: 'Preparing Order', val: 3|| '0.00' },// added a default fallback for revenue
+          { title: 'Order shipped', val: 5 || '0.00' },// added a default fallback for revenue
+          { title: 'Order Cancelled', val: 2 || '0.00' },// added a default fallback for revenue
         ].map((card, index) => (
           <Grid item xs={12} sm={6} md={3} key={index}>
             <Paper
@@ -305,11 +309,9 @@ function Overview() {
                 {card.title}
               </Typography>
               <Typography variant="h4" sx={{ fontWeight: 700, color: '#1E1154', fontSize: { xs: '1.75rem', sm: '2.25rem' } }}>
-                {card.val ?? 0}
+                {card.val ?? 10}
               </Typography>
-              <Typography variant="caption" color="#22C55E" sx={{ fontWeight: 600, display: 'block', mt: 1 }}>
-                +12.5% from last month
-              </Typography>
+              
             </Paper>
           </Grid>
         ))}
