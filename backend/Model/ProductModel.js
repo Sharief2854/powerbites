@@ -35,16 +35,8 @@ const productSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
-        offer: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "offer",
-            default: null
-        },
-        coupon: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "coupon",
-            default: null
-        },
+      
+       
         isAvailable: {
             type: Boolean,
             default: true,
