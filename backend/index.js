@@ -31,6 +31,8 @@ const orderStatusRouter = require('./Routes/OrderStatus/orderStatusUpdating');
 const dashboardRouter = require('./Routes/Dashboard/dashboardRoute')
 const productfiltering = require('./Routes/Products/ProdutsRouter')
 
+let dealsRouter = require('./Routes/Deals/dealsRoute');
+
 
 
 
@@ -66,6 +68,7 @@ app.use("/orders",ordersRouter)
 app.use("/coupon",couponRouter)
 app.use("/category",productCategoryRouter)
 app.use("/payment",PaymentRouter)
+app.use("/deals",isAdmin,dealsRouter)
 
 // Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter)

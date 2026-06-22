@@ -40,6 +40,11 @@ const productSchema = new mongoose.Schema(
             ref: "offer",
             default: null
         },
+        coupon: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "coupon",
+            default: null
+        },
         isAvailable: {
             type: Boolean,
             default: true,
