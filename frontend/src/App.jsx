@@ -35,6 +35,7 @@ import Offers from "./Pages/Admin/Offers/Offers"
 import ReviewOfProducts from "./Pages/Customer/CustomerOrder/ReviewOfProducts";
 import { Reviews } from "@mui/icons-material";
 import CustomerReview from "./Pages/Customer/CustomerProducts/CustomerReview";
+import Coupon from "./Pages/Customer/Cart/Coupon";
 
 
 function App() {
@@ -75,6 +76,7 @@ function App() {
         <Route path="/customer/products" element={<CustomerProducts/>}/>
         <Route path="/customer/productpage/:id" element={<ProductPage/>}/>
         <Route path="/customer/cart" element={<CustomerCart/>}/>
+        <Route path="/customer/coupon" element={<Coupon/>}/>
         <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
         <Route path ="/customer/editaddress" element={<CustomerEditAddress/>}/>
         <Route path ="/customer/editaddress/:id" element={<CustomerEditAddress/>}/>

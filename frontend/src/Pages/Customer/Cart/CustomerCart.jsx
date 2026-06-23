@@ -48,14 +48,14 @@ import {
 } from "../../../Redux/Slices/CM_CartSlice";
 import PaymentButton from "../Payments/PaymentButton";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-
+import Coupon from "./Coupon";
 
 const pulseAnimation = {
   "@keyframes pulse": {
     "0%": { transform: "scale(1)" },
     "50%": { transform: "scale(1.03)" },
     "100%": { transform: "scale(1)" },
-  }
+  },
 };
 const style1 = {
   position: "absolute",
@@ -119,8 +119,13 @@ const countriesData = {
   ],
 };
 
-function AddressModal({ open, onClose,setAddress, setUpdateAddress }) {
-
+function AddressModal({
+  open,
+  onClose,
+  setAddress,
+  addresses,
+  setUpdateAddress,
+}) {
   const [message, setMessage] = useState(null);
   const editProfile = useSelector((state) => state.editprofile.editprofile);
 
@@ -165,7 +170,7 @@ function AddressModal({ open, onClose,setAddress, setUpdateAddress }) {
     }
   };
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const handleDefaultChange = (e) => {
     setAddressForm((prev) => ({ ...prev, isDefault: e.target.checked }));
     console.log("addressfrom :", addressForm);
@@ -179,20 +184,29 @@ function AddressModal({ open, onClose,setAddress, setUpdateAddress }) {
       const token = localStorage.getItem("token");
       const decoded = jwtDecode(token);
       const userId = decoded.id;
-
       const finalLabel =
         addressForm.label === "OTHER" ? otherLabel : addressForm.label;
       const payload = { ...addressForm, label: finalLabel, userId };
       if (!payload._id) delete payload._id;
+      if (addresses.label == "HOME" && addressForm.label == "HOME") {
+        enqueueSnackbar(`${"HOME"} already exists  please try new`, {
+          variant: "error",
+        });
+        setSavingAddress(false);
+        return;
+      }
       let response;
 
       response = await api.post(
         `/updateCustomerProfile/addAddress/${userId}`,
         payload,
       );
-      setUpdateAddress(response.data.address)
+      setUpdateAddress(response.data.address);
       if (setAddress) {
-        setAddress((prevAddresses) => [...prevAddresses, response.data.address]);
+        setAddress((prevAddresses) => [
+          ...prevAddresses,
+          response.data.address,
+        ]);
       }
       enqueueSnackbar("Address added successfully!", {
         variant: "success",
@@ -215,7 +229,6 @@ function AddressModal({ open, onClose,setAddress, setUpdateAddress }) {
         type: "success",
       });
       onClose();
-
     } catch (err) {
       console.error("Address save error:", err.response?.data || err.message);
       setMessage({ text: "Failed to save address", type: "error" });
@@ -395,9 +408,6 @@ export default function CustomerCart() {
   const [loading, setLoading] = useState(true);
   const [openAddress, setOpenAddress] = useState(false);
   const [coupon, setCoupon] = useState("");
-  const [couponList, setCouponList] = useState([]);
-
-
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -406,6 +416,8 @@ export default function CustomerCart() {
   const [addressModalOpen, setAddressModalOpen] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [openCoupon, setOpenCoupon] = useState(false);
 
   const handleAddress = () => {
     setIsModalOpen(true);
@@ -421,14 +433,12 @@ export default function CustomerCart() {
   const handleClose = () => {
     setOpen(false);
   };
-  
+
   // const discountedPrice =
   //   product?.price - (product?.price * product?.discount) / 100;
 
   const subtotal = cartItems.reduce((total, item) => {
-    const priceInPaise = Math.round(
-      Number(item?.product?.price) * 100,
-    );
+    const priceInPaise = Math.round(Number(item?.product?.price) * 100);
     return total + priceInPaise * item?.quantity;
   }, 0);
 
@@ -443,13 +453,13 @@ export default function CustomerCart() {
     setSelectedCartId(null);
   };
 
-  async function getCoupons(){
+  async function getCoupons() {
     try {
-      let res = await api.get('coupon/getCoupons')
-      setCouponList(res.data.coupons)
+      let res = await api.get("coupon/getCoupons");
+      setCouponList(res.data.coupons);
       console.log(res.data.coupons);
     } catch (error) {
-      console.log(error.message);      
+      console.log(error.message);
     }
   }
   //   const round2 = (num) => Math.round(num * 100) / 100;
@@ -516,15 +526,15 @@ export default function CustomerCart() {
 
       const res = await api.post(`/cart/setQuantity/${cartId}`, { quantity });
 
-      dispatch(updateCart({_id:cartId, quantity}));
+      dispatch(updateCart({ _id: cartId, quantity }));
 
       console.log(res.data.product);
     } catch (error) {
       console.log(error);
     }
   }
-  console.log(cartItems);   
-  
+  console.log(cartItems);
+
   async function saveForLater(cartId) {
     try {
       const res = await api.post(`/cart/save-for-later/${cartId}`);
@@ -594,7 +604,6 @@ export default function CustomerCart() {
     getAddress();
   }, []);
   console.log(coupon);
-  
 
   useEffect(() => {
     if (addresses.length && !updateAddress) {
@@ -723,11 +732,7 @@ export default function CustomerCart() {
                       <EditIcon />
                     </IconButton>
                   ) : (
-                    <PrimaryButton
-                      onClick={(handleAddressClose) =>
-                        setAddressModalOpen(true)
-                      }
-                    >
+                    <PrimaryButton onClick={() => setAddressModalOpen(true)}>
                       Add Address
                     </PrimaryButton>
                   )}
@@ -737,8 +742,9 @@ export default function CustomerCart() {
 
             {addressModalOpen && (
               <AddressModal
-              setAddress={setAddress}
-              setUpdateAddress={setUpdateAddress}
+                addresses={addresses}
+                setAddress={setAddress}
+                setUpdateAddress={setUpdateAddress}
                 open={addressModalOpen}
                 onClose={() => setAddressModalOpen(false)}
               />
@@ -758,63 +764,65 @@ export default function CustomerCart() {
                 },
               }}
             >
-              <DialogTitle 
-  component="div" 
-  sx={{ 
-    p: 3, 
-    background: 'linear-gradient(to right, rgba(255,255,255,0.8), rgba(240,244,248,0.5))',
-    borderBottom: '1px solid',
-    borderColor: 'divider'
-  }}
->
-  <Stack 
-    direction="row" 
-    sx={{ 
-      justifyContent: 'space-between', 
-      alignItems: 'center',
-      mb: 1 
-    }}
-  >
-    <Typography 
-      variant="h6" 
-      component="h2" 
-      sx={{ 
-        fontWeight: 700, 
-        letterSpacing: '-0.5px',
-        color: 'text.primary' 
-      }}
-    >
-      Delivery Address
-    </Typography>
-    
-    <Button 
-      variant="contained" 
-      disableElevation
-      size="small"
-      color="primary" 
-      onClick={() => {
-        handleClose(); 
-        setAddressModalOpen(true); 
-      }}
-      sx={{ 
-        borderRadius: 2, 
-        textTransform: 'none',
-        fontWeight: 600,
-        px: 2
-      }}
-    >
-      + Add New Address
-    </Button>
-  </Stack>
+              <DialogTitle
+                component="div"
+                sx={{
+                  p: 3,
+                  background:
+                    "linear-gradient(to right, rgba(255,255,255,0.8), rgba(240,244,248,0.5))",
+                  borderBottom: "1px solid",
+                  borderColor: "divider",
+                }}
+              >
+                <Stack
+                  direction="row"
+                  sx={{
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 1,
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    component="h2"
+                    sx={{
+                      fontWeight: 700,
+                      letterSpacing: "-0.5px",
+                      color: "text.primary",
+                    }}
+                  >
+                    Delivery Address
+                  </Typography>
 
-  <Typography 
-    variant="body2" 
-    color="text.secondary"
-    sx={{ fontWeight: 400 }}
-  >
-    Select one from your saved profiles below, or click the button above to add a new destination.
-  </Typography>
-</DialogTitle>
+                  <Button
+                    variant="contained"
+                    disableElevation
+                    size="small"
+                    color="primary"
+                    onClick={() => {
+                      handleClose();
+                      setAddressModalOpen(true);
+                    }}
+                    sx={{
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      px: 2,
+                    }}
+                  >
+                    + Add New Address
+                  </Button>
+                </Stack>
+
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontWeight: 400 }}
+                >
+                  Select one from your saved profiles below, or click the button
+                  above to add a new destination.
+                </Typography>
+              </DialogTitle>
               <DialogContent dividers>
                 {addresses.length > 0 ? (
                   addresses.map((item) => (
@@ -976,7 +984,7 @@ export default function CustomerCart() {
                     sx={{
                       fontSize: "1.2rem",
                       fontWeight: 800,
-                      textDecoration:'line-through',
+                      textDecoration: "line-through",
                       color: "#3E1A89",
                     }}
                   >
@@ -989,7 +997,10 @@ export default function CustomerCart() {
                       color: "#3E1A89",
                     }}
                   >
-                    ₹{((item?.product?.price - (item?.product?.price * item?.product?.discount) / 100)) * item?.quantity}
+                    ₹
+                    {(item?.product?.price -
+                      (item?.product?.price * item?.product?.discount) / 100) *
+                      item?.quantity}
                   </Typography>
                 </Box>
 
@@ -1037,126 +1048,181 @@ export default function CustomerCart() {
         </Grid>
 
         <Grid size={{ xs: 12, sm: 4, md: 4 }}>
-          <Card 
-      elevation={0} 
-      sx={{ 
-        borderRadius: 4, 
-        border: "1px solid",
-        borderColor: "divider",
-        background: "linear-gradient(to bottom, #ffffff, #fcfcfc)",
-        boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.03)",
-        position: "relative",
-        overflow: "hidden",
-        ...pulseAnimation
-      }}
-    >
-      <Box sx={{ height: 4, background: "linear-gradient(90deg, #4CAF50, #2E7D32)" }} />
-
-      <CardContent sx={{ p: 3 }}>
-        <Typography 
-          variant="subtitle1" 
-          fontWeight={700} 
-          color="text.primary" 
-          sx={{ mb: 2.5, letterSpacing: "0.5px", textTransform: "uppercase", fontSize: "0.85rem" }}
-        >
-          Price Details
-        </Typography>
-
-        <Stack spacing={2}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <Typography color="text.secondary" variant="body2">
-              Subtotal
-            </Typography>
-            <Typography color="text.primary" fontWeight={500} variant="body2">
-              ₹{formatPrice(subtotal)}
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography color="text.secondary" variant="body2">Shipping</Typography>
-            </Box>
-            <Chip 
-              icon={<LocalShippingIcon style={{ fontSize: '14px', color: '#1b5e20' }} />}
-              label="FREE" 
-              size="small"
-              sx={{ 
-                backgroundColor: "#e8f5e9", 
-                color: "#1b5e20", 
-                fontWeight: 700,
-                fontSize: "0.75rem",
-                borderRadius: "6px",
-                border: "1px solid #c8e6c9",
-                animation: "pulse 2s infinite ease-in-out",
-                "& .MuiChip-label": { px: 1 }
-              }} 
-            />
-          </Box>
-
-          <Box 
-            sx={{ 
-              pt: 1.5, 
-              borderTop: "1px dashed", 
-              borderColor: "divider" 
-            }} 
-          />
-
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <Typography variant="body1" fontWeight={700} color="text.primary">
-              Total Amount
-            </Typography>
-            <Typography variant="h5" fontWeight={800} color="success.main">
-              ₹{formatPrice(grandTotal)}
-            </Typography>
-          </Box>
-        </Stack>
-
-        <Box sx={{ mt: 3, mb: 2, display: "flex", gap: 1 }}>
-         
-          <FormControl
-            fullWidth sx={{ minWidth: 180, mr: 1 }}
-            size="small">
-                        <InputLabel
-            inputlabelprops={{ shrink: true }}>Coupon Code</InputLabel>          
-                        <Select
-                          sx={{ minWidth: 160, borderRadius: "16px" }}
-                          value={coupon}
-                          label="Coupon Code"
+          <Card
+            elevation={0}
             sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-                backgroundColor: "#fafafa"
-              }
+              borderRadius: 4,
+              border: "1px solid",
+              borderColor: "divider",
+              background: "linear-gradient(to bottom, #ffffff, #fcfcfc)",
+              boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.03)",
+              position: "relative",
+              overflow: "hidden",
+              ...pulseAnimation,
             }}
-                          onChange={(e) => setCoupon(e.target.value)}
-                        >
-                          <MenuItem value="">--Choose Coupon--</MenuItem>          
-                          {couponList.map((cat) => (
-                            <MenuItem key={cat._id} value={cat._id}>
-                              {cat.code}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-          {/* <Button 
-            variant="outlined"
-            color="primary"
-            size="medium"
-            sx={{ borderRadius: 2, px: 2.5, fontWeight: 600, textTransform: "none" }}
           >
-            Apply
-          </Button> */}
-        </Box>
+            <Box
+              sx={{
+                height: 4,
+                background: "linear-gradient(90deg, #4CAF50, #2E7D32)",
+              }}
+            />
 
-        <Box sx={{ mt: 1 }}>
-          <PaymentButton
-            addressId={updateAddress?._id}
-            amount={formatPrice(grandTotal)}
-          />
-        </Box>
-      </CardContent>
-    </Card>
-  
+            <CardContent sx={{ p: 3 }}>
+              <Typography
+                variant="subtitle1"
+                fontWeight={700}
+                color="text.primary"
+                sx={{
+                  mb: 2.5,
+                  letterSpacing: "0.5px",
+                  textTransform: "uppercase",
+                  fontSize: "0.85rem",
+                }}
+              >
+                Price Details
+              </Typography>
+
+              <Stack spacing={2}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography color="text.secondary" variant="body2">
+                    Subtotal
+                  </Typography>
+                  <Typography
+                    color="text.primary"
+                    fontWeight={500}
+                    variant="body2"
+                  >
+                    ₹{formatPrice(subtotal)}
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography color="text.secondary" variant="body2">
+                      Shipping
+                    </Typography>
+                  </Box>
+                  <Chip
+                    icon={
+                      <LocalShippingIcon
+                        style={{ fontSize: "14px", color: "#1b5e20" }}
+                      />
+                    }
+                    label={formatPrice(subtotal) < 1000 ? "FREE" : 9}
+                    size="small"
+                    sx={{
+                      backgroundColor: "#e8f5e9",
+                      color: "#1b5e20",
+                      fontWeight: 700,
+                      fontSize: "0.75rem",
+                      borderRadius: "6px",
+                      border: "1px solid #c8e6c9",
+                      animation: "pulse 2s infinite ease-in-out",
+                      "& .MuiChip-label": { px: 1 },
+                    }}
+                  />
+                </Box>
+
+                <Box
+                  sx={{
+                    pt: 1.5,
+                    borderTop: "1px dashed",
+                    borderColor: "divider",
+                  }}
+                />
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    fontWeight={700}
+                    color="text.primary"
+                  >
+                    Total Amount
+                  </Typography>
+                  <Typography
+                    variant="h5"
+                    fontWeight={800}
+                    color="success.main"
+                  >
+                    ₹{formatPrice(grandTotal)}
+                  </Typography>
+                </Box>
+              </Stack>
+
+              <Box sx={{ mt: 3, mb: 2, display: "flex", gap: 1 }}>
+                <Box
+                  sx={{
+                    borderRadius: "9px",
+                    position: "relative",
+                    overflow: "hidden",
+                    px: 1,
+                    py: 1.5,
+                    background: "linear-gradient(145deg, #2c22e3, #3726cf)",
+                    boxShadow: `
+      inset 0 2px 4px rgba(255,255,255,0.4),
+      inset 0 -4px 8px rgba(0,0,0,0.2),
+      0 6px 15px rgba(255,87,34,0.35)
+    `,
+
+                    "&::before": {
+                      content: '""',
+                      position: "absolute",
+                      top: 4,
+                      left: 8,
+                      width: "40%",
+                      height: "35%",
+                      background: "rgba(255,255,255,0.45)",
+                      borderRadius: "50%",
+                      filter: "blur(6px)",
+                      pointerEvents: "none",
+                    },
+                    "& :hover": {
+                      cursor: "pointer",
+                    },
+                  }}
+                  onClick={() => navigate(`/customer/coupon`)}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      textTransform: "uppercase",
+                      fontWeight: 700,
+                      color: "#fff",
+                      letterSpacing: 1,
+                    }}
+                  >
+                    coupon
+                  </Typography>
+                </Box>           
+              </Box>
+
+              <Box sx={{ mt: 1 }}>
+                <PaymentButton
+                  addressId={updateAddress?._id}
+                  amount={formatPrice(grandTotal)}
+                />
+              </Box>
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
     </Box>

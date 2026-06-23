@@ -66,8 +66,8 @@ export default function CustomerProducts() {
   const [sortBy, setSortBy] = useState("");
   const [inStockOnly, setInStockOnly] = useState("all");
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [cartSnackbar,setCartSnackbar]=useState(false)
-  
+  const [cartSnackbar, setCartSnackbar] = useState(false);
+
   const clearFilters = () => {
     setSearch("");
     setSelectedCategory("");
@@ -156,6 +156,9 @@ export default function CustomerProducts() {
       setLoading(false);
     }
   }
+            const cartMap = new Set(
+              cartItems?.map((i) => String(i?.product?._id || i?.product)),
+            );
   let displayProducts = useMemo(() => {
     let filtered = [...products];
     if (search.trim()) {
@@ -170,19 +173,13 @@ export default function CustomerProducts() {
       );
     }
 
-          if (inStockOnly === "in") {
+    if (inStockOnly === "in") {
+      filtered = filtered.filter((p) => p.stock > 0);
+    }
 
-  filtered = filtered.filter(p => p.stock > 0);
-
-}
-
-
-
-if (inStockOnly === "out") {
-
-  filtered = filtered.filter(p => p.stock === 0);
-
-}
+    if (inStockOnly === "out") {
+      filtered = filtered.filter((p) => p.stock === 0);
+    }
 
     if (minPrice !== "") {
       filtered = filtered.filter(
@@ -206,10 +203,10 @@ if (inStockOnly === "out") {
         break;
 
       case "stock":
-         filtered.sort((a, b) => {
-    return (b.stock > 0 ? 1 : 0) - (a.stock > 0 ? 1 : 0);
-  });
-  break;
+        filtered.sort((a, b) => {
+          return (b.stock > 0 ? 1 : 0) - (a.stock > 0 ? 1 : 0);
+        });
+        break;
 
       case "newest":
         filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -266,8 +263,6 @@ if (inStockOnly === "out") {
     <Box>
       <Grid
         container
-        // alignItems="center"
-        // justifyContent="space-between"
         spacing={3}
         sx={{
           mb: 3,
@@ -349,29 +344,23 @@ if (inStockOnly === "out") {
         </Grid>
 
         <Grid size={{ xs: 12, md: 4 }}>
-          
           <Box
             display="flex"
             gap={2}
             justifyContent={{ xs: "center", md: "flex-end" }}
             alignItems="center"
           >
-<Select
+            <Select
+              sx={{ minWidth: 160, borderRadius: "16px" }}
+              value={inStockOnly}
+              onChange={(e) => setInStockOnly(e.target.value)}
+            >
+              <MenuItem value="all">All Products</MenuItem>
 
-                sx={{ minWidth: 160, borderRadius: "16px" }}
-  value={inStockOnly}
+              <MenuItem value="in">In Stock</MenuItem>
 
-  onChange={(e) => setInStockOnly(e.target.value)}
-
->
-
-  <MenuItem value="all">All Products</MenuItem>
-
-  <MenuItem value="in">In Stock</MenuItem>
-
-  <MenuItem value="out">Out of Stock</MenuItem>
-
-</Select>
+              <MenuItem value="out">Out of Stock</MenuItem>
+            </Select>
 
             <Button
               variant="outlined"
@@ -380,7 +369,7 @@ if (inStockOnly === "out") {
               sx={{
                 borderRadius: 99,
                 px: 3,
-                ml:1,
+                ml: 1,
                 height: 42,
                 textTransform: "none",
                 fontWeight: 600,
@@ -392,18 +381,18 @@ if (inStockOnly === "out") {
         </Grid>
       </Grid>
       <Snackbar
-              open={cartSnackbar}
-              autoHideDuration={5000}
-              onClose={() => setCartSnackbar(false)}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              sx={{
-                top: "200px !important",
-              }}
-            >
-              <Paper
+        open={cartSnackbar}
+        autoHideDuration={5000}
+        onClose={() => setCartSnackbar(false)}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        sx={{
+          top: "200px !important",
+        }}
+      >
+        <Paper
           elevation={6}
           sx={{
             px: 2,
@@ -431,72 +420,66 @@ if (inStockOnly === "out") {
       </Snackbar>
 
       <Grid container spacing={2}>
-        
-        {products.length <= 0? (
-  <Box
-    sx={{
-      width: "100%",
-      textAlign: "center",
-      py: 8,
-      color: "text.secondary",
-    }}
-  >
-    <Typography variant="h6">
-      No products available
-    </Typography>
-  </Box>
-) :displayProducts.length <= 0 ? (
-  <Box
-    sx={{
-      width: "100%",
-      textAlign: "center",
-      py: 6,
-      color: "text.secondary",
-    }}
-  >
-    <Typography variant="h6">
-      Nothing here
-    </Typography>
+        {products.length <= 0 ? (
+          <Box
+            sx={{
+              width: "100%",
+              textAlign: "center",
+              py: 8,
+              color: "text.secondary",
+            }}
+          >
+            <Typography variant="h6">No products available</Typography>
+          </Box>
+        ) : displayProducts.length <= 0 ? (
+          <Box
+            sx={{
+              width: "100%",
+              textAlign: "center",
+              py: 6,
+              color: "text.secondary",
+            }}
+          >
+            <Typography variant="h6">Nothing here</Typography>
 
-    <Typography variant="body2">
-      Try changing filters or clearing search
-    </Typography>
+            <Typography variant="body2">
+              Try changing filters or clearing search
+            </Typography>
 
-    <Button
-      onClick={clearFilters}
-      sx={{ mt: 2, textTransform: "none" }}
-    >
-      Reset Filters
-    </Button>
-  </Box>
-) : displayProducts.map((item) => {
-  const cartMap = new Set(
-  cartItems?.map(i => String(i?.product?._id || i?.product))
-);
-          const cartBtn = cartMap?.has(String(item._id));
-          const imagePath = item.image[0]
-            .replace(/\\/g, "/")
-            .replace(/^\/+/, "");
-          return (
-            <Grid
-              size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
-              key={item._id}
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-              }}
+            <Button
+              onClick={clearFilters}
+              sx={{ mt: 2, textTransform: "none" }}
             >
-              <ItemCard
-                addItem={addItem}
-                setCurrentImage={setCurrentImage}
-                item={item}
-                currentImage={currentImage}
-                cartBtn={cartBtn}
-                imagePath={imagePath}
-              />
-            </Grid>
-          );
-        })}
+              Reset Filters
+            </Button>
+          </Box>
+        ) : (
+          displayProducts.map((item) => {
+            const cartBtn = cartMap?.has(String(item._id));
+            const imagePath = item.image[0]
+              .replace(/\\/g, "/")
+              .replace(/^\/+/, "");
+            return (
+              <Grid
+                size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+                key={item._id}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
+                <ItemCard
+                  addItem={addItem}
+                  setCurrentImage={setCurrentImage}
+                  item={item}
+                  currentImage={currentImage}
+                  cartBtn={cartBtn}
+                  imagePath={imagePath}
+                />
+              </Grid>
+            );
+          })
+        )}
       </Grid>
     </Box>
   );
