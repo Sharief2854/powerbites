@@ -25,6 +25,15 @@ const cartSchema= new mongoose.Schema({
         ref:"coupon",
         default:null
     },
+    isUnified: {
+        type: Boolean,
+        default: false
+    },
+    unifiedCoupon: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "coupon",
+        default: null
+    },
     cartTotal:{
         type:Number,
         default:0
