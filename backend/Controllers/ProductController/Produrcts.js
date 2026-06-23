@@ -83,17 +83,68 @@ async function addProduct(req, res) {
     }
 }
 
+// async function updateProduct(req, res) {
+//     try {
+//         const id = req.params.id;
+//         const ProductData = { ...req.body };
+
+//         if (req.files && req.files.length > 0) {
+//             const imagePaths = req.files.map(file =>
+//                 `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
+//             );
+//             ProductData.image = imagePaths;
+//         }
+//         const product = await ProductModel.findByIdAndUpdate(id, ProductData, { new: true, }
+//         );
+
+//         if (!product) {
+//             return res.status(404).json({
+//                 message: "Product not found"
+//             });
+//         }
+
+//         return res.status(200).json({
+//             data: product,
+//             message: "Product updated successfully"
+//         });
+
+//     }
+
+//     catch (err) {
+//         return res.status(500).json({
+//             message: "Error updating product",
+//             error: err.message
+//         });
+//     }
+// }
+
+
+
 async function updateProduct(req, res) {
     try {
         const id = req.params.id;
+        console.log("id",id)
         const ProductData = { ...req.body };
+        ProductData.existingPhotos = JSON.parse(
+            req.body.existingPhotos || "[]"
+        );
 
-        if (req.files && req.files.length > 0) {
-            const imagePaths = req.files.map(file =>
-                `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
+        let imagePaths = [];
+
+        if (req.files?.length > 0) {
+            imagePaths = req.files.map(
+                (file) =>
+                    `${req.protocol}://${req.get("host")}/${file.path.replace(
+                        /\\/g,
+                        "/"
+                    )}`
             );
-            ProductData.image = imagePaths;
         }
+
+        ProductData.image = [
+            ...ProductData.existingPhotos,
+            ...imagePaths,
+        ];
         const product = await ProductModel.findByIdAndUpdate(id, ProductData, { new: true, }
         );
 
@@ -111,6 +162,8 @@ async function updateProduct(req, res) {
     }
 
     catch (err) {
+        console.log(err.message);
+
         return res.status(500).json({
             message: "Error updating product",
             error: err.message
