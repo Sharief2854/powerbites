@@ -3,6 +3,7 @@
 const express = require("express");
 const router = express.Router();
 const dealsController = require("../../Controllers/Deals/dealsController");
+const isCustomer = require("../../MiddleWare/customerAuth");
 
 
 router.post("/setDeal", dealsController.setDeal);

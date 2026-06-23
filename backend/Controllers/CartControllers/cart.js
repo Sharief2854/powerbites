@@ -1,7 +1,6 @@
 const cartModel = require("../../Model/cartModel");
 const couponModel = require("../../Model/couponModel");
 const ProductModel = require("../../Model/ProductModel");
-const ProductModel = require("../../Model/ProductModel");
 
 async function setCart(req, res) {
     try {
