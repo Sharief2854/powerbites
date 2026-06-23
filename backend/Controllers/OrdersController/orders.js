@@ -2,7 +2,7 @@ const ordersModel = require("../../Model/orderModel");
 
 async function getOrders(req, res) {
     try {
-
+        
         let orders = await ordersModel.find({ customer: req.userId }).populate(" address")
 
         if (!orders) {
@@ -29,7 +29,9 @@ async function getOrders(req, res) {
 
 async function getAllOrders(req, res) {
     try {
+        console.log("Admin Orders")
         let orders = await ordersModel.find().populate("customer", "name email");
+        console.log("Admin Orders",orders);
 
         if (!orders) {
             return res.status(400).json({
