@@ -27,57 +27,59 @@ async function allProduct(req, res) {
     }
 }
 
-
-
-
 async function addProduct(req, res) {
     try {
+        const { name, description, price, stock, discount, category, sendUpdates } = req.body;
+
+        // Check uploaded images
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({
-                message: "Product image is required."
+                message: "Product image is required"
             });
         }
-
+        // Convert file paths to URLs
         const imagePaths = req.files.map(file =>
             `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
         );
 
-        console.log("Category from request:", req.body.category);
+        // Find category
+        const categoryData = await ProductCategoryModel.findOne({ name: category });
 
-        const category = await ProductCategoryModel.findOne({
-            name: req.body.category.trim()
-        });
-
-        console.log("Found Category:", category);
-
-        if (!category) {
-            return res.status(400).json({
+        if (!categoryData) {
+            return res.status(404).json({
                 message: "Category not found"
             });
         }
+        const discountAmount = (Number(price) * Number(discount)) / 100;
 
-        const ProductData = {
-            name: req.body.name,
-            description: req.body.description,
-            price: req.body.price,
-            stock: req.body.stock,
-            discount: req.body.discount,
-            category: category._id,
+        const finalPrice = Number(price) - discountAmount;
+        // Create product
+        const product = await ProductModel.create({
+            name,
+            description,
+            price: Number(price),
+            stock: Number(stock),
+            discount: Number(discount),
+            finalPrice,
+            category: categoryData._id,
             image: imagePaths
-        };
+        });
+        // Send notification email
+        if (sendUpdates === "on") {
+            await sendProductNotification(product);
+        }
 
-        const product = await ProductModel.create(ProductData);
-
-        const productWithCategory = await ProductModel.findById(product._id)
-            .populate("category", "name");
-
-        return res.status(200).json({
+        return res.status(201).json({
+            success: true,
             message: "Product added successfully",
-            data: productWithCategory
+            data: product
         });
 
     } catch (err) {
+        console.log(err);
+
         return res.status(500).json({
+            success: false,
             message: err.message
         });
     }
@@ -88,36 +90,106 @@ async function updateProduct(req, res) {
         const id = req.params.id;
         const ProductData = { ...req.body };
 
-        if (req.files && req.files.length > 0) {
-            const imagePaths = req.files.map(file =>
-                `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
-            );
-            ProductData.image = imagePaths;
-        }
-        const product = await ProductModel.findByIdAndUpdate(id, ProductData, { new: true, }
+        ProductData.existingPhotos = JSON.parse(
+            req.body.existingPhotos || "[]"
         );
 
-        if (!product) {
-            return res.status(404).json({
-                message: "Product not found"
-            });
+        let imagePaths = [];
+
+        if (req.files?.length > 0) {
+            imagePaths = req.files.map(
+                file =>
+                    `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
+            );
         }
 
+        ProductData.image = [
+            ...ProductData.existingPhotos,
+            ...imagePaths,
+        ];
+
+        if (ProductData.price && ProductData.discount) {
+            const discountAmount =
+                (Number(ProductData.price) * Number(ProductData.discount)) / 100;
+
+            ProductData.finalPrice =
+                Number(ProductData.price) - discountAmount;
+        }
+
+        const product = await ProductModel.findByIdAndUpdate(
+            id,
+            ProductData,
+            { new: true }
+        );
+
         return res.status(200).json({
-            data: product,
-            message: "Product updated successfully"
+            success: true,
+            message: "Product updated successfully",
+            data: product
         });
 
-    }
-
-    catch (err) {
+    } catch (err) {
         return res.status(500).json({
-            message: "Error updating product",
-            error: err.message
-        });
+            success: false,
+            message: err.message
+        }); 
     }
 }
 
+
+
+// async function updateProduct(req, res) {
+//     try {
+//         const id = req.params.id;
+//         const ProductData = { ...req.body };
+
+//         ProductData.existingPhotos = JSON.parse(
+//             req.body.existingPhotos || "[]"
+//         );
+
+//         let imagePaths = [];
+
+//         if (req.files?.length > 0) {
+//             imagePaths = req.files.map(
+//                 (file) =>
+//                     `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
+//             );
+//         }
+
+//         ProductData.image = [
+//             ...ProductData.existingPhotos,
+//             ...imagePaths,
+//         ];
+
+//         const product = await ProductModel.findByIdAndUpdate(
+//             id,
+//             ProductData,
+//             { new: true }
+//         );
+
+//         if (!product) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "Product not found"
+//             });
+//         }
+
+//         return res.status(200).json({
+//             success: true,
+//             message: "Product updated successfully",
+//             data: product
+//         });
+
+//     } catch (err) {
+//         console.log(err.message);
+
+//         return res.status(500).json({
+//             success: false,
+//             message: "Error updating product",
+//             error: err.message
+//         });
+//     }
+// }
 async function deleteProduct(req, res) {
 
     try {

@@ -29,8 +29,9 @@ const ordersRouter = require('./Routes/Orders/ordersRouter');
 const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD');
 const orderStatusRouter = require('./Routes/OrderStatus/orderStatusUpdating');
 const dashboardRouter = require('./Routes/Dashboard/dashboardRoute')
-const productfiltering = require('./Routes/Products/ProdutsRouter')
+const productfiltering = require('./Routes/ProductfilteringRoutes/Productfiltering')
 const adminToamin = require("./Routes/AdminToadmin/adminToadminCurd")
+const CompanyDetails = require("./Routes/Company/CompanyRouter")
 
 
 
@@ -43,9 +44,9 @@ app.use(express.json())
 app.use("/upload", express.static("upload"));
 const path = require("path");
 
-app.use("/upload", express.static(path.join(__dirname, "upload"))
+app.use("/upload", express.static(path.join(__dirname, "upload")))
 
-);
+
 
 
 
@@ -74,9 +75,10 @@ app.use("/developer",DeveloperRouter)
 app.use("/review",reviewRouter)
 app.use("/orderStatus",orderStatusRouter)
 app.use("/dashboard",isAdmin,dashboardRouter)
-app.use("/product",productfiltering)
+app.use("/products",productfiltering)
 app.use("/dashboard",dashboardRouter)
 
+app.use("/company",CompanyDetails)
 
 
 // Global error handling middleware to catch Multer errors safely
