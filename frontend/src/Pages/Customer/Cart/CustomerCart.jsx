@@ -523,6 +523,8 @@ export default function CustomerCart() {
       console.log(error);
     }
   }
+  console.log(cartItems);   
+  
   async function saveForLater(cartId) {
     try {
       const res = await api.post(`/cart/save-for-later/${cartId}`);
@@ -974,6 +976,7 @@ export default function CustomerCart() {
                     sx={{
                       fontSize: "1.2rem",
                       fontWeight: 800,
+                      textDecoration:'line-through',
                       color: "#3E1A89",
                     }}
                   >
@@ -984,10 +987,9 @@ export default function CustomerCart() {
                       fontSize: "1.2rem",
                       fontWeight: 800,
                       color: "#3E1A89",
-                      textDecoration:'line-through'
                     }}
                   >
-                    P₹{((item?.product?.price - (item?.product?.price * item?.product?.discount) / 100)) * item?.quantity}
+                    ₹{((item?.product?.price - (item?.product?.price * item?.product?.discount) / 100)) * item?.quantity}
                   </Typography>
                 </Box>
 
@@ -1063,7 +1065,7 @@ export default function CustomerCart() {
         <Stack spacing={2}>
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <Typography color="text.secondary" variant="body2">
-              Subtotal ({quantity || 0} items)
+              Subtotal
             </Typography>
             <Typography color="text.primary" fontWeight={500} variant="body2">
               ₹{formatPrice(subtotal)}
@@ -1149,7 +1151,7 @@ export default function CustomerCart() {
         <Box sx={{ mt: 1 }}>
           <PaymentButton
             addressId={updateAddress?._id}
-            amount={cartItems?.length ? cartItems.cartTotal : formatPrice(grandTotal)}
+            amount={formatPrice(grandTotal)}
           />
         </Box>
       </CardContent>

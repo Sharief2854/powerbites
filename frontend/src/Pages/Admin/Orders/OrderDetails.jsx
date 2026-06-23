@@ -547,6 +547,7 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import FastfoodIcon from '@mui/icons-material/Fastfood';
+import api from '../../../api/axiosConfig';
 
 // import api from '../../../api/axiosConfig'; // <--- Uncomment this when backend is live
 
@@ -628,12 +629,13 @@ export default function OrderRecordsDashboard() {
   useEffect(() => {
     // --- LIVE BACKEND TOGGLE ---
     // When your backend is ready, uncomment the logic below and delete the default mock lines.
-    /*
+    
     async function fetchFromBackend() {
       try {
         setLoading(true);
-        let response = await api.get("/dashboard/getTotalDashboard"); // Update URL if needed
-        setOrders(parseData(response.data || []));
+        let response = await api.get("/orders/admin/getAllOrders"); // Update URL if needed
+        console.log("Backend fetch response:", response.data)
+        setOrders(parseData(response.data.orders || []));
         setLoading(false);
       } catch (err) {
         console.error("Backend fetch error, falling back to demo data:", err);
@@ -642,10 +644,10 @@ export default function OrderRecordsDashboard() {
       }
     }
     fetchFromBackend();
-    */
+    
 
     // --- DEMO WORKING BUFFER ---
-    setOrders(parseData(localMockOrders));
+   // setOrders(parseData(localMockOrders));
     setLoading(false);
   }, []);
 

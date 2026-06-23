@@ -5,6 +5,7 @@ const ordersModel = require("../../Model/orderModel");
 const ProductModel = require("../../Model/ProductModel");
 const couponModel = require("../../Model/couponModel");
 const dealsModel = require("../../Model/dealsModel");
+const addressModel = require("../../Model/addressModel");
 
 const createOrder = async (req, res) => {
     try {
@@ -173,6 +174,14 @@ const verifyPayment = async (req, res) => {
             });
         }
 
+        const addressDoc = await addressModel.findOne({ _id: addressId, userId: req.userId });
+        if (!addressDoc) {
+            return res.status(400).json({
+                success: false,
+                message: "Address not found for this user",
+            });
+        }
+
         const orderData = {
             customer: req.userId,
             products: orderDetails,
@@ -181,7 +190,14 @@ const verifyPayment = async (req, res) => {
             coupon: appliedCouponId || null,
             final_price: finalPrice,
             orderStatus: "order placed",
-            address: addressId,
+            shippingAddress: {
+                label: addressDoc.label,
+                street: addressDoc.street,
+                city: addressDoc.city,
+                state: addressDoc.state,
+                pincode: addressDoc.pincode,
+                country: addressDoc.country,
+            },
         };
 
         const createdOrder = await ordersModel.create(orderData);
