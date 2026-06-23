@@ -12,6 +12,8 @@ import {
   FormControlLabel,
   Grid,
   MenuItem,
+  Snackbar,
+  Paper,
   OutlinedInput,
   Select,
   Switch,
@@ -32,9 +34,7 @@ import { useTheme } from "@mui/material/styles";
 import InputLabel from "@mui/material/InputLabel";
 import { enqueueSnackbar } from "notistack";
 import SearchIcon from "@mui/icons-material/Search";
-import {
-  InputAdornment,
-} from "@mui/material";
+import { InputAdornment } from "@mui/material";
 import ItemCard from "./ItemCard";
 
 const ITEM_HEIGHT = 48;
@@ -58,25 +58,24 @@ export default function CustomerProducts() {
   const [selected, setSelected] = useState([]);
   const [category, setCategory] = React.useState([]);
   const [currentImage, setCurrentImage] = useState({});
-    const [photos, setPhotos] = useState([]);
-    const [search, setSearch] = useState("");
-    const [selectedCategory, setSelectedCategory] = useState("");
-    const [minPrice, setMinPrice] = useState("");
-    const [maxPrice, setMaxPrice] = useState("");
-    const [sortBy, setSortBy] = useState("");
-    const [inStockOnly, setInStockOnly] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState(null);
+  const [photos, setPhotos] = useState([]);
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [sortBy, setSortBy] = useState("");
+  const [inStockOnly, setInStockOnly] = useState("all");
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [cartSnackbar,setCartSnackbar]=useState(false)
   
-    
-    const clearFilters = () => {
-      setSearch("");
-      setSelectedCategory("");
-      setMinPrice("");
-      setMaxPrice("");
-      setSortBy("");
-      setInStockOnly(false);
-    };
-    
+  const clearFilters = () => {
+    setSearch("");
+    setSelectedCategory("");
+    setMinPrice("");
+    setMaxPrice("");
+    setSortBy("");
+    setInStockOnly("all");
+  };
 
   const theme = useTheme();
   function getStyles(name, category, theme) {
@@ -110,12 +109,8 @@ export default function CustomerProducts() {
         product: params,
         quantity: 1,
       });
-      console.log(res.data);
-
       dispatch(addToCart(res.data.cartItem));
-      if (res.status === 200) {
-        enqueueSnackbar("Item added to cart", { variant: "success" });
-      }
+      setCartSnackbar(true);
     } catch (error) {
     } finally {
       setLoading(false);
@@ -161,77 +156,87 @@ export default function CustomerProducts() {
       setLoading(false);
     }
   }
-  let displayProducts=useMemo(() => {
-      let filtered = products;
-      if (search.trim()) {
-        filtered = filtered.filter((product) =>
-          product?.name?.toLowerCase().includes(search.toLowerCase()),
-        );
-      }
-  
-      if (selectedCategory) {
-        filtered = filtered.filter(
-          (product) => product.category?._id === selectedCategory,
-        );
-      }
-  
-      if (inStockOnly) {
-        filtered = filtered.filter((product) => Number(product.stock) > 0);
-      }
-  
-      if (minPrice !== "") {
-        filtered = filtered.filter(
-          (product) => Number(product.price) >= Number(minPrice),
-        );
-      }
-  
-      if (maxPrice !== "") {
-        filtered = filtered.filter(
-          (product) => Number(product.price) <= Number(maxPrice),
-        );
-      }
-  
-      switch (sortBy) {
-        case "low":
-          filtered.sort((a, b) => a.price - b.price);
-          break;
-  
-        case "high":
-          filtered.sort((a, b) => b.price - a.price);
-          break;
-  
-        case "stock":
-          filtered.sort((a, b) => b.stock - a.stock);
-          break;
-  
-        case "newest":
-          filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-          break;
-  
-        case "oldest"||"":
-          filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-          break;
-  
-        case "name":
-          filtered.sort((a, b) => a.name.localeCompare(b.name));
-          break;
-  
-        default:
-          break;
-      }
-  
-      return filtered;
-    }, [
-      products,
-      search,
-      selectedCategory,
-      inStockOnly,
-      minPrice,
-      maxPrice,
-      sortBy,
-    ]);
-  
+  let displayProducts = useMemo(() => {
+    let filtered = [...products];
+    if (search.trim()) {
+      filtered = filtered.filter((product) =>
+        product?.name?.toLowerCase().includes(search.toLowerCase()),
+      );
+    }
 
+    if (selectedCategory) {
+      filtered = filtered.filter(
+        (product) => product.category?._id === selectedCategory,
+      );
+    }
+
+          if (inStockOnly === "in") {
+
+  filtered = filtered.filter(p => p.stock > 0);
+
+}
+
+
+
+if (inStockOnly === "out") {
+
+  filtered = filtered.filter(p => p.stock === 0);
+
+}
+
+    if (minPrice !== "") {
+      filtered = filtered.filter(
+        (product) => Number(product.price) >= Number(minPrice),
+      );
+    }
+
+    if (maxPrice !== "") {
+      filtered = filtered.filter(
+        (product) => Number(product.price) <= Number(maxPrice),
+      );
+    }
+
+    switch (sortBy) {
+      case "low":
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+
+      case "high":
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+
+      case "stock":
+         filtered.sort((a, b) => {
+    return (b.stock > 0 ? 1 : 0) - (a.stock > 0 ? 1 : 0);
+  });
+  break;
+
+      case "newest":
+        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+      case "":
+      case "oldest":
+        filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        break;
+
+      case "name":
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+
+      default:
+        break;
+    }
+
+    return filtered;
+  }, [
+    products,
+    search,
+    selectedCategory,
+    inStockOnly,
+    minPrice,
+    maxPrice,
+    sortBy,
+  ]);
 
   useEffect(() => {
     getProducts();
@@ -259,133 +264,216 @@ export default function CustomerProducts() {
   }
   return (
     <Box>
-<Grid
-  container
-  // alignItems="center"
-  // justifyContent="space-between"
-  spacing={3}
-  sx={{
-    mb: 3,
-    p: 2,
-    bgcolor: "#fff",
-    borderRadius: 3,
-    boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-  }}
->
-
-  <Grid size={{ xs: 12, md: 4 }}>
-    <Box
-      display="flex"
-      gap={2}
-      justifyContent={{ xs: "center", md: "flex-start" }}
-    >
-      
-                    <FormControl  sx={{ minWidth: 180,mr:1}}>
-                      <InputLabel>Category</InputLabel>
-
-                      <Select
-                       sx={{ minWidth: 160,borderRadius:'16px' }}
-                        value={selectedCategory}
-                        label="Category"
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                      >
-                        <MenuItem value="">All Categories</MenuItem>
-
-                        {category.map((cat) => (
-                          <MenuItem key={cat._id} value={cat._id}>
-                            {cat.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-      <FormControl sx={{ minWidth: 160,borderRadius:'16px' }}>
-        <Select
-          value={sortBy}
-           sx={{ minWidth: 160,borderRadius:'16px' }}
-          displayEmpty
-          onChange={(e) => setSortBy(e.target.value)}
-        >
-          <MenuItem value="">Sort By</MenuItem>
-          <MenuItem value="low">Low → High</MenuItem>
-          <MenuItem value="high">High → Low</MenuItem>
-          <MenuItem value="stock">Stock</MenuItem>
-          <MenuItem value="name">Name</MenuItem>
-        </Select>
-      </FormControl>
-    </Box>
-  </Grid>
-
-  <Grid size={{ xs: 12, md: 4 }}>
-    <FormControl fullWidth>
-      <OutlinedInput
-        placeholder="Search products..."
-        onChange={(e) => setSearch(e.target.value)}
-        startAdornment={
-          <InputAdornment position="start">
-            <SearchIcon color="action" />
-          </InputAdornment>
-        }
+      <Grid
+        container
+        // alignItems="center"
+        // justifyContent="space-between"
+        spacing={3}
         sx={{
-          height: 50,
-          borderRadius: 99,
-          bgcolor: "#fafafa",
-          "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#ddd",
-          },
-          "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#7C4DFF",
-          },
-          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#7C4DFF",
-            borderWidth: 2,
-          }
-        }}
-      />
-    </FormControl>
-  </Grid>
-
-
-  <Grid size={{ xs: 12, md: 4 }}>
-    <Box
-      display="flex"
-      gap={2}
-      justifyContent={{ xs: "center", md: "flex-end" }}
-      alignItems="center"
-    >
-      <FormControlLabel
-        control={
-          <Switch
-            checked={inStockOnly}
-            onChange={(e) =>
-              setInStockOnly(e.target.checked)
-            }
-            color="primary"
-          />
-        }
-        label="In Stock"
-      />
-
-      <Button
-        variant="outlined"
-        color="primary"
-        onClick={clearFilters}
-        sx={{
-          borderRadius: 99,
-          px: 3,
-          height: 42,
-          textTransform: "none",
-          fontWeight: 600,
+          mb: 3,
+          p: 2,
+          bgcolor: "#fff",
+          borderRadius: 3,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
         }}
       >
-        Clear Filters
-      </Button>
-    </Box>
-  </Grid>
-</Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Box
+            display="flex"
+            gap={2}
+            justifyContent={{ xs: "center", md: "flex-start" }}
+          >
+            <FormControl sx={{ minWidth: 180, mr: 1 }}>
+              <InputLabel>Category</InputLabel>
+
+              <Select
+                sx={{ minWidth: 160, borderRadius: "16px" }}
+                value={selectedCategory}
+                label="Category"
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                <MenuItem value="">All Categories</MenuItem>
+
+                {category.map((cat) => (
+                  <MenuItem key={cat._id} value={cat._id}>
+                    {cat.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl sx={{ minWidth: 160, borderRadius: "16px" }}>
+              <Select
+                value={sortBy}
+                sx={{ minWidth: 160, borderRadius: "16px" }}
+                displayEmpty
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <MenuItem value="">Sort By</MenuItem>
+                <MenuItem value="low">Low → High</MenuItem>
+                <MenuItem value="high">High → Low</MenuItem>
+                <MenuItem value="stock">Stock</MenuItem>
+                <MenuItem value="name">Name</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 4 }}>
+          <FormControl fullWidth>
+            <OutlinedInput
+              value={search}
+              placeholder="Search products..."
+              onChange={(e) => setSearch(e.target.value)}
+              startAdornment={
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              }
+              sx={{
+                height: 50,
+                borderRadius: 99,
+                bgcolor: "#fafafa",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#ddd",
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#7C4DFF",
+                },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#7C4DFF",
+                  borderWidth: 2,
+                },
+              }}
+            />
+          </FormControl>
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 4 }}>
+          
+          <Box
+            display="flex"
+            gap={2}
+            justifyContent={{ xs: "center", md: "flex-end" }}
+            alignItems="center"
+          >
+<Select
+
+                sx={{ minWidth: 160, borderRadius: "16px" }}
+  value={inStockOnly}
+
+  onChange={(e) => setInStockOnly(e.target.value)}
+
+>
+
+  <MenuItem value="all">All Products</MenuItem>
+
+  <MenuItem value="in">In Stock</MenuItem>
+
+  <MenuItem value="out">Out of Stock</MenuItem>
+
+</Select>
+
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={clearFilters}
+              sx={{
+                borderRadius: 99,
+                px: 3,
+                ml:1,
+                height: 42,
+                textTransform: "none",
+                fontWeight: 600,
+              }}
+            >
+              Clear Filters
+            </Button>
+          </Box>
+        </Grid>
+      </Grid>
+      <Snackbar
+              open={cartSnackbar}
+              autoHideDuration={5000}
+              onClose={() => setCartSnackbar(false)}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              sx={{
+                top: "200px !important",
+              }}
+            >
+              <Paper
+          elevation={6}
+          sx={{
+            px: 2,
+            py: 1.5,
+            borderRadius: 3,
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+          }}
+        >
+          <Typography fontWeight={600}>Added to cart ✓</Typography>
+
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => navigate("/customer/cart")}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+            }}
+          >
+            Go to Cart
+          </Button>
+        </Paper>
+      </Snackbar>
 
       <Grid container spacing={2}>
-        {displayProducts.map((item) => {
-          const cartBtn = cartItems?.some((i) => i?.product === item._id);
+        
+        {products.length <= 0? (
+  <Box
+    sx={{
+      width: "100%",
+      textAlign: "center",
+      py: 8,
+      color: "text.secondary",
+    }}
+  >
+    <Typography variant="h6">
+      No products available
+    </Typography>
+  </Box>
+) :displayProducts.length <= 0 ? (
+  <Box
+    sx={{
+      width: "100%",
+      textAlign: "center",
+      py: 6,
+      color: "text.secondary",
+    }}
+  >
+    <Typography variant="h6">
+      Nothing here
+    </Typography>
+
+    <Typography variant="body2">
+      Try changing filters or clearing search
+    </Typography>
+
+    <Button
+      onClick={clearFilters}
+      sx={{ mt: 2, textTransform: "none" }}
+    >
+      Reset Filters
+    </Button>
+  </Box>
+) : displayProducts.map((item) => {
+  const cartMap = new Set(
+  cartItems?.map(i => String(i?.product?._id || i?.product))
+);
+          const cartBtn = cartMap?.has(String(item._id));
           const imagePath = item.image[0]
             .replace(/\\/g, "/")
             .replace(/^\/+/, "");
@@ -398,7 +486,14 @@ export default function CustomerProducts() {
                 justifyContent: "center",
               }}
             >
-              <ItemCard addItem={addItem} setCurrentImage={setCurrentImage} item={item}currentImage={currentImage} cartBtn={cartBtn} imagePath={imagePath}/>
+              <ItemCard
+                addItem={addItem}
+                setCurrentImage={setCurrentImage}
+                item={item}
+                currentImage={currentImage}
+                cartBtn={cartBtn}
+                imagePath={imagePath}
+              />
             </Grid>
           );
         })}

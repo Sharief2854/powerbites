@@ -163,7 +163,6 @@ async function couponStatus(req,res){
 
 async function getCoupons(req,res){
     try{
-
         let coupons = await couponModel.find().sort({updatedAt:-1});
         if(!coupons){
             return res.status(400).json({

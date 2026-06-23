@@ -165,4 +165,30 @@ async function updateStatus(req,res){
     }
 }
 
+// async function applyOffer(req,res){
+//     try{
+//         let {offerCode,productId} = req.body;
+
+//         if(!offerCode || !productId){
+//             return res.status(400).json({
+//                 message:"Offer code and product ID are required"
+//             })
+//         }
+
+//         let offer = await offerModel.findOne({code:offerCode});
+
+//         if(!offer){
+//             return res.status(404).json({
+//                 message:"Offer not found"
+//             })
+//         }
+
+//         let product = await Product.findById(productId);
+
+//         if(!product){
+//             return res.status(404).json({
+//                 message:"Product not found"
+//             })
+//         }
+
 module.exports = {getOffers,setOffer,deleteOffer,updateOffer,updateStatus}

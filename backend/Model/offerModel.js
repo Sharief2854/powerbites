@@ -14,6 +14,10 @@ const offerSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    product: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: "Product",
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "users",
