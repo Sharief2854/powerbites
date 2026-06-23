@@ -186,4 +186,93 @@ async function analyticSpecific(params) {
     }
 }
 
-module.exports={analyticsPeriod,analyticSpecific}
+//getting most sold product in week month and year
+async function topSellingProducts(req, res) {
+    try {
+
+        const { year, month } = req.query;
+
+        if (!year) {
+            return res.status(400).json({
+                success: false,
+                message: "Year is required"
+            });
+        }
+
+        let startDate;
+        let endDate;
+
+        if (month) {
+
+            if (month < 1 || month > 12) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Month must be between 1 and 12"
+                });
+            }
+
+            startDate = new Date(year, month - 1, 1);
+            endDate = new Date(year, month, 1);
+
+        } else {
+
+            startDate = new Date(year, 0, 1);
+            endDate = new Date(Number(year) + 1, 0, 1);
+
+        }
+
+        const orders = await ordersModel.find({
+            createdAt: {
+                $gte: startDate,
+                $lt: endDate
+            }
+        });
+
+        const productSales = {};
+
+        orders.forEach(order => {
+
+            order.products.forEach(item => {
+
+                const productId = item.product.toString();
+
+                if (!productSales[productId]) {
+                    productSales[productId] = 0;
+                }
+
+                productSales[productId] += item.quantity;
+
+            });
+
+        });
+
+        const sortedProducts = Object.entries(productSales)
+            .sort((a, b) => b[1] - a[1]);
+
+        if (sortedProducts.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No product sales found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Top selling products fetched successfully",
+            data: sortedProducts
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+            error: error.message
+        });
+
+    }
+}
+
+
+
+module.exports={analyticsPeriod,analyticSpecific,topSellingProducts}
