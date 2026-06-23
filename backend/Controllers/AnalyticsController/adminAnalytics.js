@@ -80,7 +80,7 @@ async function analyticsPeriod(req,res) {
 };
 
 //getting analytics for admin for a specific year and month
-async function analyticSpecific(params) {
+async function analyticSpecific(req,res) {
    try {
 
         const { year, month } = req.query;
