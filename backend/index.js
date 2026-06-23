@@ -30,9 +30,11 @@ const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD');
 const orderStatusRouter = require('./Routes/OrderStatus/orderStatusUpdating');
 const dashboardRouter = require('./Routes/Dashboard/dashboardRoute')
 const productfiltering = require('./Routes/ProductfilteringRoutes/Productfiltering');
+const AnalyticsRouter = require('./Routes/Analytics/analytics')
 
 let dealsRouter = require('./Routes/Deals/dealsRoute');
 
+const companyRouter = require("./Routes/CompanyDetails/CompanyDetails");
 
 
 
@@ -63,6 +65,8 @@ app.use("/banner",bannerRouter)
 app.use("/offer",offerRouter)
 
 
+app.use("/company", companyRouter);
+
 app.use("/orders",ordersRouter)
 
 app.use("/coupon",couponRouter)
@@ -78,6 +82,7 @@ app.use("/orderStatus",orderStatusRouter)
 app.use("/dashboard",isAdmin,dashboardRouter)
 app.use("/product",productfiltering)
 app.use("/dashboard",dashboardRouter)
+app.use("/adminAnalytics",AnalyticsRouter)
 
 
 

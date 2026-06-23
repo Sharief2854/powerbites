@@ -273,6 +273,8 @@ function Overview() {
 
   useEffect(() => {
     getData();
+      console.log("data",data)
+
   }, []);
 
   return (
