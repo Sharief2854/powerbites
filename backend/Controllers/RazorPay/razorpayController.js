@@ -119,7 +119,7 @@ const verifyPayment = async (req, res) => {
                 price: product.price,
                 discount: product.discount || 0,
                 discounted_price: discountedPrice,
-                offer: product.offer || null,
+                offer: null,
                 image: product.image?.[0] || "",
                 quantity: item.quantity,
             });

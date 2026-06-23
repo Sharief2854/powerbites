@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors')
-const ConnectDB = require('./config/ConnectDB');
+const ConnectDB = require('./config/connectDB');
 const RegRouter = require("./Routes/Auth/Registration")
 const ResetRouter = require("./Routes/Auth/ResetPassword")
 const LoginRouter = require("./Routes/Auth/Login")
@@ -30,6 +30,8 @@ const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD');
 const orderStatusRouter = require('./Routes/OrderStatus/orderStatusUpdating');
 const dashboardRouter = require('./Routes/Dashboard/dashboardRoute')
 const productfiltering = require('./Routes/ProductfilteringRoutes/Productfiltering');
+
+let dealsRouter = require('./Routes/Deals/dealsRoute');
 
 
 
@@ -66,6 +68,7 @@ app.use("/orders",ordersRouter)
 app.use("/coupon",couponRouter)
 app.use("/category",productCategoryRouter)
 app.use("/payment",PaymentRouter)
+app.use("/deals",isAdmin,dealsRouter)
 
 // Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter)
