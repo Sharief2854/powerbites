@@ -31,6 +31,7 @@ import ShareIcon from "@mui/icons-material/Share";
 import { jwtDecode } from "jwt-decode";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import CustomerReview from "./CustomerReview";
 
 export default function ProductPage() {
   const [product, setProduct] = useState({});
@@ -597,6 +598,7 @@ async function checkOutPage() {
           <Typography color="text.secondary">No features available</Typography>
         )}
       </Paper>
+      <CustomerReview/>
     </Box>
   );
 }

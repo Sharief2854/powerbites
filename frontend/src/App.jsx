@@ -33,6 +33,8 @@ import OrderRecordsDashboard from "./Pages/Admin/Orders/OrderDetails";
 
 import Offers from "./Pages/Admin/Offers/Offers"
 import ReviewOfProducts from "./Pages/Customer/CustomerOrder/ReviewOfProducts";
+import { Reviews } from "@mui/icons-material";
+import CustomerReview from "./Pages/Customer/CustomerProducts/CustomerReview";
 
 
 function App() {
@@ -79,7 +81,7 @@ function App() {
         <Route path ="/customer/orderlist" element={<OrderList/>}/>
         <Route path ="/customer/reviews/:id" element={<ReviewOfProducts/>}/>
         </Route>
-
+        {/* <Route path="/review" element={<CustomerReview/>} /> */}
       </Routes>
             
       </BrowserRouter>
