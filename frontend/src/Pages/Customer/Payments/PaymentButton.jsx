@@ -2,7 +2,7 @@ import { enqueueSnackbar, SnackbarProvider } from "notistack";
 import api from "../../../api/axiosConfig";
 import { PrimaryButton } from "../../../Components/Common/Buttons";
 import { replace, useNavigate } from "react-router-dom";
-import { addValue, getItems } from "../../../Redux/Slices/CM_CartSlice";
+import { addValue, clearCart, getItems } from "../../../Redux/Slices/CM_CartSlice";
 async function getCart() {
   setLoading(true);
   try {
@@ -44,7 +44,7 @@ export default function PaymentButton({ amount, addressId, coupon_id = "" }) {
             });
             if (data.success) {
               enqueueSnackbar("Payment successfull!", { variant: "success" });
-              getCart();
+              dispatch(clearCart())
               navigate("/customer/orderlist");
             } else {
               enqueueSnackbar("Verification failed", { variant: "error" });

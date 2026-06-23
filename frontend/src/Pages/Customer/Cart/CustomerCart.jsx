@@ -17,6 +17,7 @@ import {
   FormControl,
   TextField,
   CircularProgress,
+  InputLabel,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import api from "../../../api/axiosConfig";
@@ -394,6 +395,8 @@ export default function CustomerCart() {
   const [loading, setLoading] = useState(true);
   const [openAddress, setOpenAddress] = useState(false);
   const [coupon, setCoupon] = useState("");
+  const [couponList, setCouponList] = useState([]);
+
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -429,11 +432,9 @@ export default function CustomerCart() {
     return total + priceInPaise * item?.quantity;
   }, 0);
 
-  const shipping = subtotal < 1000 ? "Free" : 999;
+  const shipping = subtotal < 1000 ? "Free" : 0;
 
   const grandTotal = subtotal + shipping;
-  console.log(subtotal, grandTotal);
-
   const formatPrice = (amountInPaise) => (amountInPaise / 100).toFixed(2);
   const confirmDelete = async () => {
     await deleteCart(selectedCartId);
@@ -441,6 +442,16 @@ export default function CustomerCart() {
     setOpenDeleteDialog(false);
     setSelectedCartId(null);
   };
+
+  async function getCoupons(){
+    try {
+      let res = await api.get('coupon/getCoupons')
+      setCouponList(res.data.coupons)
+      console.log(res.data.coupons);
+    } catch (error) {
+      console.log(error.message);      
+    }
+  }
   //   const round2 = (num) => Math.round(num * 100) / 100;
 
   // function calculateCart(cartItems, shipping = 49.99, discount = 0) {
@@ -480,6 +491,7 @@ export default function CustomerCart() {
   //   };
   // }
   //get Cart Details
+
   async function getCart() {
     setLoading(true);
     try {
@@ -504,7 +516,7 @@ export default function CustomerCart() {
 
       const res = await api.post(`/cart/setQuantity/${cartId}`, { quantity });
 
-      dispatch(updateCart(res.data.product));
+      dispatch(updateCart({_id:cartId, quantity}));
 
       console.log(res.data.product);
     } catch (error) {
@@ -576,8 +588,11 @@ export default function CustomerCart() {
 
   useEffect(() => {
     getCart();
+    getCoupons();
     getAddress();
   }, []);
+  console.log(coupon);
+  
 
   useEffect(() => {
     if (addresses.length && !updateAddress) {
@@ -586,7 +601,6 @@ export default function CustomerCart() {
       setUpdateAddress(defaultAddress);
     }
   }, [addresses]);
-  console.log(cartItems);
   if (loading) {
     return (
       <Box sx={{ p: 3 }}>
@@ -928,7 +942,7 @@ export default function CustomerCart() {
 
                   <Select
                     value={item?.quantity}
-                    onChange={(e) => handleChange(item._id, e.target.value)}
+                    onChange={(e) => handleChange(item?._id, e.target.value)}
                     size="small"
                     sx={{
                       borderRadius: 3,
@@ -973,7 +987,7 @@ export default function CustomerCart() {
                       textDecoration:'line-through'
                     }}
                   >
-                    P₹{(item?.price - (item?.price * item?.discount) / 100) * item?.quantity}
+                    P₹{((item?.product?.price - (item?.product?.price * item?.product?.discount) / 100)) * item?.quantity}
                   </Typography>
                 </Box>
 
@@ -1096,35 +1110,46 @@ export default function CustomerCart() {
         </Stack>
 
         <Box sx={{ mt: 3, mb: 2, display: "flex", gap: 1 }}>
-          <TextField
-            fullWidth
-            size="small"
-            label="Coupon Code"
-            name="coupon"
-            placeholder="SAVE10"
-            inputlabelprops={{ shrink: true }}
-            onChange={(e) => setCoupon(e.target.value)}
+         
+          <FormControl
+            fullWidth sx={{ minWidth: 180, mr: 1 }}
+            size="small">
+                        <InputLabel
+            inputlabelprops={{ shrink: true }}>Coupon Code</InputLabel>          
+                        <Select
+                          sx={{ minWidth: 160, borderRadius: "16px" }}
+                          value={coupon}
+                          label="Coupon Code"
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: 2,
                 backgroundColor: "#fafafa"
               }
             }}
-          />
-          <Button 
-            variant="outlined" 
+                          onChange={(e) => setCoupon(e.target.value)}
+                        >
+                          <MenuItem value="">--Choose Coupon--</MenuItem>          
+                          {couponList.map((cat) => (
+                            <MenuItem key={cat._id} value={cat._id}>
+                              {cat.code}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+          {/* <Button 
+            variant="outlined"
             color="primary"
             size="medium"
             sx={{ borderRadius: 2, px: 2.5, fontWeight: 600, textTransform: "none" }}
           >
             Apply
-          </Button>
+          </Button> */}
         </Box>
 
         <Box sx={{ mt: 1 }}>
           <PaymentButton
             addressId={updateAddress?._id}
-            amount={formatPrice(grandTotal)}
+            amount={cartItems?.length ? cartItems.cartTotal : formatPrice(grandTotal)}
           />
         </Box>
       </CardContent>
