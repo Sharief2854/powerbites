@@ -3,6 +3,7 @@ import api from "../../../api/axiosConfig";
 import { PrimaryButton } from "../../../Components/Common/Buttons";
 import { replace, useNavigate } from "react-router-dom";
 import { addValue, clearCart, getItems } from "../../../Redux/Slices/CM_CartSlice";
+import { useDispatch } from "react-redux";
 async function getCart() {
   setLoading(true);
   try {
@@ -20,6 +21,7 @@ export default function PaymentButton({ amount, addressId, coupon_id = "" }) {
     return;
   }
   const navigate = useNavigate()
+  const dispatch = useDispatch();
   const handlePayment = async () => {
     try {
       const { data: order } = await api.post("/payment/create-order", {
