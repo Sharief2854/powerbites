@@ -30,6 +30,7 @@ const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD');
 const orderStatusRouter = require('./Routes/OrderStatus/orderStatusUpdating');
 const dashboardRouter = require('./Routes/Dashboard/dashboardRoute')
 const productfiltering = require('./Routes/ProductfilteringRoutes/Productfiltering');
+const AnalyticsRouter = require('./Routes/Analytics/analytics')
 
 let dealsRouter = require('./Routes/Deals/dealsRoute');
 
@@ -81,6 +82,7 @@ app.use("/orderStatus",orderStatusRouter)
 app.use("/dashboard",isAdmin,dashboardRouter)
 app.use("/product",productfiltering)
 app.use("/dashboard",dashboardRouter)
+app.use("/adminAnalytics",AnalyticsRouter)
 
 
 
