@@ -1,22 +1,28 @@
 import { jwtDecode } from "jwt-decode";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function ProtectedRoutes({ role, children }) {
   let token = localStorage.getItem("token");
-
-  let decodeRole = jwtDecode(token);
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if(!token){
-      navigate("/login", { replace: true });
-      return
-    }
-    if (decodeRole.role != role) {
-      navigate("/login", { replace: true });
-      localStorage.clearItem("token");
+    try{
+      
+    if (!token || token == null ) {
+      navigate("/login", { replace: true })
       return;
+    }
+  let decodeRole = jwtDecode(token);
+    if (decodeRole.role != role) {
+      navigate("/login", { replace: true })
+      localStorage.removeItem("token");
+      return;
+    }
+    }
+    catch(err){   
+      return;
+      
     }
   }, []);
 
