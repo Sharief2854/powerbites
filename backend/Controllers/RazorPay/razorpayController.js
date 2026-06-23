@@ -3,6 +3,8 @@ const razorpay = require("../../config/razorpayConfig");
 const cartModel = require("../../Model/cartModel");
 const ordersModel = require("../../Model/orderModel");
 const ProductModel = require("../../Model/ProductModel");
+const couponModel = require("../../Model/couponModel");
+const dealsModel = require("../../Model/dealsModel");
 
 const createOrder = async (req, res) => {
     try {
@@ -78,6 +80,45 @@ const verifyPayment = async (req, res) => {
             });
         }
 
+        // Enforce unified coupon logic for multi-item carts
+        let appliedCouponId = null;
+        if (cart.length > 1) {
+            // For multi-item carts, use unified coupon only
+            if (cart[0].isUnified && cart[0].unifiedCoupon) {
+                appliedCouponId = cart[0].unifiedCoupon;
+            } else if (coupon_id) {
+                // Validate that the coupon is part of a deal
+                const deal = await dealsModel.findOne({ coupon: coupon_id });
+                if (!deal) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "For multiple items in cart, coupon must be part of a deal",
+                    });
+                }
+                appliedCouponId = coupon_id;
+            }
+        } else {
+            // Single-item cart: use provided coupon or cart's coupon
+            appliedCouponId = coupon_id || (cart[0].coupon ? cart[0].coupon : null);
+        }
+
+        // Validate coupon if provided
+        if (appliedCouponId) {
+            const coupon = await couponModel.findById(appliedCouponId);
+            if (!coupon) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Coupon not found",
+                });
+            }
+            if (coupon.status !== "Active") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Coupon is not active",
+                });
+            }
+        }
+
         const orderDetails = [];
 
         for (const item of cart) {
@@ -137,7 +178,7 @@ const verifyPayment = async (req, res) => {
             products: orderDetails,
             total: finalPrice,
             paymentID: razorpay_payment_id,
-            coupon: coupon_id || null,
+            coupon: appliedCouponId || null,
             final_price: finalPrice,
             orderStatus: "order placed",
             address: addressId,
