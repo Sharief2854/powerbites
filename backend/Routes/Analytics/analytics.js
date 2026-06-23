@@ -1,6 +1,6 @@
 const express = require("express");
 const ordersModel = require("../../Model/orderModel");
-const {analyticsPeriod,analyticSpecific} = require("../../Controllers/AnalyticsController/adminAnalytics");
+const {analyticsPeriod,analyticSpecific, topSellingProducts} = require("../../Controllers/AnalyticsController/adminAnalytics");
 
 const router = express.Router();
 
@@ -8,5 +8,8 @@ const router = express.Router();
 router.get("/analytics/:period",analyticsPeriod);
 
 router.get("/analyticSpecifc",analyticSpecific)
+
+//getting best sold products per year month and week
+router.get("/bestSoldProducts",topSellingProducts)
 
 module.exports = router;
