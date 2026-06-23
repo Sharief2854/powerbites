@@ -60,21 +60,21 @@ export default function ProductCard({product}) {
         <CardMedia
           component="img"
           height="140"
-          image={product.image[0].replace(/\\/g, '/').replace(/^\/+/, '')}
+          image={product?.image[0].replace(/\\/g, '/').replace(/^\/+/, '')}
           alt="No Image Found"
           sx={{ objectFit: 'cover' }}
         />
         <CardContent>
           <Typography gutterBottom variant="h5" component="div">
-            {product.name}
+            {product?.name}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {product.description}
+            {product?.description}
           </Typography>
           <Stack direction={'row'}>
 
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            ₹{product.price}
+            ₹{product?.price}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             {/* {product.discount}% */}
@@ -83,10 +83,10 @@ export default function ProductCard({product}) {
         </CardContent>
       </CardActionArea>
       <CardActions>
-        <PrimaryButton onClick={()=>(toggleUpdate(product._id))} size="small" color="primary">
+        <PrimaryButton onClick={()=>(toggleUpdate(product?._id))} size="small" color="primary">
           Update
         </PrimaryButton>
-        <PrimaryButton onClick={()=>(onClick=handleClickOpen(product._id))} size="small" color="primary">
+        <PrimaryButton onClick={()=>{handleClickOpen(product?._id)}} size="small" color="primary">
           Delete
         </PrimaryButton>
       </CardActions>

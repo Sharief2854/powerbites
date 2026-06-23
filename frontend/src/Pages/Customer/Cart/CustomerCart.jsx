@@ -23,7 +23,7 @@ import api from "../../../api/axiosConfig";
 import { jwtDecode } from "jwt-decode";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { enqueueSnackbar } from "notistack";
+import { enqueueSnackbar, SnackbarProvider } from "notistack";
 import { EditNotificationsSharp } from "@mui/icons-material";
 import {
   PrimaryButton,
@@ -37,35 +37,39 @@ import DialogTitle from "@mui/material/DialogTitle";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import EditIcon from "@mui/icons-material/Edit";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import {
   addToCart,
   addValue,
   getItems,
+  removeCartItem,
 } from "../../../Redux/Slices/CM_CartSlice";
 import PaymentButton from "../Payments/PaymentButton";
 
 const style1 = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
   width: 500,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  borderRadius: 9,
   boxShadow: 24,
   pt: 2,
   px: 4,
   pb: 3,
 };
 const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
   width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
+  bgcolor: "background.paper",
+  border: "2px solid #000",
   boxShadow: 24,
+  borderRadius: 9,
   pt: 2,
   px: 4,
   pb: 3,
@@ -101,45 +105,26 @@ const countriesData = {
     "Uttar Pradesh",
     "Uttarakhand",
     "West Bengal",
-  ],}
+  ],
+};
 
 function AddressModal() {
   const [open, setOpen] = React.useState(false);
-  
+
   const handleOpen = () => {
     setOpen(true);
   };
   const handleClose = () => {
     setOpen(false);
   };
-  //   const [addressForm, setAddressForm] = useState({
-  //     label: "",
-  //     street: "",
-  //     city: "",
-  //     state: "",
-  //     country: "",
-  //     pincode: "",
-  //     _id: "",
-  //     isDefault: false,
-  //   });
-  // const handleAddressChange = (e) => {
-  //   const { name, value } = e.target;
-    
-  //   setAddressForm((prev) => ({ ...prev, [name]: value }));
-
-  //   // Reset state when country changes
-  //   if (name === "country") {
-  //     setAddressForm((prev) => ({ ...prev, state: "" }));
-  //   }
-  // };
   const [message, setMessage] = useState(null);
   const editProfile = useSelector((state) => state.editprofile.editprofile);
-  
-    const editAddress = useSelector((state) => state.editprofile.editaddress);
-  
+
+  const editAddress = useSelector((state) => state.editprofile.editaddress);
+
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
-  const [otherLabel ,setOtherLabel] = useState("")
+  const [otherLabel, setOtherLabel] = useState("");
 
   const [profileForm, setProfileForm] = useState({
     name: "",
@@ -161,51 +146,14 @@ function AddressModal() {
 
   const editaddressId = useParams().id || "";
 
-
-  // Sync initial Address data based on URL parameter
-  useEffect(() => {
-    if (editaddressId && Array.isArray(editAddress)) {
-      const currentAddr = editAddress.find(
-        (addr) => addr._id === editaddressId,
-      );
-      if (currentAddr) {
-        const isPredefined = ["", "HOME", "OFFICE"].includes(currentAddr.label);
-        setAddressForm({
-          label: isPredefined ? (currentAddr.label || "") : "OTHER",
-          street: currentAddr.street || "",
-          city: currentAddr.city || "",
-          state: currentAddr.state || "",
-          country: currentAddr.country || "",
-          pincode: currentAddr.pincode || "",
-          _id: currentAddr._id || "",
-          isDefault: currentAddr.isDefault || false,
-        });
-        setOtherLabel(isPredefined ? "" : currentAddr.label);
-      }
-    } else {
-      setAddressForm({
-        label: "",
-        street: "",
-        city: "",
-        state: "",
-        country: "",
-        pincode: "",
-        _id: "",
-        isDefault: false,
-      });
-    }
-  }, [editaddressId, editAddress]);
-
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
     setProfileForm((prev) => ({ ...prev, [name]: value }));
   };
 
- 
-
   const handleAddressChange = (e) => {
     const { name, value } = e.target;
-    
+
     setAddressForm((prev) => ({ ...prev, [name]: value }));
 
     if (name === "country") {
@@ -218,8 +166,6 @@ function AddressModal() {
     console.log("addressfrom :", addressForm);
   };
 
-  
-
   const handleSaveAddress = async (e) => {
     e.preventDefault();
     setSavingAddress(true);
@@ -229,35 +175,26 @@ function AddressModal() {
       const decoded = jwtDecode(token);
       const userId = decoded.id;
 
-      const finalLabel = addressForm.label === "OTHER" ? otherLabel : addressForm.label;
+      const finalLabel =
+        addressForm.label === "OTHER" ? otherLabel : addressForm.label;
       const payload = { ...addressForm, label: finalLabel, userId };
-      if (!payload._id) delete payload._id; // Prevents MongoDB CastError on empty string
+      if (!payload._id) delete payload._id;
       let response;
 
-      if (editaddressId) {
-        response = await api.put(
-          `/updateCustomerProfile/updateAddress/${editaddressId}`,
-          payload,
-        );
-        dispatch(
-          updateeditaddress({
-            id: addressForm._id,
-            data: response.data.address,
-          }),
-        );
-      } else {
-        response = await api.post(
-          `/updateCustomerProfile/addAddress/${userId}`,
-          payload,
-        );
-        dispatch(posteditaddress(response.data.address));
-      }
+      response = await api.post(
+        `/updateCustomerProfile/addAddress/${userId}`,
+        payload,
+      );
+      navigate("/customer/cart");
+      enqueueSnackbar("address added go click back to go to cart", {
+        variant: "success",
+      });
+      dispatch(posteditaddress(response.data.address));
 
       setMessage({
         text: "Address added!",
         type: "success",
       });
-      setTimeout(() => navigate("/customer/cart"), 1400);
     } catch (err) {
       console.error("Address save error:", err.response?.data || err.message);
       setMessage({ text: "Failed to save address", type: "error" });
@@ -268,25 +205,17 @@ function AddressModal() {
 
   const availableStates = countriesData[addressForm.country] || [];
 
-
-
   return (
     <React.Fragment>
-               <IconButton  onClick={handleOpen}>
-                  <PrimaryButton sx={{width:200, m:0}}>Add New Address</PrimaryButton>
-                </IconButton>
+      <SnackbarProvider />
+      <PrimaryButton onClick={handleOpen} sx={{ m: 0 }}>
+        Add New
+      </PrimaryButton>
       <Modal
         open={open}
         onClose={handleClose}
         aria-labelledby="child-modal-title"
         aria-describedby="child-modal-description"
-  //       PaperProps={{
-  //   sx: {
-  //     width: "900px",
-  //     maxWidth: "90vw",
-  //     borderRadius: 4,
-  //   },
-  // }}
       >
         <Box sx={{ ...style1, width: 400 }}>
           <form onSubmit={handleSaveAddress}>
@@ -296,7 +225,7 @@ function AddressModal() {
               color="primary"
               gutterBottom
             >
-              { "Add New Address"}
+              {"Add New Address"}
             </Typography>
 
             <Grid container spacing={3}>
@@ -318,10 +247,10 @@ function AddressModal() {
                       name="customLabel"
                       label="Specify Address Type"
                       value={otherLabel}
-                      onChange={(e)=>setOtherLabel(e.target.value)}
+                      onChange={(e) => setOtherLabel(e.target.value)}
                       variant="outlined"
                       fullWidth
-                      margin="normal" 
+                      margin="normal"
                     />
                   )}
                 </FormControl>
@@ -416,7 +345,7 @@ function AddressModal() {
               >
                 {"Add Address"}
               </PrimaryButton>
-          <Button onClick={handleClose}>Back</Button>
+              <Button onClick={handleClose}>Back</Button>
             </Box>
           </form>
         </Box>
@@ -440,13 +369,13 @@ export default function CustomerCart() {
   const [updateAddress, setUpdateAddress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [openAddress, setOpenAddress] = useState(false);
-  const [coupon,setCoupon] = useState("")
+  const [coupon, setCoupon] = useState("");
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-const [selectedCartId, setSelectedCartId] = useState(null);
+  const [selectedCartId, setSelectedCartId] = useState(null);
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -454,23 +383,22 @@ const [selectedCartId, setSelectedCartId] = useState(null);
   const handleClose = () => {
     setOpen(false);
   };
-  const subtotal =
-    cartItems.reduce((total, item) => {
-      const priceInPaise = Math.round(Number(item?.product?.price) * 100);
-
-      return total + priceInPaise * item?.product?.quantity;
-    }, 0) || 0;
+  const subtotal = cartItems.reduce((total, item) => {
+    const priceInPaise = Math.round(Number(item?.product?.price) * 100);
+    return total + priceInPaise * item?.quantity;
+  }, 0);
   const shipping = subtotal > 5000 ? 999 : 0;
 
   const grandTotal = subtotal + shipping;
+  console.log(subtotal, grandTotal);
 
   const formatPrice = (amountInPaise) => (amountInPaise / 100).toFixed(2);
   const confirmDelete = async () => {
-  await deleteCart(selectedCartId);
+    await deleteCart(selectedCartId);
 
-  setOpenDeleteDialog(false);
-  setSelectedCartId(null);
-};
+    setOpenDeleteDialog(false);
+    setSelectedCartId(null);
+  };
   //   const round2 = (num) => Math.round(num * 100) / 100;
 
   // function calculateCart(cartItems, shipping = 49.99, discount = 0) {
@@ -519,7 +447,6 @@ const [selectedCartId, setSelectedCartId] = useState(null);
       console.log(res.data.cart);
     } catch (error) {
       // enqueueSnackbar('')
-      console.log(error.message);
     } finally {
       setLoading(false);
     }
@@ -553,8 +480,7 @@ const [selectedCartId, setSelectedCartId] = useState(null);
   async function deleteCart(cartId) {
     try {
       const res = await api.delete(`/cart/deleteItem/${cartId}`);
-
-      dispatch(addToCart(res.data.data));
+      dispatch(removeCartItem(cartId));
 
       enqueueSnackbar("Item removed", {
         variant: "success",
@@ -578,7 +504,7 @@ const [selectedCartId, setSelectedCartId] = useState(null);
       const defaultAddress =
         addressList.find((item) => item.isDefault) || addressList[0];
 
-      console.log(defaultAddress);
+      console.log(defaultAddress, addressList);
       setUpdateAddress(defaultAddress);
     } catch (error) {}
   }
@@ -595,37 +521,13 @@ const [selectedCartId, setSelectedCartId] = useState(null);
   let address =
     updateAddress && Object.keys(updateAddress).length
       ? updateAddress
-      : [addresses] || [];
+      : addresses || [];
 
-      console.log(address);
-      
+  console.log(cartItems);
+
   useEffect(() => {
     getCart();
     getAddress();
-    if (cartItems?.length <= 0) {
-      return (
-        <Box sx={{ width: "screen", p: 3 }}>
-          <Typography
-            align="center"
-            variant="h4"
-            color="text.primary"
-            sx={{ mb: 3, fontWeight: 600 }}
-          >
-            Your Cart is Empty
-          </Typography>
-          <Typography
-            align="center"
-            variant="body1"
-            color="text.secondary"
-            sx={{ mb: 3 }}
-          >
-            <SecondaryButton onClick={() => navigate("/customer/products")}>
-              Browse Items
-            </SecondaryButton>
-          </Typography>
-        </Box>
-      );
-    }
   }, []);
 
   useEffect(() => {
@@ -636,11 +538,56 @@ const [selectedCartId, setSelectedCartId] = useState(null);
       setUpdateAddress(defaultAddress);
     }
   }, [addresses]);
-  if (loading) {
-    Skeleton.count = 4;
-  }
   console.log(cartItems);
-  
+  if (loading) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />
+        <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />
+        <Skeleton variant="rectangular" height={120} />
+      </Box>
+    );
+  }
+
+  if (cartItems?.length <= 0) {
+    return (
+      <Box sx={{ width: "screen", p: 3 }}>
+        <Typography
+          align="center"
+          variant="h4"
+          color="text.primary"
+          sx={{
+            mb: 3,
+            fontWeight: 600,
+            color: "#3E1A89",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <ShoppingCartOutlinedIcon
+            sx={{
+              fontSize: 100,
+              color: "#3E1A89",
+              opacity: 0.2,
+              mb: 2,
+            }}
+          />
+          Your Cart is Empty
+        </Typography>
+        <Typography
+          align="center"
+          variant="body1"
+          color="text.secondary"
+          sx={{ mb: 3 }}
+        >
+          <SecondaryButton onClick={() => navigate("/customer/products")}>
+            Browse Items
+          </SecondaryButton>
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: 3 }}>
@@ -652,43 +599,36 @@ const [selectedCartId, setSelectedCartId] = useState(null);
         My Cart
       </Typography>
       <Dialog
-  open={openDeleteDialog}
-  onClose={() => setOpenDeleteDialog(false)}
-  maxWidth="xs"
-  fullWidth
->
-  <DialogTitle
-    sx={{
-      fontWeight: 700,
-      color: "#3E1A89",
-    }}
-  >
-    Remove Item
-  </DialogTitle>
+        open={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{
+            fontWeight: 700,
+            color: "#3E1A89",
+          }}
+        >
+          Remove Item
+        </DialogTitle>
 
-  <DialogContent>
-    <Typography>
-      Are you sure you want to remove this item from your cart?
-    </Typography>
-  </DialogContent>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to remove this item from your cart?
+          </Typography>
+        </DialogContent>
 
-  <DialogActions sx={{ p: 2 }}>
-    <Button
-      variant="outlined"
-      onClick={() => setOpenDeleteDialog(false)}
-    >
-      Cancel
-    </Button>
+        <DialogActions sx={{ p: 2 }}>
+          <Button variant="outlined" onClick={() => setOpenDeleteDialog(false)}>
+            Cancel
+          </Button>
 
-    <Button
-      color="error"
-      variant="contained"
-      onClick={confirmDelete}
-    >
-      Remove
-    </Button>
-  </DialogActions>
-</Dialog>
+          <Button color="error" variant="contained" onClick={confirmDelete}>
+            Remove
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, sm: 8, md: 8 }}>
           <Stack spacing={2}>
@@ -700,23 +640,30 @@ const [selectedCartId, setSelectedCartId] = useState(null);
 
                 <Stack
                   direction="row"
-                  sx={{justifyContent:'space-between'}}
-                >{address ? (
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        key={address._id}
-                      >
-                        {updateAddress &&
-                          `${updateAddress.street}, ${updateAddress.city}, ${updateAddress.state}, ${updateAddress.country}, ${updateAddress.pincode}`}
-                      </Typography>
-                    ) : (
-                      "No Address Found"
-                    )}
-                    {address ?
-                  <IconButton onClick={handleClickOpen}>
-                    <EditIcon /></IconButton>:(<PrimaryButton onClick={() => navigate("/customer/profile")}>Add Address</PrimaryButton>)
-                  }
+                  sx={{ justifyContent: "space-between", alignItems: "center" }}
+                >
+                  {updateAddress ? (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      key={address._id}
+                    >
+                      {updateAddress &&
+                        `${updateAddress.street}, ${updateAddress.city}, ${updateAddress.state}, ${updateAddress.country}, ${updateAddress.pincode}`}
+                    </Typography>
+                  ) : (
+                    "No Address Found"
+                  )}
+
+                  {updateAddress ? (
+                    <IconButton onClick={handleClickOpen}>
+                      <EditIcon />
+                    </IconButton>
+                  ) : (
+                    <PrimaryButton onClick={handleClickOpen}>
+                      Add Address
+                    </PrimaryButton>
+                  )}
                 </Stack>
               </CardContent>
             </Card>
@@ -726,35 +673,37 @@ const [selectedCartId, setSelectedCartId] = useState(null);
               open={open}
               onClose={handleClose}
               aria-labelledby="responsive-dialog-title"
-              
-  paperprops={{
-    sx: {
-      width: "100%",
-      maxWidth: 900,
-      margin: "auto",
-    },
-  }}
+              paperprops={{
+                sx: {
+                  width: "100%",
+                  maxWidth: 900,
+                  margin: "auto",
+                },
+              }}
             >
               <DialogTitle id="responsive-dialog-title">
-               <AddressModal sx={{width:"400px"}}/>
-                <Typography variant="body1" color="initial">
+                <AddressModal sx={{ width: "400px" }} />
+                <Typography variant="body1" align="center" color="initial">
                   or select from below
                 </Typography>
               </DialogTitle>
               <DialogContent>
-                {addresses?addresses.map((item) => {
-                  return (
-                    <Box key={item._id}>
-                      <Checkbox
-                        checked={updateAddress?._id === item._id}
-                        onChange={() => setUpdateAddress(item)}
-                      />
-                      <DialogContentText>
-                        {item.street}, {item.city}, {item.state}, {item.pincode}
-                      </DialogContentText>
-                    </Box>
-                  );
-                }):"No Address Found"}
+                {addresses
+                  ? addresses.map((item) => {
+                      return (
+                        <Box key={item._id}>
+                          <Checkbox
+                            checked={updateAddress?._id === item._id}
+                            onChange={() => setUpdateAddress(item)}
+                          />
+                          <DialogContentText>
+                            {item.street}, {item.city}, {item.state},{" "}
+                            {item.pincode}
+                          </DialogContentText>
+                        </Box>
+                      );
+                    })
+                  : "No Address Found"}
               </DialogContent>
               <DialogActions>
                 <Button autoFocus onClick={handleClose}>
@@ -764,178 +713,172 @@ const [selectedCartId, setSelectedCartId] = useState(null);
             </Dialog>
             {cartItems?.map((item) => (
               <Card
-  key={item._id}
-  sx={{
-    mb: 2,
-    borderRadius: 4,
-    p: 1.5,
-    display: "flex",
-    flexDirection: { xs: "column", sm: "row" },
-    alignItems: "center",
-    gap: 2,
-    background:
-      "linear-gradient(135deg,#fff,#f8f9ff)",
-    border: "1px solid rgba(62,26,137,0.10)",
-    boxShadow: "0 8px 25px rgba(0,0,0,0.06)",
-    transition: "0.25s",
-    "&:hover": {
-      transform: "translateY(-3px)",
-      boxShadow: "0 18px 40px rgba(62,26,137,0.12)",
-    },
-  }}
->
-  {/* IMAGE */}
-  <Box
-    component="img"
-    src={
-      item?.product?.image?.[0]
-        ? `http://localhost:4500/${item.product.image[0]
-            .replace(/\\/g, "/")
-            .replace(/^\/+/, "")}`
-        : "/no-image.png"
-    }
-    sx={{
-      width: 90,
-      height: 90,
-      borderRadius: 3,
-      objectFit: "cover",
-      border: "2px solid rgba(62,26,137,0.08)",
-      flexShrink: 0,
-    }}
-  />
+                key={item._id}
+                sx={{
+                  mb: 2,
+                  borderRadius: 4,
+                  p: 1.5,
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  alignItems: "center",
+                  gap: 2,
+                  background: "linear-gradient(135deg,#fff,#f8f9ff)",
+                  border: "1px solid rgba(62,26,137,0.10)",
+                  boxShadow: "0 8px 25px rgba(0,0,0,0.06)",
+                  transition: "0.25s",
+                  "&:hover": {
+                    transform: "translateY(-3px)",
+                    boxShadow: "0 18px 40px rgba(62,26,137,0.12)",
+                  },
+                }}
+              >
+                <Box
+                  component="img"
+                  src={
+                    item?.product?.image?.[0]
+                      ? `${item.product.image[0]
+                          .replace(/\\/g, "/")
+                          .replace(/^\/+/, "")}`
+                      : "/no-image.png"
+                  }
+                  sx={{
+                    width: 90,
+                    height: 90,
+                    borderRadius: 3,
+                    objectFit: "cover",
+                    border: "2px solid rgba(62,26,137,0.08)",
+                    flexShrink: 0,
+                  }}
+                />
 
-  {/* DETAILS */}
-  <Box sx={{ flex: 1, minWidth: 0 }}>
-    <Typography
-      sx={{
-        fontWeight: 700,
-        fontSize: "1rem",
-        color: "#111827",
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-      }}
-    >
-      {item?.product?.name}
-    </Typography>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: "1rem",
+                      color: "#111827",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {item?.product?.name}
+                  </Typography>
 
-    <Typography
-      sx={{
-        fontSize: "0.85rem",
-        color: "#6B7280",
-        display: { xs: "none", sm: "block" },
-      }}
-    >
-      {item?.product?.description}
-    </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: "0.85rem",
+                      color: "#6B7280",
+                      display: { xs: "none", sm: "block" },
+                    }}
+                  >
+                    {item?.product?.description}
+                  </Typography>
 
-    <Chip
-      size="small"
-      label="In Cart"
-      sx={{
-        mt: 1,
-        bgcolor: "rgba(62,26,137,0.08)",
-        color: "#3E1A89",
-        fontWeight: 600,
-      }}
-    />
-  </Box>
+                  <Chip
+                    size="small"
+                    label="In Cart"
+                    sx={{
+                      mt: 1,
+                      bgcolor: "rgba(62,26,137,0.08)",
+                      color: "#3E1A89",
+                      fontWeight: 600,
+                    }}
+                  />
+                </Box>
 
-  <Box sx={{ textAlign: "center" }}>
-    <Typography
-      sx={{
-        fontSize: "0.75rem",
-        color: "#6B7280",
-        fontWeight: 600,
-        mb: 0.5,
-      }}
-    >
-      Qty
-    </Typography>
+                <Box sx={{ textAlign: "center" }}>
+                  <Typography
+                    sx={{
+                      fontSize: "0.75rem",
+                      color: "#6B7280",
+                      fontWeight: 600,
+                      mb: 0.5,
+                    }}
+                  >
+                    Qty
+                  </Typography>
 
-    <Select
-      value={item?.quantity}
-      onChange={(e) =>
-        handleChange(item._id, e.target.value)
-      }
-      size="small"
-      sx={{
-        borderRadius: 3,
-        minWidth: 70,
-        fontSize: "0.85rem",
-        bgcolor: "#fff",
-      }}
-    >
-      {[...Array(10)].map((_, i) => (
-        <MenuItem key={i + 1} value={i + 1}>
-          {i + 1}
-        </MenuItem>
-      ))}
+                  <Select
+                    value={item?.quantity}
+                    onChange={(e) => handleChange(item._id, e.target.value)}
+                    size="small"
+                    sx={{
+                      borderRadius: 3,
+                      minWidth: 70,
+                      fontSize: "0.85rem",
+                      bgcolor: "#fff",
+                    }}
+                  >
+                    {[...Array(10)].map((_, i) => (
+                      <MenuItem key={i + 1} value={i + 1}>
+                        {i + 1}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Box>
 
-    </Select>
-  </Box>
+                <Box sx={{ textAlign: "center", minWidth: 90 }}>
+                  <Typography
+                    sx={{
+                      fontSize: "0.75rem",
+                      color: "#6B7280",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Price
+                  </Typography>
 
-  <Box sx={{ textAlign: "center", minWidth: 90 }}>
-    <Typography
-      sx={{
-        fontSize: "0.75rem",
-        color: "#6B7280",
-        fontWeight: 600,
-      }}
-    >
-      Price
-    </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: "1.2rem",
+                      fontWeight: 800,
+                      color: "#3E1A89",
+                    }}
+                  >
+                    ₹{item?.product?.price * item?.quantity}
+                  </Typography>
+                </Box>
 
-    <Typography
-      sx={{
-        fontSize: "1.2rem",
-        fontWeight: 800,
-        color: "#3E1A89",
-      }}
-    >
-      ₹{item?.product?.price * item?.quantity}
-    </Typography>
-  </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: { xs: "row", sm: "column" },
+                    gap: 1,
+                  }}
+                >
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="error"
+                    sx={{
+                      borderRadius: 99,
+                      textTransform: "none",
+                      fontSize: "0.75rem",
+                      px: 2,
+                    }}
+                    onClick={() => deleteCart(item._id)}
+                  >
+                    Remove
+                  </Button>
 
-  <Box
-    sx={{
-      display: "flex",
-      flexDirection: { xs: "row", sm: "column" },
-      gap: 1,
-    }}
-  >
-    <Button
-      size="small"
-      variant="outlined"
-      color="error"
-      sx={{
-        borderRadius: 99,
-        textTransform: "none",
-        fontSize: "0.75rem",
-        px: 2,
-      }}
-      onClick={() => deleteCart(item._id)}
-    >
-      Remove
-    </Button>
-
-    <Button
-      size="small"
-      variant="contained"
-      sx={{
-        borderRadius: 99,
-        textTransform: "none",
-        fontSize: "0.75rem",
-        px: 2,
-        bgcolor: "#3E1A89",
-        "&:hover": { bgcolor: "#2C1265" },
-      }}
-      onClick={() => saveForLater(item._id)}
-    >
-      Save
-    </Button>
-  </Box>
-</Card>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    sx={{
+                      borderRadius: 99,
+                      textTransform: "none",
+                      fontSize: "0.75rem",
+                      px: 2,
+                      bgcolor: "#3E1A89",
+                      "&:hover": { bgcolor: "#2C1265" },
+                    }}
+                    onClick={() => saveForLater(item._id)}
+                  >
+                    Save
+                  </Button>
+                </Box>
+              </Card>
             ))}
           </Stack>
         </Grid>
@@ -1003,14 +946,17 @@ const [selectedCartId, setSelectedCartId] = useState(null);
                 <TextField
                   fullWidth
                   label="Coupon Code"
+                  sx={{ m: 1 }}
                   name="coupon"
                   // value={addressForm.pincode}
-                  onChange={()=>setCoupon(e.target.value)}
+                  onChange={(e) => setCoupon(e.target.value)}
                 />
               </Grid>
 
-
-              <PaymentButton addressId={updateAddress?._id} amount={grandTotal} />
+              <PaymentButton
+                addressId={updateAddress?._id}
+                amount={formatPrice(grandTotal)}
+              />
             </CardContent>
           </Card>
         </Grid>

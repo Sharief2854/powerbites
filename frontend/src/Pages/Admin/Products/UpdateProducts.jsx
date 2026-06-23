@@ -12,25 +12,34 @@ import {
   Select,
   SnackbarContent,
   Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  DialogActions,
   Switch,
   Typography, IconButton,
   ImageListItem,
   ImageListItemBar,
   Checkbox,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { PrimaryButton } from "../../../Components/Common/Buttons";
+import React, { useEffect, useRef, useState } from "react";
+import { PrimaryButton, SecondaryButton } from "../../../Components/Common/Buttons";
 import { useDispatch, useSelector } from "react-redux";
 import { enqueueSnackbar, SnackbarProvider } from "notistack";
 import { updateProduct } from "../../../Redux/Slices/ProductSlice";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import styled from "@emotion/styled";
 import api from "../../../api/axiosConfig";
 import { getProducts } from "../../../Redux/Slices/ProductSlice";
+import {Divider} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { v4 as uuidv4 } from "uuid";
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit'
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -82,17 +91,147 @@ export default function UpdateProducts() {
   let { id } = useParams();
   let product = allProducts
   console.log(allProducts);
-
   const [productData, setProductData] = useState({
-    name: product?.name,
-    description: product?.description,
-    price: product?.price,
-    stock: product?.stock,
-    discount: product?.discount,
-    isAvailable: product?.isAvailable,
-    sendUpdates: product?.sendUpdates,
-    category: product?.category?._id,
-  });
+  name: "",
+  description: "",
+  price: "",
+  stock: "",
+  discount: 0,
+  isAvailable: false, 
+  sendUpdates: false,
+  category: "",
+});
+
+  const [openModal, setOpenModal] = useState(false);
+
+  const [categories, setCategories] = useState([]);
+const [openCategoryModal, setOpenCategoryModal] = useState(false);
+const [categoryName, setCategoryName] = useState("");
+const [loading,setLoading] = useState()
+const mountedRef = useRef(true);
+
+const handleOpenAddCategory = () => {
+  setSelectedCategory(null);
+  setCategoryName("");
+  setOpenCategoryModal(true);
+};
+const handleEditCategory = (category) => {
+  setSelectedCategory(category);
+  setCategoryName(category.name);
+  setOpenCategoryModal(true);
+};
+
+const handleCloseCategoryModal = () => {
+  setOpenCategoryModal(false);
+  setCategoryName("");
+  setSelectedCategory(null);
+};
+
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [sortBy, setSortBy] = useState("");
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  
+  const openAddProductModal = () => {
+    setOpenModal(true);
+  };
+
+  const closeAddProductModal = () => {
+    setOpenModal(false);
+
+    setProductData({
+      name: "",
+      description: "",
+      price: "",
+      stock: "",
+      sendUpdates: false,
+      category: "",
+      discount: 0,
+      isAvailable: true,
+    });
+
+    setPhotos([]);
+  };
+
+  const handleSaveCategory = async () => {
+  if (!categoryName.trim()) return;
+
+  try {
+    setLoading(true);
+
+    if (selectedCategory) {
+      await api.put(
+        `/category/updateProductCategory/${selectedCategory._id}`,
+        {
+          name: categoryName,
+        }
+      );
+    } else {
+      await api.post("/category/addProductCategory", {
+        name: categoryName,
+      });
+    }
+
+    await getCategories();
+    handleCloseCategoryModal();
+  } catch (error) {
+    console.error(error);
+  } finally {
+    if (mountedRef.current) {
+      setLoading(false);
+    }
+  }
+};
+
+const handleDeleteCategory = async (_id) => {
+  if (!selectedCategory) return;
+
+  const confirmDelete = window.confirm(
+    `Delete ${selectedCategory.name}?`
+  );
+
+  if (!confirmDelete) return;
+
+  try {
+    setLoading(true);
+
+    await api.delete(
+      `category/deleteProductCategory/${_id}`
+    );
+
+    await getCategories();
+    handleCloseCategoryModal();
+  } catch (error) {
+    console.error(error);
+  } finally {
+    if (mountedRef.current) {
+      setLoading(false);
+    }
+  }
+};
+
+
+  const getCategories = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/category/allCategories");
+
+      setCategories(response.data.categories || []);
+      setProductData((prev) => ({
+  ...prev,
+  category: prev.category ?? "",
+}));
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const [filteredFile, setFilteredFile] = useState([]);
   const [existingPhotos, setExistingPhotos] = useState([]);
@@ -140,7 +279,7 @@ export default function UpdateProducts() {
     prev.filter((_, i) => i !== index)
   );
 }
-    
+    const navigate = useNavigate()
 
   async function updateProducts(e) {
     e.preventDefault();
@@ -161,17 +300,18 @@ export default function UpdateProducts() {
     formData.append("existingPhotos", JSON.stringify(existingPhotos))
 
     photos.forEach((photo) => {
-      formData.append("file", photo.photo);
+      formData.append("file", photo.file);
     });
 
     try {
       let response = await api.put(
-        `admin/updateProduct/${product._id}`,
+        `products/updateProduct/${id}`,
         formData,
       );
 
       if(response.status === 200){
       dispatch(updateProduct(response.data.product));
+      navigate('/admin/product')
       enqueueSnackbar("Product updated successfully", {
         variant: "success",
         anchorOrigin: { vertical: "top", horizontal: "right" },
@@ -180,28 +320,54 @@ export default function UpdateProducts() {
       enqueueSnackbar("Failed to update", { variant: "error" });
     }
   }
-async function getById(params) {
-      try {
-        let response = await api.get(`admin/getprd/${id}`);
-        console.log(response.data);
-        
-        dispatch(getProducts(response.data.data));
-      } catch (error) {console.log(error.message);
-      }
-    }
+async function getById() {
+  try {
+    let response = await api.get(`product/getprd/${id}`);
+
+    const product = response.data.data;
+
+    console.log(product);
+    
+    setProductData({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      stock: product.stock,
+      discount: product.discount,
+      isAvailable: product.isAvailable,
+      sendUpdates: product.sendUpdates,
+      category: product?.category || "",
+    });
+
+    setExistingPhotos(product.image || []);
+  } catch (error) {
+    console.log(error.message);
+  }
+}
     useEffect(() => {
       getById()
-    
+      getCategories()
     }, [])
     
   useEffect(() => {
-    if (product) {
-      setProductData(product);
-      setExistingPhotos(product.image.map((e) => e) || []);
-      getById();
-    }
-  }, []);
+  if (product) {
+    setProductData(product);
+    setExistingPhotos(product?.image || []);
+  }
+}, [product]);
   console.log(product, existingPhotos);
+
+useEffect(() => {
+  mountedRef.current = true;
+
+  getCategories();
+
+  return () => {
+    mountedRef.current = false;
+  };
+}, []);
+
+      console.log(productData.category)
 
   return (
     <Box>
@@ -212,7 +378,7 @@ async function getById(params) {
         </Typography>
         <Stack component="form" onSubmit={updateProducts}>
           <FormControl fullWidth margin="normal">
-            <InputLabel htmlFor="name">Product Name</InputLabel>
+            <InputLabel shrink htmlFor="name">Product Name</InputLabel>
             <OutlinedInput
               id="name"
               label="Product Name"
@@ -223,7 +389,7 @@ async function getById(params) {
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel htmlFor="description">Description</InputLabel>
+            <InputLabel shrink htmlFor="description">Description</InputLabel>
             <OutlinedInput
               id="description"
               type="text"
@@ -379,10 +545,124 @@ async function getById(params) {
                         </Box>
                       )}
           
+<Box
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    border: "1px solid",
+    borderColor: "divider",
+    borderRadius: 2,
+  }}
+>
+
+  <FormControl fullWidth>
+  <Select
+    name="category"
+    value={productData.category ?? ""}
+    onChange={handleChange}
+    displayEmpty
+    sx={{
+      "& fieldset": {
+        border: "none",
+      },
+    }}
+  >
+    <MenuItem value="">
+      --Select Category--
+    </MenuItem>
+
+    {categories.map((item) => (      
+      <MenuItem key={item._id} value={item._id}>
+        {item.name}
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
+  <Divider orientation="vertical" flexItem />
+
+  <IconButton
+    color="primary"
+    onClick={handleOpenAddCategory}
+  >
+    <AddIcon />
+  </IconButton>
+
+  <IconButton
+    color="rgba(23, 75, 231, 0.8)"
+    disabled={!productData.category}
+    onClick={() => {
+      const category = categories.find(
+        (c) => c._id === productData.category
+      );
+
+      if (category) {
+        handleEditCategory(category);
+      }
+    }}
+  >
+    <EditIcon />
+  </IconButton>
+
+  <IconButton
+    color="error"
+    disabled={!productData.category}
+    onClick={() =>
+      handleDeleteCategory(productData.category)
+    }
+  >
+    <DeleteIcon />
+  </IconButton>
+</Box>
+
+<Dialog
+  open={openCategoryModal}
+  onClose={handleCloseCategoryModal}
+  maxWidth="sm"
+  fullWidth
+>
+  <DialogTitle>
+    {selectedCategory
+      ? "Update Category"
+      : "Add Category"}
+  </DialogTitle>
+
+  <DialogContent>
+    <TextField
+      fullWidth
+      label="Category Name"
+      value={categoryName}
+      onChange={(e) =>
+        setCategoryName(e.target.value)
+      }
+      sx={{ mt: 1 }}
+    />
+  </DialogContent>
+
+  <DialogActions>
+    <Button
+      onClick={handleCloseCategoryModal}
+      disabled={loading}
+    >
+      Cancel
+    </Button>
+
+    <Button
+      variant="contained"
+      onClick={handleSaveCategory}
+      disabled={loading || !categoryName.trim()}
+    >
+      {loading
+        ? "Saving..."
+        : selectedCategory
+        ? "Update"
+        : "Add"}
+    </Button>
+  </DialogActions>
+</Dialog>
           <Grid container spacing={2}>
             <Grid xs={6}>
               <FormControl fullWidth margin="normal">
-                <InputLabel htmlFor="price">Price</InputLabel>
+                <InputLabel shrink htmlFor="price">Price</InputLabel>
                 <OutlinedInput
                   id="price"
                   type="number"
@@ -400,7 +680,7 @@ async function getById(params) {
             </Grid>
             <Grid xs={6}>
               <FormControl fullWidth margin="normal">
-                <InputLabel>Discount</InputLabel>
+                <InputLabel shrink>Discount</InputLabel>
                 <OutlinedInput
                   type="number"
                   name="discount"
@@ -414,7 +694,6 @@ async function getById(params) {
                     </InputAdornment>
                   }
                   label="Discount"
-                  sx={{ borderRadius: "10px" }}
                 />
               </FormControl>
             </Grid>
@@ -437,7 +716,7 @@ async function getById(params) {
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel htmlFor="stock">Stock</InputLabel>
+            <InputLabel shrink htmlFor="stock">Stock</InputLabel>
             <OutlinedInput
               id="stock"
               type="number"
@@ -458,7 +737,17 @@ async function getById(params) {
                 }
                 label="Send updates to Customers"
               />
+              <Stack direction={"row"} sx={{mt:2,gap:1 }}>
+              <SecondaryButton
+                variant="outlined"
+                startIcon={<ArrowBackIcon />}
+                onClick={() => navigate("/admin/products")}
+              >
+                Back
+              </SecondaryButton>
           <PrimaryButton type="submit">Update</PrimaryButton>
+
+              </Stack>
         </Stack>
       </Box>
     </Box>
