@@ -635,7 +635,7 @@ export default function OrderRecordsDashboard() {
         setLoading(true);
         let response = await api.get("/orders/admin/getAllOrders"); // Update URL if needed
         console.log("Backend fetch response:", response.data)
-        setOrders(parseData(response.data || []));
+        setOrders(parseData(response.data.orders || []));
         setLoading(false);
       } catch (err) {
         console.error("Backend fetch error, falling back to demo data:", err);
@@ -647,7 +647,7 @@ export default function OrderRecordsDashboard() {
     
 
     // --- DEMO WORKING BUFFER ---
-    setOrders(parseData(localMockOrders));
+   // setOrders(parseData(localMockOrders));
     setLoading(false);
   }, []);
 
