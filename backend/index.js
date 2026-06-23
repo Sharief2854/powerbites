@@ -33,6 +33,7 @@ const productfiltering = require('./Routes/ProductfilteringRoutes/Productfilteri
 
 let dealsRouter = require('./Routes/Deals/dealsRoute');
 
+const companyRouter = require("./Routes/CompanyDetails/CompanyDetails");
 
 
 
@@ -62,6 +63,8 @@ app.use("/products",ProductRouter)
 app.use("/banner",bannerRouter)
 app.use("/offer",offerRouter)
 
+
+app.use("/company", companyRouter);
 
 app.use("/orders",ordersRouter)
 
