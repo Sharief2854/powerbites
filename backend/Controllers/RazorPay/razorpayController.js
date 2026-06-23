@@ -190,7 +190,6 @@ const verifyPayment = async (req, res) => {
             coupon: appliedCouponId || null,
             final_price: finalPrice,
             orderStatus: "order placed",
-            address: addressId,
             shippingAddress: {
                 label: addressDoc.label,
                 street: addressDoc.street,
