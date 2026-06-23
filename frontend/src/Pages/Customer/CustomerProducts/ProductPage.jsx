@@ -159,7 +159,7 @@ export default function ProductPage() {
   //     setLoading(false);
   //   }
   // }
-  
+
 async function checkOutPage() {
   const cartItem = cartItems?.find(
     (item) => item?.product?._id === id
@@ -523,7 +523,7 @@ async function checkOutPage() {
             }}
           >
             ›
-          </IconButton>
+          </IconButton>          
 
           <Box
             sx={{
