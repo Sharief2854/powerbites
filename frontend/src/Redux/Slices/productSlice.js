@@ -15,7 +15,7 @@ const productReducer = createSlice({
       );
     },
     postProducts: (state, action) => {
-      state.products.push(action.payload);
+      state.products.unshift(action.payload);
     },
     updateProduct: (state, action) => {
       state.products = state.products.map((product) => {

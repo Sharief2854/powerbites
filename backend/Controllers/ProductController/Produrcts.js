@@ -42,13 +42,10 @@ async function addProduct(req, res) {
             `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
         );
 
-        console.log("Category from request:", req.body.category);
-
         const category = await ProductCategoryModel.findOne({
-            name: req.body.category.trim()
+            _id: req.body.category.trim()
         });
 
-        console.log("Found Category:", category);
 
         if (!category) {
             return res.status(400).json({
@@ -65,15 +62,16 @@ async function addProduct(req, res) {
             category: category._id,
             image: imagePaths
         };
-
-        const product = await ProductModel.create(ProductData);
-
-        const productWithCategory = await ProductModel.findById(product._id)
+        const products = await ProductModel.create(ProductData);
+        
+if(req.body.sendUpdates=="on"){
+    sendProductNotification(products)}
+        const Product = await ProductModel.findById(products._id)
             .populate("category", "name");
 
         return res.status(200).json({
             message: "Product added successfully",
-            data: productWithCategory
+            data: Product
         });
 
     } catch (err) {
