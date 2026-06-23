@@ -2,6 +2,7 @@
 
 const express = require("express");
 const router = express.Router();
+const isCustomer = require("../../Middleware/isCustomer");
 const dealsController = require("../../Controllers/Deals/dealsController");
 
 

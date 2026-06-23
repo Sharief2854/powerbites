@@ -1,7 +1,6 @@
 const cartModel = require("../../Model/cartModel");
 const couponModel = require("../../Model/couponModel");
 const ProductModel = require("../../Model/ProductModel");
-const ProductModel = require("../../Model/ProductModel");
 
 async function setCart(req, res) {
     try {
@@ -181,15 +180,81 @@ async function applyCoupon(req, res) {
         }
 
         const couponId = coupon._id;
-        const updatedCartItems = [];
 
-        for (let item of cartItems) {
-            item.coupon = couponId;
-            await item.save();
-            updatedCartItems.push(item);
+        // If cart has more than one item, apply a unified coupon across the cart
+        if (cartItems.length > 1) {
+            // calculate subtotal (considering product-level discounts and quantity)
+            let subtotal = 0;
+            const entries = [];
+            for (const item of cartItems) {
+                const product = item.product;
+                const basePrice = Number(product.price) || 0;
+                const productDiscountPercent = Number(product.discount) || 0;
+                const priceAfterProductDiscount = productDiscountPercent > 0
+                    ? basePrice - (basePrice * productDiscountPercent) / 100
+                    : basePrice;
+                const lineTotal = priceAfterProductDiscount * (item.quantity || 1);
+                subtotal += lineTotal;
+                entries.push({ item, priceAfterProductDiscount, lineTotal });
+            }
+
+            // validate coupon status and min order value
+            if (coupon.status !== "Active") {
+                return res.status(400).json({ message: "Coupon is not active" });
+            }
+            const minOrderValue = Number(coupon.min_order_value) || 0;
+            if (subtotal < minOrderValue) {
+                return res.status(400).json({ message: `Coupon requires minimum order value of ${minOrderValue}` });
+            }
+
+            const couponPercent = Number(coupon.discount) || 0;
+            let totalCouponDiscount = (subtotal * couponPercent) / 100;
+            const maxDiscount = Number(coupon.max_discount);
+            if (!Number.isNaN(maxDiscount)) {
+                totalCouponDiscount = Math.min(totalCouponDiscount, maxDiscount);
+            }
+
+            // apply proportional coupon discount to each cart item and mark unified
+            const updatedCartItems = [];
+            let orderPrice = 0;
+            for (const entry of entries) {
+                const share = subtotal > 0 ? (entry.lineTotal / subtotal) : 0;
+                const couponDiscountAmount = Number((totalCouponDiscount * share).toFixed(2));
+                const finalLineTotal = Math.max(0, entry.lineTotal - couponDiscountAmount);
+
+                const item = entry.item;
+                item.coupon = null; // disable per-item coupon
+                item.isUnified = true;
+                item.unifiedCoupon = couponId;
+                item.cartTotal = finalLineTotal;
+                await item.save();
+
+                updatedCartItems.push({
+                    product: item.product,
+                    quantity: item.quantity,
+                    priceAfterProductDiscount: entry.priceAfterProductDiscount,
+                    couponDiscountAmount,
+                    finalLineTotal
+                });
+
+                orderPrice += finalLineTotal;
+            }
+
+            return res.status(200).json({
+                message: "Unified coupon applied to cart successfully",
+                coupon,
+                products: updatedCartItems,
+                orderPrice
+            });
         }
 
-        
+        // single-item cart: apply coupon per-item as before (use bulk update)
+        await cartModel.updateMany(
+            { customer: req.userId },
+            { $set: { coupon: couponId, isUnified: false, unifiedCoupon: null } }
+        );
+
+        const updatedCartItems = await cartModel.find({ customer: req.userId }).populate("product");
 
         res.status(200).json({
             message: "Coupon applied to cart successfully",
