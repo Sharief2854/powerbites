@@ -132,7 +132,7 @@ async function setQuantity(req, res) {
 async function getCart(req, res) {
     try {
         let userId = req.userId;
-        let cart = await cartModel.find({ customer: userId }).populate("product");
+        let cart = await cartModel.find({ customer: userId }).populate("product coupon");
 
         if (!cart || cart.length === 0) {
             return res.status(400).json({
