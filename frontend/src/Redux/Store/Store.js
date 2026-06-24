@@ -6,6 +6,7 @@ import CustomerEditProfile from "../Slices/CM_ProfileSlice"
 import ReviewSlice from "../Slices/ReviewSlice"
 import OfferSlice from "../Slices/OffserSlice"
 import OrderListSlice from "../Slices/AdminSlice/OrderListSlice"
+import CustomerOrderSlicee from "../Slices/CustomerSlice/CustomerOrderSlice"
 
 
 const store = configureStore({
@@ -17,6 +18,7 @@ const store = configureStore({
         Review: ReviewSlice,
         Offer: OfferSlice,
         orderlist:OrderListSlice,
+        customerOrder:CustomerOrderSlicee,
     }
 })
 

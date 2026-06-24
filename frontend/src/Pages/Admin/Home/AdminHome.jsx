@@ -206,8 +206,22 @@ import {
   Typography,
   TableSortLabel,
   Pagination,
-  Stack
+  Stack,
+  Card,
+  CardContent
 } from '@mui/material';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  BarChart,
+  Bar
+} from "recharts";
 import React, { useEffect, useState } from 'react';
 import api from '../../../api/axiosConfig';
 
@@ -271,11 +285,19 @@ function Overview() {
     { id: '#100220', name: 'Jane Smith', date: '2024-05-15 13:45', status: 'Out for Delivery', amount: '$28.00' },
   ];
 
+  const datachart = [
+  { month: "Jan", sales: 1000 },
+  { month: "Feb", sales: 3050 },
+  { month: "Mar", sales: 2000 },
+  { month: "Apr", sales: 4500 },
+];
+
   useEffect(() => {
     getData();
       console.log("data",data)
 
   }, []);
+
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3 } }}>
@@ -318,10 +340,53 @@ function Overview() {
           </Grid>
         ))}
 
+<Grid size={{sm:12}}>
+  <Card sx={{minWidth:275,boxShadow:3,p:2}}>
+    <CardContent>
+      <Typography> Weekly Visitors</Typography>
+      <ResponsiveContainer width='100%' height={300}>
+        <LineChart data ={datachart}>
+          <CartesianGrid strokeDasharray='3.3' />
+        <XAxis dataKey="month"/>
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line 
+        type="monotoneX"
+        dataKey ="sales"
+        
+        stroke ="#8884d8"
+        />
+        </LineChart>
+      </ResponsiveContainer>
+    </CardContent>
+
+    <CardContent>
+      <Typography> Weekly Visitors</Typography>
+      <ResponsiveContainer width='100%' height={300}>
+        <BarChart data ={datachart}>
+         
+        <XAxis dataKey="month"/>
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar 
+        type="monotoneX"
+        dataKey ="sales"
+        
+        stroke ="#8884d8"
+        />
+        </BarChart>
+      </ResponsiveContainer>
+    </CardContent>
+
+  </Card>
+</Grid>
+
         {/* Orders Table Container Block */}
         <Grid item xs={12}>
           
-          {/* Title Header with Responsive Layout */}
+          {/* Title Header with Responsive Layout
           <Box 
             sx={{ 
               mb: 2, 
@@ -337,7 +402,7 @@ function Overview() {
             <Typography variant="caption" sx={{ color: 'gray', fontStyle: 'italic' }}>
               — What's Happening Orders refers to in the recent pending orders
             </Typography>
-          </Box>
+          </Box> */}
 
           {/* Table container configuration built for all viewports */}
           <TableContainer 
