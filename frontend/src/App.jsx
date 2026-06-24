@@ -35,6 +35,8 @@ import Offers from "./Pages/Admin/Offers/Offers"
 import ReviewOfProducts from "./Pages/Customer/CustomerOrder/ReviewOfProducts";
 import { Reviews } from "@mui/icons-material";
 import CustomerReview from "./Pages/Customer/CustomerProducts/CustomerReview";
+import Coupon from "./Pages/Customer/Cart/Coupon";
+import AdminProductPage from "./Pages/Admin/Products/AdminProductPage";
 
 
 function App() {
@@ -63,6 +65,7 @@ function App() {
         <Route path ="/admin/customers" element={<UserDetails/>}/>
         <Route path="/admin/orders" element ={<OrderRecordsDashboard/>}/>
         <Route path="/admin/products" element={<AdminProducts/>}/>
+        <Route path="/admin/productlist/:id" element={<AdminProductPage/>}/>
         <Route path="/admin/products/updateProduct/:id" element={<UpdateProducts/>}/>
         <Route path="/admin/offers" element={<Offers/>}/>
         </Route>
@@ -75,6 +78,7 @@ function App() {
         <Route path="/customer/products" element={<CustomerProducts/>}/>
         <Route path="/customer/productpage/:id" element={<ProductPage/>}/>
         <Route path="/customer/cart" element={<CustomerCart/>}/>
+        <Route path="/customer/coupon" element={<Coupon/>}/>
         <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
         <Route path ="/customer/editaddress" element={<CustomerEditAddress/>}/>
         <Route path ="/customer/editaddress/:id" element={<CustomerEditAddress/>}/>
