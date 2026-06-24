@@ -103,8 +103,8 @@ export default function CustomerProducts() {
 
   async function addItem(params) {
     setLoading(true);
-    if(item.stock<= 0){
-      enqueueSnackbar('Item out of stock Please try Later',{
+    if(cartItems?.find((i)=>i.product?._id===params)){
+      enqueueSnackbar('Item already in cart',{
         variant:'error'
       })
       return;
