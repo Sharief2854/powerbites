@@ -255,14 +255,13 @@ export default function Coupon({ setOpen, applyCoupon }) {
     p: 2.5,
     borderRadius: "20px",
     background:
-      "linear-gradient(135deg, #b7a3e2 0%, #f1eff7 100%)",
+      "linear-gradient(135deg, #b7a3e2 0%, #3e3d3f 100%)",
     color: "#fff",
     transition: "all .3s ease",
     boxShadow: "0 10px 30px rgba(62,26,137,.25)",
 
     "&:hover": {
       transform: "translateY(-5px)",
-      boxShadow: "0 18px 40px rgba(62,26,137,.4)",
     },
 
     "&::before": {
