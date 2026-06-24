@@ -347,7 +347,6 @@ async function updateOrderStatus(req, res) {
 }
 
 //customer cancelling the order
-
 async function customerCancellingOrder(req, res) {
     try {
         const orderId = req.params.id;
