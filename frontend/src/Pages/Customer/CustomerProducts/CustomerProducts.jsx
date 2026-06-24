@@ -103,12 +103,19 @@ export default function CustomerProducts() {
 
   async function addItem(params) {
     setLoading(true);
-    if(cartItems?.find((i)=>i.product?._id===params)){
-      enqueueSnackbar('Item already in cart',{
-        variant:'error'
-      })
-      return;
-    }
+  //   let caRt=cartItems?.find((i)=>{
+  //     return i.product?._id==params}
+  // )
+  // console.log();
+  
+  //   if(caRt.stock<=0){
+  //     enqueueSnackbar('Item already in cart',{
+  //       variant:'error'
+  //     })
+  //     return;
+  //   }
+  
+    
     try {
       let res = await api.post(`/cart/setCart`, {
         customer: decodeId,
