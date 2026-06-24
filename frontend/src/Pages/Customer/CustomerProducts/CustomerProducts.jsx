@@ -103,7 +103,7 @@ export default function CustomerProducts() {
 
   async function addItem(params) {
     setLoading(true);
-    if(cartItems?.find((i)=>i?.product?._id===params)){
+    if(cartItems?.find((i)=>i.product?._id===params)){
       enqueueSnackbar('Item already in cart',{
         variant:'error'
       })
