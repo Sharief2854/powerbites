@@ -1,6 +1,6 @@
 const express = require("express");
 const ordersModel = require("../../Model/orderModel");
-const {analyticsPeriod,analyticSpecific, topSellingProducts, leastSellingProducts, bestSellingProduct,totalCustomers,totalOrders, totalProductsSold, orderStatusSummary, cancelledOrdersAnalytics} = require("../../Controllers/AnalyticsController/adminAnalytics");
+const {analyticsPeriod,analyticSpecific, topSellingProducts, leastSellingProducts, bestSellingProduct,totalCustomers,totalOrders, totalProductsSold, orderStatusSummary, cancelledOrdersAnalytics, topCustomer} = require("../../Controllers/AnalyticsController/adminAnalytics");
 
 const router = express.Router();
 
@@ -32,6 +32,9 @@ router.get("/orderStatusSummary",orderStatusSummary)
 
 //cancelled orders
 router.get("/cancelledOrdersAnalytics",cancelledOrdersAnalytics)
+
+//getting top customer
+router.get("/topCustomer",topCustomer)
 
 
 
