@@ -25,7 +25,9 @@ const CartSlice = createSlice({
       });
     },
     addValue: (state, action) => {
-      state.cartValue = action.payload;
+      state.cartValue = action.payload.reduce((total,current)=>{
+        return total + current.quantity;
+      },0);
     },
     getItems: (state, action) => {
       state.items = action.payload;

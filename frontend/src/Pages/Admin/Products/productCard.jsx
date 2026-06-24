@@ -55,7 +55,9 @@ export default function ProductCard({ product }) {
     <Grid size={{ xs: 12, sm: 4 }}>
       <Card sx={{ maxWidth: "100%", maxHeight: 390 }}>
         <SnackbarProvider />
-        <CardActionArea>
+        <CardActionArea
+        onClick={()=>navigate(`/admin/productlist/${product?._id}`,{state:product})}
+        >
           <CardMedia
             component="img"
             height="140"
@@ -78,8 +80,8 @@ export default function ProductCard({ product }) {
               <Typography variant="body2" sx={{ color: "text.secondary" }}>
                 ₹{product?.price}
               </Typography>
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                {/* {product.discount}% */}
+              <Typography variant="body2" sx={{ml:1,p:'2px',borderRadius:1, color: "secondary.main",backgroundColor:'primary.main' }}>
+                {product.discount}% off
               </Typography>
             </Stack>
           </CardContent>
