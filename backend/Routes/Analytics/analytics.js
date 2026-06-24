@@ -7,6 +7,7 @@ const router = express.Router();
 //getting products analytics for admin API
 router.get("/analytics/:period",analyticsPeriod);
 
+//getting specific month and year
 router.get("/analyticSpecifc",analyticSpecific)
 
 //getting best sold products per year month and week

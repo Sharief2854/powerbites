@@ -742,4 +742,16 @@ async function topCustomer(req, res) {
 }
 
 
-module.exports = { analyticsPeriod, analyticSpecific, topSellingProducts, leastSellingProducts, bestSellingProduct, totalCustomers, totalOrders, totalProductsSold, orderStatusSummary, cancelledOrdersAnalytics ,topCustomer}
+module.exports = {
+     analyticsPeriod, 
+     analyticSpecific, 
+     topSellingProducts, 
+     leastSellingProducts, 
+     bestSellingProduct, 
+     totalCustomers, 
+     totalOrders, 
+     totalProductsSold, 
+     orderStatusSummary, 
+     cancelledOrdersAnalytics,
+     topCustomer
+    }
