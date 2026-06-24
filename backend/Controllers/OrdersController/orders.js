@@ -3,7 +3,7 @@ const ordersModel = require("../../Model/orderModel");
 async function getOrders(req, res) {
     try {
 
-        let orders = await ordersModel.find({ customer: req.userId }).populate(" address")
+        let orders = await ordersModel.find({ customer: req.userId })
 
         if (!orders) {
             return res.status(400).json({

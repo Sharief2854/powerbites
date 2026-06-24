@@ -83,7 +83,6 @@ function UserDetails() {
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: "#f4f6f8",
         px: { xs: 1.5, sm: 2.5, md: 4 },
         py: { xs: 2, sm: 3, md: 4 },
       }}
@@ -139,7 +138,8 @@ function UserDetails() {
                 startAdornment: (
                   <InputAdornment position="start">
                     <SearchIcon
-                      sx={{ fontSize: { xs: 20, sm: 22 } }}
+                      sx={{ fontSize: { xs: 20, sm: 22 }
+                    }}
                       color="action"
                     />
                   </InputAdornment>
@@ -154,9 +154,15 @@ function UserDetails() {
             onChange={(e) => setVerifyFilter(e.target.value)}
             size="small"
             sx={{
-              minWidth: { xs: "100%", md: 220 },
-              backgroundColor: "#fff",
-              borderRadius: 2,
+               borderRadius: 2,
+              "& .MuiInputBase-root": {
+                fontSize: { xs: "0.9rem", sm: "1rem" },
+                minHeight: { xs: 44, sm: 48 },
+              },
+              "& .MuiInputBase-input": {
+                py: { xs: 1.2, sm: 1.4 },
+              },
+
             }}
           >
             <MenuItem value="all">All Users</MenuItem>

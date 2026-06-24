@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors')
-const ConnectDB = require('./config/ConnectDB');
+const ConnectDB = require('./config/connectDB');
 const RegRouter = require("./Routes/Auth/Registration")
 const ResetRouter = require("./Routes/Auth/ResetPassword")
 const LoginRouter = require("./Routes/Auth/Login")
@@ -11,6 +11,7 @@ const ProductRouter = require("./Routes/Products/ProdutsRouter")
 const isAdmin = require('./MiddleWare/adminAuth');
 const CartRouter = require('./Routes/Cart/cartRouter');
 const bannerRouter = require('./Routes/Banner/bannerRoutes');
+const offerRouter = require('./Routes/Offer/offerRouter');
 const multer = require('multer');
 
 const couponRouter = require('./Routes/Coupon/couponRouter');
@@ -26,6 +27,14 @@ const reviewRouter = require('./Routes/Review/Review');
 const ordersRouter = require('./Routes/Orders/ordersRouter');
 
 const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD');
+const orderStatusRouter = require('./Routes/OrderStatus/orderStatusUpdating');
+const dashboardRouter = require('./Routes/Dashboard/dashboardRoute')
+const productfiltering = require('./Routes/ProductfilteringRoutes/Productfiltering');
+const AnalyticsRouter = require('./Routes/Analytics/analytics')
+
+let dealsRouter = require('./Routes/Deals/dealsRoute');
+
+const companyRouter = require("./Routes/CompanyDetails/CompanyDetails");
 
 
 
@@ -53,18 +62,27 @@ app.use("/crudAdmin",isAdmin,adminRouter)
 app.use("/cart",isCustomer,CartRouter)
 app.use("/products",ProductRouter)
 app.use("/banner",bannerRouter)
+app.use("/offer",offerRouter)
 
-// app.use("/category",productCategoryRouter)
+
+app.use("/company", companyRouter);
+
 app.use("/orders",ordersRouter)
 
 app.use("/coupon",couponRouter)
-app.use("/category",isAdmin,productCategoryRouter)
+app.use("/category",productCategoryRouter)
 app.use("/payment",PaymentRouter)
+app.use("/deals",isAdmin,dealsRouter)
 
 // Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter)
 app.use("/developer",DeveloperRouter)
 app.use("/review",reviewRouter)
+app.use("/orderStatus",orderStatusRouter)
+app.use("/dashboard",isAdmin,dashboardRouter)
+app.use("/product",productfiltering)
+app.use("/dashboard",dashboardRouter)
+app.use("/adminAnalytics",AnalyticsRouter)
 
 
 

@@ -21,6 +21,7 @@ const productSchema = new mongoose.Schema(
             required: true,
             default: 0,
         },
+
         image: {
             type: [String],
             required: true,
@@ -34,18 +35,18 @@ const productSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
-        offer:{
-            type:String
-        },
+      
+       
         isAvailable: {
             type: Boolean,
             default: true,
         },
-         discount_Price:{
-         type:Number,
-        default:0
+        category: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "ProductCategory"
+        }
     },
-    },
+    
    
     {
         timestamps: true,

@@ -37,7 +37,7 @@ const pages = [
   },
   {
     name: "Cart",
-    path: "/customer/cart/:id",
+    path: "/customer/cart",
     icon: <ShoppingCartIcon fontSize="small" />,
   },
   {

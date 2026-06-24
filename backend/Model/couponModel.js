@@ -7,7 +7,8 @@ const mongoose = require('mongoose');
 const couponSchema = new mongoose.Schema({
     code: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -16,7 +17,7 @@ const couponSchema = new mongoose.Schema({
     },
     min_order_value: {
         type: Number,
-        default: 0
+        required: true
     },
     
     title: {
@@ -27,10 +28,7 @@ const couponSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    offer: {
-        type: String,
-        
-    },
+   
     discount: {
         type: Number,
         required: true

@@ -21,7 +21,6 @@ async function verifyEmail(req, res) {
             })
 
         }
-
          let existingOtp = await otpModel.findOne({ email: body.email })
 
         if (existingOtp) {
@@ -30,7 +29,6 @@ async function verifyEmail(req, res) {
 
             })
         }
-
         let info = await emailSender( body)
 
 
@@ -50,7 +48,6 @@ async function verifyEmail(req, res) {
                 message: "Something went wrong"
             })
         }
-
 
         res.status(200).json({
             message:"otp sent successfully",
