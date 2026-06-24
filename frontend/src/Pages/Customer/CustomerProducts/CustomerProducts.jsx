@@ -103,6 +103,12 @@ export default function CustomerProducts() {
 
   async function addItem(params) {
     setLoading(true);
+    if(item.stock<= 0){
+      enqueueSnackbar('Item out of stock Please try Later',{
+        variant:'error'
+      })
+      return;
+    }
     try {
       let res = await api.post(`/cart/setCart`, {
         customer: decodeId,
@@ -289,11 +295,11 @@ export default function CustomerProducts() {
               >
                 <MenuItem value="">All Categories</MenuItem>
 
-                {category.map((cat) => (
+                {category.map((cat) => (cat.isAvailable && (
                   <MenuItem key={cat._id} value={cat._id}>
                     {cat.name}
                   </MenuItem>
-                ))}
+                )))}
               </Select>
             </FormControl>
             <FormControl sx={{ minWidth: 160, borderRadius: "16px" }}>
@@ -401,6 +407,7 @@ export default function CustomerProducts() {
             display: "flex",
             alignItems: "center",
             gap: 2,
+            backgroundColor:'#35b247'
           }}
         >
           <Typography fontWeight={600}>Added to cart ✓</Typography>

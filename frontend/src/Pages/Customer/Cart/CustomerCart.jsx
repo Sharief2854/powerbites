@@ -49,14 +49,17 @@ import {
 import PaymentButton from "../Payments/PaymentButton";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import Coupon from "./Coupon";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 
-const pulseAnimation = {
-  "@keyframes pulse": {
+const cartCardAnimation = {
+  "@keyframes cartCard": {
     "0%": { transform: "scale(1)" },
     "50%": { transform: "scale(1.03)" },
     "100%": { transform: "scale(1)" },
   },
 };
+
 const style1 = {
   position: "absolute",
   top: "50%",
@@ -231,6 +234,9 @@ function AddressModal({
       onClose();
     } catch (err) {
       console.error("Address save error:", err.response?.data || err.message);
+      enqueueSnackbar(`${err.response?.data || err.message}`, {
+        variant: "error",
+      });
       setMessage({ text: "Failed to save address", type: "error" });
     } finally {
       setSavingAddress(false);
@@ -241,7 +247,6 @@ function AddressModal({
 
   return (
     <React.Fragment>
-      <SnackbarProvider />
       {open ? (
         ""
       ) : (
@@ -255,6 +260,7 @@ function AddressModal({
         aria-labelledby="child-modal-title"
         aria-describedby="child-modal-description"
       >
+        <SnackbarProvider />
         <Box sx={{ ...style1, width: 400 }}>
           <form onSubmit={handleSaveAddress}>
             <Typography
@@ -412,10 +418,10 @@ export default function CustomerCart() {
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [selectedCartId, setSelectedCartId] = useState(null);
   const [addressModalOpen, setAddressModalOpen] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [removeId, setRemoveId] = useState("");
 
   const [openCoupon, setOpenCoupon] = useState(false);
 
@@ -437,27 +443,39 @@ export default function CustomerCart() {
   // const discountedPrice =
   //   product?.price - (product?.price * product?.discount) / 100;
 
+  const handleRemoveCoupon = () => {
+    setCoupon(null);
+
+    setCouponDiscount(0);
+
+    setCouponCode("");
+  };
   const subtotal = cartItems.reduce((total, item) => {
     const priceInPaise = Math.round(Number(item?.product?.price) * 100);
     return total + priceInPaise * item?.quantity;
   }, 0);
 
-  const shipping = subtotal < 1000 ? "Free" : 0;
+  const couponDiscount =
+    cartItems[0]?.coupon && Math.floor(subtotal/100) >= cartItems[0]?.coupon.min_order_value
+      ? Math.min(
+          (subtotal * cartItems[0]?.coupon.discount) / 100,
+          cartItems[0]?.coupon.max_discount,
+        )
+      : 0;
 
-  const grandTotal = subtotal + shipping;
-  const formatPrice = (amountInPaise) => (amountInPaise / 100).toFixed(2);
-  const confirmDelete = async () => {
-    await deleteCart(selectedCartId);
-
-    setOpenDeleteDialog(false);
-    setSelectedCartId(null);
-  };
-
+      
+      const shipping = subtotal >= 1000 ? 0 : 999;
+      
+      const formatPrice = (amountInPaise) => (amountInPaise / 100).toFixed(2);
+      
+      const grandTotal = (subtotal + shipping ) - (couponDiscount*100);
+      console.log(couponDiscount,formatPrice(subtotal), shipping,grandTotal);
+  
   async function getCoupons() {
     try {
-      let res = await api.get("coupon/getCoupons");
-      setCouponList(res.data.coupons);
-      console.log(res.data.coupons);
+      // let res = await api.get("coupon/getCoupons");
+      // setCouponList(res.data.coupons);
+      // console.log(res.data.coupons);
     } catch (error) {
       console.log(error.message);
     }
@@ -506,9 +524,9 @@ export default function CustomerCart() {
     setLoading(true);
     try {
       let res = await api.get(`/cart/getCart`);
-      dispatch(addValue(res.data.quantity));
+      dispatch(addValue(res.data.cart));
       dispatch(getItems(res.data.cart));
-      console.log(res.data.cart);
+      console.log(res.data);
     } catch (error) {
       // enqueueSnackbar('')
     } finally {
@@ -527,8 +545,6 @@ export default function CustomerCart() {
       const res = await api.post(`/cart/setQuantity/${cartId}`, { quantity });
 
       dispatch(updateCart({ _id: cartId, quantity }));
-
-      console.log(res.data.product);
     } catch (error) {
       console.log(error);
     }
@@ -551,14 +567,20 @@ export default function CustomerCart() {
     }
   }
 
-  async function deleteCart(cartId) {
-    try {
-      const res = await api.delete(`/cart/deleteItem/${cartId}`);
-      dispatch(removeCartItem(cartId));
+  function deleteModal(params) {
+    setOpenDeleteDialog(true);
+    setRemoveId(params);
+  }
 
+  //delete cart
+  async function deleteCart() {
+    try {
+      const res = await api.delete(`/cart/deleteItem/${removeId}`);
+      dispatch(removeCartItem(removeId));
       enqueueSnackbar("Item removed", {
         variant: "success",
       });
+      setOpenDeleteDialog(false);
     } catch (error) {
       enqueueSnackbar("Failed to delete item", {
         variant: "error",
@@ -566,7 +588,6 @@ export default function CustomerCart() {
     }
   }
   //get Customer Address
-
   async function getAddress() {
     try {
       const res = await api.get("/updateCustomerProfile/getAddresses");
@@ -615,9 +636,16 @@ export default function CustomerCart() {
   if (loading) {
     return (
       <Box sx={{ p: 3 }}>
-        <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />
-        <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />
-        <Skeleton variant="rectangular" height={120} />
+        <Grid container>
+          <Grid size={{ xs: 12, sm: 8, md: 8 }}>
+            <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />
+            <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />
+            <Skeleton variant="rectangular" height={120} />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4, md: 4 }}>
+            <Skeleton variant="rectangular" height={200} />
+          </Grid>
+        </Grid>
       </Box>
     );
   }
@@ -697,7 +725,7 @@ export default function CustomerCart() {
             Cancel
           </Button>
 
-          <Button color="error" variant="contained" onClick={confirmDelete}>
+          <Button color="error" variant="contained" onClick={deleteCart}>
             Remove
           </Button>
         </DialogActions>
@@ -883,25 +911,72 @@ export default function CustomerCart() {
                   },
                 }}
               >
-                <Box
-                  component="img"
-                  src={
-                    item?.product?.image?.[0]
-                      ? `${item.product.image[0]
-                          .replace(/\\/g, "/")
-                          .replace(/^\/+/, "")}`
-                      : "/no-image.png"
-                  }
-                  sx={{
-                    width: 90,
-                    height: 90,
-                    borderRadius: 3,
-                    objectFit: "cover",
-                    border: "2px solid rgba(62,26,137,0.08)",
-                    flexShrink: 0,
-                  }}
-                />
+                <Stack>
+                  <Box
+                    component="img"
+                    src={
+                      item?.product?.image?.[0]
+                        ? `${item.product.image[0]
+                            .replace(/\\/g, "/")
+                            .replace(/^\/+/, "")}`
+                        : "/no-image.png"
+                    }
+                    sx={{
+                      width: 90,
+                      height: 90,
+                      borderRadius: 3,
+                      objectFit: "cover",
+                      border: "2px solid rgba(62,26,137,0.08)",
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      border: "1.5px solid rgba(62,26,137,.15)",
+                      width: 90,
+                      borderRadius: 3,
+                      bgcolor: "#fff",
+                      boxShadow: "0 4px 12px rgba(62,26,137,.08)",
+                    }}
+                  >
+                    <IconButton
+                      size="small"
+                      onClick={() =>
+                        item.quantity > 1 &&
+                        handleChange(item._id, item.quantity - 1)
+                      }
+                      sx={{
+                        color: "#3E1A89",
+                        borderRadius: 0,
+                      }}
+                    >
+                      <RemoveIcon />
+                    </IconButton>
 
+                    <Typography
+                      sx={{
+                        minWidth: 22,
+                        textAlign: "center",
+                        fontWeight: 700,
+                        color: "#3E1A89",
+                      }}
+                    >
+                      {item.quantity}
+                    </Typography>
+
+                    <IconButton
+                      size="small"
+                      onClick={() => handleChange(item._id, item.quantity + 1)}
+                      sx={{
+                        color: "#3E1A89",
+                        borderRadius: 0,
+                      }}
+                    >
+                      <AddIcon />
+                    </IconButton>
+                  </Box>
+                </Stack>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography
                     sx={{
@@ -938,7 +1013,7 @@ export default function CustomerCart() {
                   />
                 </Box>
 
-                <Box sx={{ textAlign: "center" }}>
+                {/* <Box sx={{ textAlign: "center" }}>
                   <Typography
                     sx={{
                       fontSize: "0.75rem",
@@ -967,7 +1042,7 @@ export default function CustomerCart() {
                       </MenuItem>
                     ))}
                   </Select>
-                </Box>
+                </Box> */}
 
                 <Box sx={{ textAlign: "center", minWidth: 90 }}>
                   <Typography
@@ -983,7 +1058,7 @@ export default function CustomerCart() {
                   <Typography
                     sx={{
                       fontSize: "1.2rem",
-                      fontWeight: 800,
+                      fontWeight: 600,
                       textDecoration: "line-through",
                       color: "#3E1A89",
                     }}
@@ -1021,7 +1096,7 @@ export default function CustomerCart() {
                       fontSize: "0.75rem",
                       px: 2,
                     }}
-                    onClick={() => deleteCart(item._id)}
+                    onClick={() => deleteModal(item?._id)}
                   >
                     Remove
                   </Button>
@@ -1058,7 +1133,6 @@ export default function CustomerCart() {
               boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.03)",
               position: "relative",
               overflow: "hidden",
-              ...pulseAnimation,
             }}
           >
             <Box
@@ -1092,8 +1166,9 @@ export default function CustomerCart() {
                   }}
                 >
                   <Typography color="text.secondary" variant="body2">
-                    Subtotal
+                    Subtotal ({quantity} items)
                   </Typography>
+
                   <Typography
                     color="text.primary"
                     fontWeight={500}
@@ -1110,18 +1185,23 @@ export default function CustomerCart() {
                     alignItems: "center",
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Typography color="text.secondary" variant="body2">
-                      Shipping
-                    </Typography>
-                  </Box>
+                  <Typography color="text.secondary" variant="body2">
+                    Shipping
+                  </Typography>
+
                   <Chip
                     icon={
-                      <LocalShippingIcon
-                        style={{ fontSize: "14px", color: "#1b5e20" }}
-                      />
+                      formatPrice(subtotal) < 1000 ? (
+                        <LocalShippingIcon
+                          style={{ fontSize: "14px", color: "#1b5e20" }}
+                        />
+                      ) : null
                     }
-                    label={formatPrice(subtotal) < 1000 ? "FREE" : 9}
+                    label={
+                      formatPrice(subtotal) < 1000
+                        ? "FREE"
+                        : `₹${formatPrice(shipping)}`
+                    }
                     size="small"
                     sx={{
                       backgroundColor: "#e8f5e9",
@@ -1130,20 +1210,54 @@ export default function CustomerCart() {
                       fontSize: "0.75rem",
                       borderRadius: "6px",
                       border: "1px solid #c8e6c9",
-                      animation: "pulse 2s infinite ease-in-out",
-                      "& .MuiChip-label": { px: 1 },
                     }}
                   />
                 </Box>
 
-                <Box
-                  sx={{
-                    pt: 1.5,
-                    borderTop: "1px dashed",
-                    borderColor: "divider",
-                  }}
-                />
+                {cartItems[0].coupon && (
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      bgcolor: "#f1f8e9",
+                      border: "1px solid #c5e1a5",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Box>
+                      <Typography
+                        variant="body2"
+                        fontWeight={700}
+                        color="success.main"
+                      >
+                        Coupon Applied: {cartItems[0].coupon.code}
+                      </Typography>
 
+                      <Typography variant="caption" color="text.secondary">
+                        {cartItems[0].coupon.discount}% OFF
+                      </Typography>
+
+                      <Typography
+                        variant="body2"
+                        color="success.main"
+                        fontWeight={600}
+                      >
+                        - ₹{couponDiscount}
+                      </Typography>
+                    </Box>
+
+                    <Button
+                      size="small"
+                      color="error"
+                      variant="outlined"
+                      onClick={handleRemoveCoupon}
+                    >
+                      Remove
+                    </Button>
+                  </Box>
+                )}
                 <Box
                   sx={{
                     display: "flex",
@@ -1161,7 +1275,7 @@ export default function CustomerCart() {
                   <Typography
                     variant="h5"
                     fontWeight={800}
-                    color="success.main"
+                    color="primary.main"
                   >
                     ₹{formatPrice(grandTotal)}
                   </Typography>
@@ -1175,7 +1289,7 @@ export default function CustomerCart() {
                     position: "relative",
                     overflow: "hidden",
                     px: 1,
-                    py: 1.5,
+                    py: 0.5,
                     background: "linear-gradient(145deg, #2c22e3, #3726cf)",
                     boxShadow: `
       inset 0 2px 4px rgba(255,255,255,0.4),
@@ -1189,7 +1303,7 @@ export default function CustomerCart() {
                       top: 4,
                       left: 8,
                       width: "40%",
-                      height: "35%",
+                      height: "25%",
                       background: "rgba(255,255,255,0.45)",
                       borderRadius: "50%",
                       filter: "blur(6px)",
@@ -1212,7 +1326,7 @@ export default function CustomerCart() {
                   >
                     coupon
                   </Typography>
-                </Box>           
+                </Box>
               </Box>
 
               <Box sx={{ mt: 1 }}>
