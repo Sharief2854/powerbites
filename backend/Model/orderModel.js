@@ -82,12 +82,13 @@ const ordersSchema= new mongoose.Schema({
    cancelledAt: {
     type: Date
    },
-
-
-   address:{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:"Address",
-    required:true
+   shippingAddress: {
+      label: { type: String, required: true },
+      street: { type: String, required: true },
+      city: { type: String, required: true },
+      state: { type: String, required: true },
+      pincode: { type: Number, required: true },
+      country: { type: String, required: true }
    }
     
 },
