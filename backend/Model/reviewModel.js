@@ -7,6 +7,11 @@ const reviewSchema = new mongoose.Schema(
         ref: "Product",
         required: true
     },
+    customerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "customers",
+    required: true
+},
 
     orderId: {
         type: mongoose.Schema.Types.ObjectId,

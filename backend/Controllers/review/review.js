@@ -6,7 +6,8 @@ async function getAllReviews(req, res) {
   try {
     const reviews = await ReviewModel.find()
       .populate("productId")
-      .populate("orderId");
+      .populate("orderId")
+      .populate("customerId");
 
     return res.status(200).json({
       success: true,
@@ -22,44 +23,44 @@ async function getAllReviews(req, res) {
   }
 }
 
-async function createReview(req,res){
-    try{
-        
-        const{
+async function createReview(req, res) {
+    try {
+        const {
             productId,
+            customerId,
             orderId,
             review,
             rating
-        }=req.body;
-        console.log(req.body);
+        } = req.body;
 
-        // if(!productId || !orderId || !review || !rating){
-        //     return res.status(400).json({
-        //         success:false,
-        //         message:"All fields are required"
-        //     });
-
-        //     }
-            const reviewData = await ReviewModel.create({
-                productId,
-                orderId,
-                review,
-                rating
+        if (!productId || !customerId || !orderId || !review || !rating) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required"
             });
-            console.log(reviewData);
-            return res.status(201).json({
-                success:true,
-                message:"Review created successfully",
-                data: reviewData
-            });
-
-            }catch(error){
-                return res.status(500).json({
-                    success:false,
-                    message:error.message
-                });
-            }
         }
+
+        const reviewData = await ReviewModel.create({
+            productId,
+            customerId,
+            orderId,
+            review,
+            rating
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "Review stored successfully",
+            data: reviewData
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
         
 
 
