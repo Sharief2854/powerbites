@@ -650,6 +650,96 @@ async function cancelledOrdersAnalytics(req, res) {
     }
 }
 
+//getting top customer
+async function topCustomer(req, res) {
+    try {
+        const { year, month } = req.query;
+        if (!year) {
+            return res.status(400).json({
+                success: false,
+                message: "Year is required"
+            });
+        }
+
+        let startDate;
+        let endDate;
+
+        if (month) {
+            if (month < 1 || month > 12) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Month must be between 1 and 12"
+                });
+            }
+            startDate = new Date(year, month - 1, 1);
+            endDate = new Date(year, month, 1);
+        } else {
+            startDate = new Date(year, 0, 1);
+            endDate = new Date(Number(year) + 1, 0, 1);
+        }
+
+        const topCustomer = await ordersModel.aggregate([
+            {
+                $match: {
+                    createdAt: {
+                        $gte: startDate,
+                        $lt: endDate
+                    },
+                     orderStatus: { $ne: "order cancelled" }
+                }
+            },
+            {
+                $group: {
+                    _id: "$customer",
+                    totalOrders: { $sum: 1 },
+                    totalAmountSpent: { $sum: "$final_price" }
+                }
+            },
+            { $sort: { totalAmountSpent: -1 } },
+            { $limit: 1 },
+            {
+                $lookup: {
+                    from: "users", // The collection name for users
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "customerDetails"
+                }
+            },
+            { $unwind: "$customerDetails" },
+            {
+                $project: {
+                    _id: 0,
+                    customerId: "$_id",
+                    customerName: "$customerDetails.name",
+                    customerEmail: "$customerDetails.email",
+                    totalOrders: 1,
+                    totalAmountSpent: 1
+                }
+            }
+        ]);
+
+        if (topCustomer.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No top customer found for the specified period."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Top customer fetched successfully.",
+            data: topCustomer[0]
+        });
+
+    } catch (error) {
+        console.error("Error fetching top customer:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+}
 
 
 module.exports = { analyticsPeriod, analyticSpecific, topSellingProducts, leastSellingProducts, bestSellingProduct, totalCustomers, totalOrders, totalProductsSold, orderStatusSummary, cancelledOrdersAnalytics }
