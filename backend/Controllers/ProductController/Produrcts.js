@@ -2,7 +2,7 @@ const express = require("express");
 const ProductModel = require("../../Model/ProductModel");
 const sendProductNotification = require("../../Utils/sendProductNotification");
 const ProductCategoryModel = require("../../Model/productCategoryModel");
-
+// const CompanyModel = require("../../Model/CompanyModel")
 async function allProduct(req, res) {
     try {
         const data = await ProductModel.find().populate({ path: "category" }).sort({ createdAt: -1 });
@@ -38,6 +38,7 @@ async function addProduct(req, res) {
             });
         }
 
+
         const imagePaths = req.files.map(file =>
             `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
         );
@@ -45,7 +46,7 @@ async function addProduct(req, res) {
         const category = await ProductCategoryModel.findOne({
             _id: req.body.category.trim()
         });
-
+s
 
         if (!category) {
             return res.status(400).json({
@@ -53,6 +54,18 @@ async function addProduct(req, res) {
             });
         }
 
+
+        // let category = await ProductCategoryModel.findOne({
+        //     name: req.body.category.trim()
+        // });
+
+        // if (!category) {
+        //     category = await ProductCategoryModel.create({
+        //         name: req.body.category.trim()
+        //     });
+        // }
+
+        // const company = await CompanyModel.findOne();
         const ProductData = {
             name: req.body.name,
             description: req.body.description,
@@ -63,9 +76,10 @@ async function addProduct(req, res) {
             image: imagePaths
         };
         const products = await ProductModel.create(ProductData);
-        
-if(req.body.sendUpdates=="on"){
-    sendProductNotification(products)}
+
+        if (req.body.sendUpdates == "on") {
+            await sendProductNotification(products)
+        }
         const Product = await ProductModel.findById(products._id)
             .populate("category", "name");
 
@@ -121,7 +135,7 @@ if(req.body.sendUpdates=="on"){
 async function updateProduct(req, res) {
     try {
         const id = req.params.id;
-        console.log("id",id)
+        console.log("id", id)
         const ProductData = { ...req.body };
         ProductData.existingPhotos = JSON.parse(
             req.body.existingPhotos || "[]"
@@ -233,4 +247,27 @@ async function getProductsByCategory(req, res) {
     }
 }
 
-module.exports = { addProduct, updateProduct, deleteProduct, allProduct, getTotalProducts, getProductsByCategory };
+async function getProductById(req, res) {
+    try {
+        const product = await ProductModel.findById(req.params.id)
+            .populate("category");
+
+        if (!product) {
+            return res.status(404).json({
+                message: "Product not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Product fetched successfully",
+            data: product
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
+module.exports = { addProduct, updateProduct, deleteProduct, allProduct, getTotalProducts, getProductsByCategory, getProductById };
