@@ -217,4 +217,58 @@ const verifyPayment = async (req, res) => {
     }
 };
 
-module.exports = { createOrder, verifyPayment };
+const refundPayment = async (req, res) => {
+    try {
+        const { orderId, amount } = req.body;
+
+        if (!orderId || !amount) {
+            return res.status(400).json({
+                success: false,
+                message: "orderId and amount are required.",
+            });
+        }
+
+        const refundAmount = Number(amount);
+        if (isNaN(refundAmount) || refundAmount <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid refund amount.",
+            });
+        }
+
+        const order = await ordersModel.findById(orderId);
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found." });
+        }
+
+        if (!order.paymentID) {
+            return res.status(400).json({ success: false, message: "Payment ID not found for this order." });
+        }
+
+        if (order.orderStatus === "refunded") {
+            return res.status(400).json({ success: false, message: "This order has already been refunded." });
+        }
+
+        // Initiate refund with Razorpay
+        const refund = await razorpay.payments.refund(order.paymentID, {
+            amount: refundAmount * 100, // Amount in paise
+            speed: "normal", // or "optimum"
+        });
+
+        if (!refund) {
+            return res.status(500).json({ success: false, message: "Refund initiation failed." });
+        }
+
+        // Update order status in your database
+        order.orderStatus = "refunded";
+        await order.save();
+
+        res.json({ success: true, message: "Refund processed successfully.", refund });
+
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+module.exports = { createOrder, verifyPayment, refundPayment };
