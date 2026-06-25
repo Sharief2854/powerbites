@@ -158,6 +158,7 @@ const verifyPayment = async (req, res) => {
 
             orderDetails.push({
                 product: product._id,
+                name: product.name,
                 price: product.price,
                 discount: product.discount || 0,
                 discounted_price: discountedPrice,
