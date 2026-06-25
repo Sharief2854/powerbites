@@ -46,7 +46,7 @@ export default function OrderRecordsDashboardById() {
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
   const rawOrderList = useSelector((state) => state.orderlist?.orderlist || []);
-
+  console.log("rawOrderList :",rawOrderList)
   const triggerSnackbar = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
   };
@@ -118,7 +118,7 @@ export default function OrderRecordsDashboardById() {
       const updatedList = rawOrderList.map(order => 
         order._id === routeOrderId ? { ...order, orderStatus: "order cancelled", cancelledBy: "admin", cancelReason: cancelReasonInput.trim() } : order
       );
-      console.log("Updated List:", updatedList);
+      console.log("cancel List:", updatedList);
       dispatch(getOrder(updatedList));
       setCancelDialogOpen(false);
       triggerSnackbar("Order terminated successfully.", "success");
@@ -149,6 +149,7 @@ export default function OrderRecordsDashboardById() {
         }
         return order;
       });
+
 
       dispatch(getOrder(updatedList));
       triggerSnackbar(STEP_MESSAGES_MAP[targetStatus] || `Status shifted to ${STEP_LABELS_MAP[targetStatus]}`, "success");

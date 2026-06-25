@@ -955,7 +955,7 @@ export default function AdminDashboard() {
         </Grid>
 
         <Grid item xs={12} md={5}>
-          <Card sx={{ borderRadius: '24px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.06)', height: '100%' }}>
+          <Card sx={{ borderRadius: '24px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.06)', height: '100%' ,bgcolor:'skyblue'}}>
             <CardContent sx={{ p: 4, height: '100%', display: 'flex', flexDirection: 'column' }}>
               <Typography variant="h5" fontWeight="700" sx={{ mb: 3 }}>Order Status Distribution</Typography>
               {loading ? (
@@ -972,7 +972,8 @@ export default function AdminDashboard() {
                         cornerRadius: 6,
                         highlightScope: { faded: 'global', highlighted: 'item' }
                       }]} 
-                      height={320} 
+                      
+                      height={250} 
                     />
                   </Box>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2, justifyContent: 'center' }}>
