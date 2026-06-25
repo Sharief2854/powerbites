@@ -592,6 +592,7 @@ export default function OrderRecordsTable() {
         setLoading(true);
         const response = await api.get("/orders/admin/getAllOrders"); 
         const backendOrders = response.data.orders || response.data || [];
+        
         dispatch(getOrder(backendOrders));
       } catch (err) {
         console.error("Backend connection fetch error:", err);

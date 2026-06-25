@@ -38,10 +38,11 @@ import CustomerReview from "./Pages/Customer/CustomerProducts/CustomerReview";
 import Coupon from "./Pages/Customer/Cart/Coupon";
 import AdminProductPage from "./Pages/Admin/Products/AdminProductPage";
 import OrderRecordsDashboardById from "./Pages/Admin/Orders/OrderDetailsById";
-import DynamicAdminDashboard from "./Pages/Admin/Home/adminCharts";
+//import DynamicAdminDashboard from "./Pages/Admin/Home/adminCharts";
 import CompanyInfo from "./Pages/Admin/MyCompany/CompanyInfo";
 import About from "./Pages/Common/About";
 import UpdateInfo from "./Pages/Admin/MyCompany/UpdateInfo";
+import AdminDashboard from "./Pages/Admin/Home/adminCharts";
 
 
 function App() {
@@ -76,7 +77,7 @@ function App() {
         <Route path="/admin/info" element={<CompanyInfo/>}/>
         <Route path="/admin/infoupdate/:id" element={<UpdateInfo/>}/>
         <Route path="/admin/offers" element={<Offers/>}/>
-        <Route path="/admin/Analytics" element={<DynamicAdminDashboard/>}/>
+        <Route path="/admin/Analytics" element={<AdminDashboard/>}/>
         </Route>
 
         <Route path ="/customer" element={<ProtectedRoutes role="customer"><CustomerDashboard/></ProtectedRoutes>}>

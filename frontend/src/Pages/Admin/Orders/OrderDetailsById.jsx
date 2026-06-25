@@ -96,6 +96,7 @@ export default function OrderRecordsDashboardById() {
           setLoading(true);
           const response = await api.get("/orders/admin/getAllOrders"); 
           const backendOrders = response.data.orders || response.data || [];
+          console.log("Backend fetch response:", backendOrders);
           dispatch(getOrder(backendOrders));
         } catch (err) {
           triggerSnackbar("Failed to download historical logistics data.", "error");
@@ -117,6 +118,7 @@ export default function OrderRecordsDashboardById() {
       const updatedList = rawOrderList.map(order => 
         order._id === routeOrderId ? { ...order, orderStatus: "order cancelled", cancelledBy: "admin", cancelReason: cancelReasonInput.trim() } : order
       );
+      console.log("Updated List:", updatedList);
       dispatch(getOrder(updatedList));
       setCancelDialogOpen(false);
       triggerSnackbar("Order terminated successfully.", "success");
