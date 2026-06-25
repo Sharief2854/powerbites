@@ -20,6 +20,7 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
     { text: 'Orders', icon: <ReceiptLongIcon /> },
     { text: 'Customers', icon: <PeopleIcon /> },
     { text: 'Analytics', icon: <BarChartIcon /> },
+    { text: 'charts', icon: <BarChartIcon /> },
     { text: 'Settings', icon: <SettingsIcon /> },
   ];
 

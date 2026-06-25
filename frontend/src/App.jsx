@@ -37,6 +37,8 @@ import { Reviews } from "@mui/icons-material";
 import CustomerReview from "./Pages/Customer/CustomerProducts/CustomerReview";
 import Coupon from "./Pages/Customer/Cart/Coupon";
 import AdminProductPage from "./Pages/Admin/Products/AdminProductPage";
+import OrderRecordsDashboardById from "./Pages/Admin/Orders/OrderDetailsById";
+import DynamicAdminDashboard from "./Pages/Admin/Home/adminCharts";
 
 
 function App() {
@@ -64,10 +66,12 @@ function App() {
         <Route path ="/admin/overview" element={<Overview/>}/>
         <Route path ="/admin/customers" element={<UserDetails/>}/>
         <Route path="/admin/orders" element ={<OrderRecordsDashboard/>}/>
+        <Route path="/admin/orders/:id" element ={<OrderRecordsDashboardById/>}/>
         <Route path="/admin/products" element={<AdminProducts/>}/>
         <Route path="/admin/productlist/:id" element={<AdminProductPage/>}/>
         <Route path="/admin/products/updateProduct/:id" element={<UpdateProducts/>}/>
         <Route path="/admin/offers" element={<Offers/>}/>
+        <Route path="/admin/charts" element={<DynamicAdminDashboard/>}/>
         </Route>
 
         <Route path ="/customer" element={<ProtectedRoutes role="customer"><CustomerDashboard/></ProtectedRoutes>}>
