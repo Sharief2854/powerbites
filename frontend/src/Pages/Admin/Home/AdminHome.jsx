@@ -318,22 +318,30 @@ function Overview() {
             <Paper
               elevation={0}
               sx={{
+                // p: 3,
+                // borderRadius: '16px',
+                // border: '1px solid #E5E7EB',
+                // bgcolor: '#ffffff',
+                // transition: 'all 0.3s ease',
+                // '&:hover': {
+                //   transform: 'translateY(-4px)',
+                //   boxShadow: '0 12px 25px rgba(0,0,0,0.06)',
+                // },
+                borderLeft: '5px solid #2196f3', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' ,
                 p: 3,
                 borderRadius: '16px',
-                border: '1px solid #E5E7EB',
+                //border: '1px solid #E5E7EB',
                 bgcolor: '#ffffff',
                 transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: '0 12px 25px rgba(0,0,0,0.06)',
-                },
+                
               }}
             >
+               
               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, mb: 1 }}>
                 {card.title}
               </Typography>
               <Typography variant="h4" sx={{ fontWeight: 700, color: '#1E1154', fontSize: { xs: '1.75rem', sm: '2.25rem' } }}>
-                {card.val ?? 10}
+                ₹{card.val ?? 10}
               </Typography>
               
             </Paper>
