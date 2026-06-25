@@ -83,13 +83,13 @@ export default function CustomerProducts() {
         </Box>
 
 
-              <Grid container spacing={{ xs: 2, sm: 3 }} alignItems="stretch">
+              <Grid container spacing={{ xs: 2, sm: 3 }} alignItems="center">
         {filterProducts.length > 0 ? (
           filterProducts.map((product) => (  
-        <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={product._id}>
         <Card
           sx={{
-            width: "400px",
+            width: "100%",
             height:"500px",
             display: "flex",
             flexDirection: "column",
