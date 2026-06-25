@@ -122,7 +122,7 @@ export default function ProductPage() {
   const handleDecrease = async () => {
   if (quantity === 1) {
     const cartProduct = itemsCart.find(
-      (i) => i?.product?._id === id
+      (i) => i?.product === id
     );
 
     if (cartProduct) {
@@ -152,7 +152,7 @@ export default function ProductPage() {
     try {
       setLoading(true);
       let cartProduct = itemsCart.find((i)=>{
-        return i?.product?._id==id?true:false
+        return i?.product==id?true:false
       })
       console.log(cartProduct);
       

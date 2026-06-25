@@ -24,6 +24,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Sidebar from './SideNavBar';
 import { Outlet, useNavigate } from 'react-router-dom';
+import CompanyInfo from '../MyCompany/CompanyInfo';
 
 export default function DashboardLayout() {
   const navigate = useNavigate()

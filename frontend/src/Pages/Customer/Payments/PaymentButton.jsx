@@ -3,23 +3,14 @@ import api from "../../../api/axiosConfig";
 import { PrimaryButton } from "../../../Components/Common/Buttons";
 import { replace, useNavigate } from "react-router-dom";
 import { addValue, clearCart, getItems } from "../../../Redux/Slices/CM_CartSlice";
-async function getCart() {
-  setLoading(true);
-  try {
-    let res = await api.get(`/cart/getCart`);
-    dispatch(addValue(res.data.quantity));
-    dispatch(getItems(res.data.cart));
-  } catch (error) {
-    // enqueueSnackbar('')
-  } finally {
-    setLoading(false);
-  }
-}
+import { useDispatch } from "react-redux";
+
 export default function PaymentButton({ amount, addressId, coupon_id = "" }) {
   if (!addressId) {
     return;
   }
   const navigate = useNavigate()
+  const dispatch = useDispatch();
   const handlePayment = async () => {
     try {
       const { data: order } = await api.post("/payment/create-order", {
@@ -50,7 +41,8 @@ export default function PaymentButton({ amount, addressId, coupon_id = "" }) {
               enqueueSnackbar("Verification failed", { variant: "error" });
             }
           } catch (error) {
-            console.error("API Error", error.message);s
+            console.log(error.message);
+            console.error("API Error", error.message);
             enqueueSnackbar("Error verifying payment", { variant: "error" });
           }
         },
@@ -68,6 +60,7 @@ export default function PaymentButton({ amount, addressId, coupon_id = "" }) {
       razorpay.open();
     } catch (error) {
       console.error(error);
+      console.log(error.message);
 
       enqueueSnackbar("Unable to initiate payment", {
         variant: "error",
