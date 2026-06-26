@@ -10,10 +10,10 @@ import {
   TextField,
   Divider,
 } from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import React, { useEffect, useState } from 'react'
 import api from '../../../api/axiosConfig';
-import { enqueueSnackbar, SnackbarProvider } from "notistack";
-
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 const inputStyles = {
   '& .MuiOutlinedInput-root': {
@@ -39,8 +39,6 @@ const inputStyles = {
     },
   },
 };
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-
 export default function CouponForm({ getCoupons }) {
 const [coupons, setCoupons] = useState([]);
 const [loading, setLoading] = useState(false);
@@ -63,28 +61,29 @@ const incomingCouponData = location.state?.coupon;
 console.log(incomingCouponData);
 
 
+const navigate = useNavigate();
 
-useEffect(() => {
+// useEffect(() => {
   
-  const targetCoupon = incomingCouponData || editingCoupon;
+//   const targetCoupon = incomingCouponData || editingCoupon;
   
-  if (targetCoupon) {
-    setEditingCoupon(targetCoupon);
-    setCouponForm({
-      title: targetCoupon.title || "",
-      description: targetCoupon.description || "",
-      code: targetCoupon.code || "",
-      discount: targetCoupon.discount || "",
-      max_discount: targetCoupon.max_discount || "",
-      min_order_value: targetCoupon.min_order_value || "",
-      starts_At: targetCoupon.starts_At ? targetCoupon.starts_At.slice(0, 16) : "",
-      ends_At: targetCoupon.ends_At ? targetCoupon.ends_At.slice(0, 16) : "",
-    });
-  } else {
-    setCouponForm(initialCoupon);
-    setEditingCoupon(null);
-  }
-}, [incomingCouponData]);
+//   if (targetCoupon) {
+//     setEditingCoupon(targetCoupon);
+//     setCouponForm({
+//       title: targetCoupon.title || "",
+//       description: targetCoupon.description || "",
+//       code: targetCoupon.code || "",
+//       discount: targetCoupon.discount || "",
+//       max_discount: targetCoupon.max_discount || "",
+//       min_order_value: targetCoupon.min_order_value || "",
+//       starts_At: targetCoupon.starts_At ? targetCoupon.starts_At.slice(0, 16) : "",
+//       ends_At: targetCoupon.ends_At ? targetCoupon.ends_At.slice(0, 16) : "",
+//     });
+//   } else {
+//     setCouponForm(initialCoupon);
+//     setEditingCoupon(null);
+//   }
+// }, [incomingCouponData]);
 
 
 const handleSubmit = async () => {
@@ -94,13 +93,16 @@ const handleSubmit = async () => {
         `/coupon/updateCoupon/${editingCoupon._id}`,
         couponForm
       );
-      enqueueSnackbar("Coupon updated successfully", { variant: 'success' });
+      // enqueueSnackbar("Coupon updated successfully", { variant: 'success' });
     } else {
-      await api.post(
+      let res = await api.post(
         "/coupon/setCoupon",
         couponForm
       );
-      enqueueSnackbar("Coupon created successfully", { variant: 'success' });
+      console.log(res.data);
+      
+      navigate('/admin/coupon')
+      // enqueueSnackbar("Coupon created successfully", { variant: 'success' });
     }
 
     setCouponForm(initialCoupon);
@@ -163,7 +165,7 @@ return (
       overflow: "hidden",
     }}
   >
-    {/* Navigation Controller Anchor */}
+    
     <Button
       onClick={() => window.history.back()}
       sx={{
@@ -200,7 +202,6 @@ return (
       {editingCoupon ? "Modify Coupon Parameters" : "Provision New Coupon"}
     </Typography>
 
-    {/* Replacement Box Component Layer omitting native nested Grid rules */}
     <Box
       sx={{
         display: "grid",
@@ -208,7 +209,7 @@ return (
         gap: 4,
       }}
     >
-      {/* LEFT SECTION PANELS */}
+      
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 3 }}>
           <TextField
@@ -247,7 +248,6 @@ return (
         />
       </Box>
 
-      {/* RIGHT SECTION PANELS */}
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         <TextField
           fullWidth
@@ -267,29 +267,50 @@ return (
           sx={inputStyles}
         />
 
-        <TextField
-          fullWidth
-          type="datetime-local"
-          label="Starts At"
-          InputLabelProps={{ shrink: true }}
-          value={couponForm.starts_At}
-          onChange={(e) => setCouponForm({ ...couponForm, starts_At: e.target.value })}
-          sx={inputStyles}
-        />
+<FormControl fullWidth sx={inputStyles}>
+  <InputLabel shrink sx={{ color: "#3E1A89" }}>
+    Starts At
+  </InputLabel>
 
-        <TextField
-          fullWidth
-          type="datetime-local"
-          label="Ends At"
-          InputLabelProps={{ shrink: true }}
-          value={couponForm.ends_At}
-          onChange={(e) => setCouponForm({ ...couponForm, ends_At: e.target.value })}
-          sx={inputStyles}
-        />
+  <OutlinedInput
+    type="datetime-local"
+    value={couponForm.starts_At}
+    onChange={(e) =>
+      setCouponForm({ ...couponForm, starts_At: e.target.value })
+    }
+    label="Starts At"
+    sx={{
+      color: "#3E1A89",
+      "& input": {
+        padding: "14px",
+      },
+    }}
+  />
+</FormControl>
+
+<FormControl fullWidth sx={inputStyles}>
+  <InputLabel shrink sx={{ color: "#3E1A89" }}>
+    Rnds At
+  </InputLabel>
+
+  <OutlinedInput
+    type="datetime-local"
+    value={couponForm.starts_At}
+    onChange={(e) =>
+      setCouponForm({ ...couponForm, starts_At: e.target.value })
+    }
+    label="Starts At"
+    sx={{
+      color: "#3E1A89",
+      "& input": {
+        padding: "14px",
+      },
+    }}
+  />
+</FormControl>
       </Box>
     </Box>
 
-    {/* ACTIONS CONTROLLER BASE */}
     <Stack
       direction={{ xs: "column", sm: "row-reverse" }}
       spacing={2}
@@ -314,7 +335,7 @@ return (
           },
         }}
       >
-        {editingCoupon ? "Update Coupon Info" : "Publish Coupon"}
+        {editingCoupon ? "Update Coupon" : "Publish Coupon"}
       </Button>
 
       {editingCoupon && (

@@ -1,4 +1,3 @@
-import { enqueueSnackbar, SnackbarProvider } from 'notistack';
 import {
   Box,
   Card,
@@ -36,17 +35,24 @@ export default function AllCoupon() {
   }
 };
 
+
 const deleteCoupon = async (id) => {
   try {
     await api.delete(`/coupon/deleteCoupon/${id}`);
 
-    enqueueSnackbar("Coupon deleted",{variant:'success'});
-
     getCoupons();
-  } catch (err) {
-    enqueueSnackbar(err?.response?.data?.message,{variant:'error'});
+  } catch (err) { enqueueSnackbar(err?.response?.data?.message,{variant:'error'});
   }
 };
+const statusUpdate = async (id, status) => {
+  try {
+    await api.put(`/coupon/couponStatus/${id}`, { status });
+
+    setCoupons(p=>p.map((i)=>i._id===id?{...i,status}:i));
+  }
+  catch(err){
+
+  }}
 
 
 useEffect(() => {
@@ -226,7 +232,7 @@ useEffect(() => {
                 <Button
                   fullWidth
                   variant={isActive ? "contained" : "outlined"}
-                  onClick={() => handleStatus(coupon._id)}
+                  onClick={() => statusUpdate(coupon._id, isActive ? "inActive" : "Active")}
                   sx={{
                     borderRadius: '10px',
                     textTransform: 'none',
