@@ -378,9 +378,11 @@ async function customerCancellingOrder(req, res) {
         const originalStatus = order.orderStatus;
 
         // prevent cancellation after shipping
-        if (["order shipped", "order delivered"].includes(order.orderStatus)) {
+        const hasBeenShipped = order.historyStatuses?.some(s => ["order shipped", "order delivered"].includes(s.toLowerCase()));
+
+        if (hasBeenShipped) {
             return res.status(400).json({
-                message: "Order cannot be cancelled at this stage"
+                message: "Order cannot be cancelled as it has already been processed for shipping."
             });
         }
 
@@ -397,10 +399,10 @@ async function customerCancellingOrder(req, res) {
         }
 
         let refund = null;
-        if (refundAmount > 0) {
+        if (refundAmount > 0 && order.paymentID) { // Check for paymentID before attempting refund
             try {
                 refund = await razorpay.payments.refund(order.paymentID, {
-                    amount: refundAmount * 100, // Amount in paise
+                    amount: Math.round(refundAmount * 100), // Amount in paise (must be an integer)
                     speed: "normal",
                     notes: {
                         reason: `Customer cancellation: ${reason}`,
@@ -425,7 +427,8 @@ async function customerCancellingOrder(req, res) {
                     cancelledAt: new Date(),
                     refundId: refund ? refund.id : null,
                     refundAmount: refundAmount,
-                    cancellationFee: cancellationFee
+                    cancellationFee: cancellationFee,
+                    $push: { historyStatuses: "order cancelled" } // Add to history
                 }
             }
         );
@@ -547,6 +550,9 @@ async function customerCancellingOrder(req, res) {
             html
         });
 
+        // Emit a socket event for real-time update
+        getIo().emit("orderUpdate", updatedOrder);
+
         res.json({
             message: "Order cancelled successfully. A refund has been initiated.",
             order: updatedOrder,
@@ -602,7 +608,7 @@ async function cancelOrderByAdmin(req, res) {
         if (refundAmount > 0 && order.paymentID) {
             try {
                 refund = await razorpay.payments.refund(order.paymentID, {
-                    amount: refundAmount * 100, // Amount in paise
+                    amount: Math.round(refundAmount * 100), // Amount in paise (must be an integer)
                     speed: "normal",
                     notes: {
                         reason: `Admin cancellation: ${reason}`,
@@ -769,6 +775,9 @@ async function cancelOrderByAdmin(req, res) {
             });
         }
 
+        // Emit a socket event for real-time update
+        getIo().emit("orderUpdate", updatedOrder);
+
         return res.status(200).json({
             message: "Order cancelled by admin and email sent successfully",
             order: updatedOrder,
@@ -791,4 +800,4 @@ async function cancelOrderByAdmin(req, res) {
 
 
 
-module.exports = { updateOrderStatus, customerCancellingOrder, cancelOrderByAdmin }
+module.exports = { updateOrderStatus, customerCancellingOrder, cancelOrderByAdmin };
