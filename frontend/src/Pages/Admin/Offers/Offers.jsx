@@ -40,6 +40,7 @@ import {
   deleteOffer as deleteOfferAction,
   updateOffer as updateOfferAction,
 } from "../../../Redux/Slices/OffserSlice";
+import OfferPreviewBanner from "./AllBanners";
 
 const backgroundOptions = [
   {
@@ -104,68 +105,195 @@ const backgroundOptions = [
   },
 ];
 
-function ThemeSelectorRow({ selectedBg, setSelectedBg }) {
+function ThemeSelectorRow({
+  selectedBg,
+  setSelectedBg,
+  selectedCoupon,
+  coupons,
+  handleCouponSelect,
+}) {
   return (
     <Box>
-      <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 1.5 }}>
-        Select Theme
-      </Typography>
+      <Box>
+        <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 1.5 }}>
+          Select Theme
+        </Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "repeat(2, 1fr)",
+              sm: "repeat(3, 1fr)",
+              md: "repeat(4, 1fr)",
+            },
+            gap: 2,
+          }}
+        >
+          {backgroundOptions.map((item) => {
+            const active = selectedBg?.id === item.id;
 
-      <Box
-        sx={{
-          display: "flex",
-          gap: 1.5,
-          pb: 1,
-          pr: 1,
-          scrollBehavior: "smooth",
-          "&::-webkit-scrollbar": { height: 6 },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor: "#cbd5e1",
-            borderRadius: 999,
-          },
+            return (
+              <Card
+                key={item.id}
+                onClick={() => setSelectedBg(item)}
+                sx={{
+                  cursor: "pointer",
+                  borderRadius: 3,
+                  background: item.bg,
+                  color: item.textColor,
+                  border: active
+                    ? `3px solid ${item.borderColor}`
+                    : "1px solid #e5e7eb",
+                  transition: "all 0.25s ease",
+                  overflow: "hidden",
+                  minHeight: 80,
+                }}
+              >
+                <CardContent>
+                  <Typography
+                    fontWeight={800}
+                    sx={{
+                      wordBreak: "break-word",
+                      textAlign: "center",
+                    }}
+                  >
+                    {item.name}
+                  </Typography>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </Box>
+      </Box>
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="subtitle1" fontWeight={800} mb={2}>
+          Available Coupons
+        </Typography>
+
+        <Grid container spacing={2}>
+          {coupons?.map((coupon) => {
+            const selected = selectedCoupon === coupon?._id;
+            return (
+              <Grid item xs={12} sm={6} md={4} key={coupon?._id}>
+                <Card
+  onClick={() => handleCouponSelect(coupon?._id)}
+  sx={{
+    cursor: "pointer",
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: 4,
+    border: selected ? "2px solid #3E1A89" : "1px solid rgba(62,26,137,0.15)",
+    background: "#fff",
+    transition: "all 0.25s ease",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "start",
+
+    boxShadow: selected
+      ? "0 15px 40px rgba(62,26,137,0.25)"
+      : "0 8px 25px rgba(62,26,137,0.08)",
+    transition: "all 0.25s ease",
+    "&:hover": {
+      boxShadow: "0 18px 45px rgba(62,26,137,0.18)",
+      transform: "translateY(-2px)",
+    },
+
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "40%",
+      background:
+        "linear-gradient(180deg, rgba(62,26,137,0.15), rgba(255,255,255,0))",
+      pointerEvents: "none",
+    },
+
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      inset: 0,
+      borderRadius: "inherit",
+      boxShadow: selected
+        ? "inset 0 0 0 1px rgba(62,26,137,0.4)"
+        : "none",
+      pointerEvents: "none",
+    },
+  }}
+>
+  <CardContent
+    sx={{
+      position: "relative",
+      zIndex: 1,
+      py: 3,
+    }}
+  >
+    <Typography
+      fontWeight={800}
+      sx={{
+        fontSize: "1.1rem",
+        color: "#3E1A89",
+        letterSpacing: 0.5,
+      }}
+    >
+      {coupon?.title}
+    </Typography>
+
+    <Typography
+      mt={1.5}
+      sx={{
+        fontSize: "0.9rem",
+        color: "#3E1A89",
+      }}
+    >
+      Code:{" "}
+      <strong
+        style={{
+          color: "#3E1A89",
+          padding: "2px 8px",
+          borderRadius: "6px",
+          fontWeight: 700,
         }}
       >
-        {backgroundOptions.map((item) => {
-          const active = selectedBg.id === item.id;
+        {coupon?.code}
+      </strong>
+    </Typography>
 
-          return (
-            <Card
-              key={item.id}
-              onClick={() => setSelectedBg(item)}
-              sx={{
-                minWidth: { xs: 130, sm: 150, md: 160 },
-                cursor: "pointer",
-                borderRadius: 3,
-                background: item.bg,
-                color: item.textColor,
-                border: active
-                  ? `3px solid ${item.borderColor}`
-                  : "1px solid #e5e7eb",
-                transform: active ? "translateY(-3px)" : "translateY(0)",
-                boxShadow: active
-                  ? "0 12px 24px rgba(0,0,0,0.14)"
-                  : "0 6px 14px rgba(15,23,42,0.06)",
-                transition: "all 0.25s ease",
-                flexShrink: 0,
-              }}
-            >
-              <CardContent sx={{ py: 1.8, px: 1.5 }}>
-                <Typography
-                  fontWeight={800}
-                  fontSize={{ xs: "0.82rem", sm: "0.95rem" }}
-                >
-                  {item.name}
-                </Typography>
-              </CardContent>
-            </Card>
-          );
-        })}
+    <Typography
+      mt={2}
+      sx={{
+        fontWeight: 400,
+        color: "#3E1A89",
+      }}
+    >
+      {coupon?.discount}% OFF
+    </Typography>
+
+    {coupon?.max_discount && (
+      <Typography
+        mt={1}
+        sx={{
+          fontSize: "0.85rem",
+          color: "#3E1A89",
+          opacity: 0.8,
+        }}
+      >
+        Max Savings: ₹{coupon?.max_discount}
+      </Typography>
+    )}
+  </CardContent>
+</Card>
+              </Grid>
+            );
+          })}
+        </Grid>
       </Box>
     </Box>
   );
 }
 
-function AutoCarousel({
+export function AutoCarousel({
   images = [],
   editable = false,
   existingImages = [],
@@ -185,26 +313,23 @@ function AutoCarousel({
   }, [images.length]);
 
   useEffect(() => {
-  setCurrent(0);
-}, [editable, existingImages.length, images.length]);
+    setCurrent(0);
+  }, [editable, existingImages.length, images.length]);
 
   if (!images.length) {
     return (
       <Box
-        sx={{
-          width: "100%",
-          height: { xs: 240, sm: 300, md: 320 },
-          borderRadius: 4,
-          bgcolor: "rgba(255,255,255,0.92)",
-          display: "flex",
-          alignItems: "center",
+        sx={{width: { xs: "100%", sm: 240 }, 
+        height: { xs: 240, sm: 300 },
+        display: 'flex',
+        alignItems: 'center',
           justifyContent: "center",
           textAlign: "center",
           px: 3,
           boxShadow: "0 14px 35px rgba(0,0,0,0.18)",
         }}
       >
-        <Typography color="text.secondary" fontWeight={700}>
+        <Typography color="text.secondary" fontWeight={700} sx={{color:'#fff',fontSize:30}}>
           Upload images to preview the banner
         </Typography>
       </Box>
@@ -301,168 +426,6 @@ function AutoCarousel({
   );
 }
 
-function OfferPreviewBanner({
-  offer,
-  actions,
-  editable = false,
-  existingImages = [],
-  onRemoveExistingImage = () => {},
-  onRemoveNewImage = () => {},
-}) {
-  const selectedBg =
-    backgroundOptions.find((item) => item.name === offer.background) ||
-    backgroundOptions[0];
-
-  const images = Array.isArray(offer?.images) ? offer.images : [];
-
-  return (
-    <Paper
-      elevation={0}
-      sx={{
-        width: "100%",
-        overflow: "hidden",
-        background: selectedBg.bg,
-        boxShadow: "0 12px 35px rgba(0,0,0,0.10)",
-        mt: 0,
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", md: "row" },
-          alignItems: "center",
-          justifyContent: "space-between",
-          minHeight: { xs: "auto", md: 360 },
-        }}
-      >
-        <Box
-          sx={{
-            flex: 1,
-            width: "100%",
-            px: { xs: 3, sm: 5, md: 7 },
-            py: { xs: 4, sm: 5, md: 4 },
-            textAlign: { xs: "center", md: "left" },
-          }}
-        >
-          <Stack
-            direction="row"
-            spacing={1}
-            flexWrap="wrap"
-            justifyContent={{ xs: "center", md: "flex-start" }}
-            sx={{ mb: 2 }}
-          >
-            <Chip
-              icon={
-                <LocalOfferIcon
-                  sx={{ color: `${selectedBg.chipColor} !important` }}
-                />
-              }
-              label={offer?.status || "inactive"}
-              sx={{
-                bgcolor: selectedBg.chipBg,
-                color: selectedBg.chipColor,
-                fontWeight: 700,
-              }}
-            />
-            <Chip
-              label={offer?.background || selectedBg.name}
-              sx={{
-                bgcolor: selectedBg.chipBg,
-                color: selectedBg.chipColor,
-                fontWeight: 700,
-              }}
-            />
-          </Stack>
-
-          <Typography
-            sx={{
-              fontSize: { xs: "2rem", sm: "2.6rem", md: "3.4rem" },
-              fontWeight: 800,
-              color: selectedBg.textColor,
-              lineHeight: 1.1,
-              mb: 1,
-            }}
-          >
-            {offer?.title || "Special Offer Title"}
-          </Typography>
-
-          <Typography
-            sx={{
-              fontSize: { xs: "1.2rem", sm: "1.7rem", md: "2rem" },
-              fontWeight: 700,
-              color: selectedBg.subTextColor,
-              mb: 3,
-            }}
-          >
-            {offer?.description || "Offer description will appear here."}
-          </Typography>
-
-          <Box
-            sx={{
-              display: "inline-block",
-              backgroundColor: selectedBg.offerBg,
-              color: selectedBg.offerText,
-              px: { xs: 2.5, sm: 3.5, md: 4 },
-              py: { xs: 1.5, sm: 2, md: 2.2 },
-              borderRadius: 3,
-              boxShadow: "0 10px 25px rgba(0,0,0,0.18)",
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: { xs: "1.4rem", sm: "1.9rem", md: "2rem" },
-                fontWeight: 800,
-                lineHeight: 1.1,
-              }}
-            >
-              Use Code: {offer?.code || "SAVE20"}
-            </Typography>
-          </Box>
-
-          {actions && (
-            <Stack
-              direction="row"
-              spacing={1.5}
-              flexWrap="wrap"
-              justifyContent={{ xs: "center", md: "flex-start" }}
-              sx={{ mt: 3 }}
-            >
-              {actions}
-            </Stack>
-          )}
-        </Box>
-
-        <Box
-          sx={{
-            flex: 1,
-            width: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            px: { xs: 2, sm: 3, md: 4 },
-            pb: { xs: 4, md: 0 },
-          }}
-        >
-          <Box
-            sx={{
-              width: "100%",
-              maxWidth: { xs: "100%", sm: 420, md: 500 },
-            }}
-          >
-            <AutoCarousel
-              images={images}
-              editable={editable}
-              existingImages={existingImages}
-              onRemoveExistingImage={onRemoveExistingImage}
-              onRemoveNewImage={onRemoveNewImage}
-            />
-          </Box>
-        </Box>
-      </Box>
-    </Paper>
-  );
-}
-
 export default function Offers() {
   const theme = useTheme();
   const fullScreenDialog = useMediaQuery(theme.breakpoints.down("md"));
@@ -484,8 +447,19 @@ export default function Offers() {
   const [editId, setEditId] = useState(null);
   const [existingImages, setExistingImages] = useState([]);
   const [newImages, setNewImages] = useState([]);
-   const [openDelete, setOpenDelete] = useState(false);
-    const [selectedUserId, setSelectedUserId] = useState(null);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+  const [coupons, setCoupons] = useState([]);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState("");
+  const [banners,setBanners] = useState([]);
+
+
+  const handleCouponSelect = (couponId) => {
+    setSelectedCoupon((prev) => (prev === couponId ? null : couponId));
+  };
 
   const [toast, setToast] = useState({
     open: false,
@@ -528,6 +502,7 @@ export default function Offers() {
 
       const res = await api.get("/offer/getOffers");
       const fetchedOffers = res?.data?.offers || res?.data?.data || [];
+
       dispatch(getOffer(fetchedOffers));
     } catch (error) {
       console.error("GET ERROR:", error?.response?.data || error.message);
@@ -538,8 +513,42 @@ export default function Offers() {
     }
   };
 
+  const fetchCoupons = async () => {
+    try {
+      setLoading(true);
+      setErrorText("");
+
+      const res = await api.get("/coupon/getCoupons");
+      const fetchedCoupons = res?.data?.coupons || res?.data?.data || [];
+      setCoupons(fetchedCoupons);
+    } catch (error) {
+      setErrorText(error?.response?.data?.message || "Failed to load coupons");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchBanners = async () => {
+    try {
+      setLoading(true);
+      setErrorText("");
+
+      const res = await api.get("/banner/allBanners");
+      const fetchedB = res?.data?.banners || res?.data?.data || [];
+      console.log(fetchedB);
+      
+      setBanners(fetchedB);
+    } catch (error) {
+      setErrorText(error?.response?.data?.message || "Failed to load coupons");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchOffers();
+    fetchCoupons();
+    fetchBanners();
   }, []);
 
   const resetCreateForm = () => {
@@ -565,7 +574,7 @@ export default function Offers() {
 
   const handleCreateImages = (e) => {
     const files = Array.from(e.target.files || []).filter((file) =>
-      file.type.startsWith("image/")
+      file.type.startsWith("image/"),
     );
 
     const merged = [...images, ...files].slice(0, 5);
@@ -602,7 +611,7 @@ export default function Offers() {
       formData.append("code", code);
       formData.append("status", status);
       formData.append("background", selectedBg.name);
-
+      formData.append("coupon", selectedCoupon);
       images.forEach((file) => {
         formData.append("file", file);
       });
@@ -624,7 +633,7 @@ export default function Offers() {
       console.error("CREATE ERROR:", error?.response?.data || error.message);
       showToast(
         error?.response?.data?.message || "Failed to create offer",
-        "error"
+        "error",
       );
     } finally {
       setLoading(false);
@@ -642,7 +651,7 @@ export default function Offers() {
       console.error("DELETE ERROR:", error?.response?.data || error.message);
       showToast(
         error?.response?.data?.message || "Failed to delete offer",
-        "error"
+        "error",
       );
     } finally {
       setLoading(false);
@@ -657,7 +666,7 @@ export default function Offers() {
     setStatus((offer.status || "inactive").toLowerCase());
     setSelectedBg(
       backgroundOptions.find((bg) => bg.name === offer.background) ||
-        backgroundOptions[0]
+        backgroundOptions[0],
     );
     setExistingImages(Array.isArray(offer.image) ? offer.image : []);
     setNewImages([]);
@@ -666,7 +675,7 @@ export default function Offers() {
 
   const handleEditImageChange = (e) => {
     const files = Array.from(e.target.files || []).filter((file) =>
-      file.type.startsWith("image/")
+      file.type.startsWith("image/"),
     );
 
     const total = existingImages.length + newImages.length + files.length;
@@ -688,57 +697,57 @@ export default function Offers() {
   const removeEditNewImage = (index) => {
     setNewImages((prev) => prev.filter((_, i) => i !== index));
   };
-const handleUpdateOffer = async () => {
-  if (!title || !description || !code) {
-    showToast("Please fill title, description and code", "error");
-    return;
-  }
-
-  if (existingImages.length + newImages.length === 0) {
-    showToast("At least one image is required", "error");
-    return;
-  }
-
-  try {
-    setLoading(true);
-
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("code", code);
-    formData.append("status", status);
-    formData.append("background", selectedBg.name);
-    formData.append("existingImages", JSON.stringify(existingImages));
-
-    newImages.forEach((file) => {
-      formData.append("file", file);
-    });
-
-    const res = await api.put(`/offer/updateOffer/${editId}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-
-    const updatedOffer = res?.data?.offer;
-
-    if (updatedOffer) {
-      dispatch(updateOfferAction(updatedOffer));
+  const handleUpdateOffer = async () => {
+    if (!title || !description || !code) {
+      showToast("Please fill title, description and code", "error");
+      return;
     }
 
-    resetEditForm();
-    showToast("Offer updated successfully");
-    await fetchOffers();
-  } catch (error) {
-    console.error("UPDATE ERROR:", error?.response?.data || error.message);
-    showToast(
-      error?.response?.data?.message || "Failed to update offer",
-      "error"
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+    if (existingImages.length + newImages.length === 0) {
+      showToast("At least one image is required", "error");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("code", code);
+      formData.append("status", status);
+      formData.append("background", selectedBg.name);
+      formData.append("existingImages", JSON.stringify(existingImages));
+
+      newImages.forEach((file) => {
+        formData.append("file", file);
+      });
+
+      const res = await api.put(`/offer/updateOffer/${editId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const updatedOffer = res?.data?.offer;
+
+      if (updatedOffer) {
+        dispatch(updateOfferAction(updatedOffer));
+      }
+
+      resetEditForm();
+      showToast("Offer updated successfully");
+      await fetchOffers();
+    } catch (error) {
+      console.error("UPDATE ERROR:", error?.response?.data || error.message);
+      showToast(
+        error?.response?.data?.message || "Failed to update offer",
+        "error",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleStatusToggle = async (offer) => {
     const nextStatus = offer.status === "active" ? "inactive" : "active";
 
@@ -761,7 +770,34 @@ const handleUpdateOffer = async () => {
       console.error("STATUS ERROR:", error?.response?.data || error.message);
       showToast(
         error?.response?.data?.message || "Failed to update status",
-        "error"
+        "error",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleBannerStatus = async (offer) => {
+    const nextStatus = offer.status === "active" ? "inactive" : "active";
+
+    try {
+      setLoading(true);
+
+      const res = await api.put(`/banner/bannerStatus/${offer._id}`, {
+        status: nextStatus,
+      });
+
+      const updatedOffer = res?.data?.offer || res?.data?.status;
+      await fetchBanners();
+      // if (updatedOffer) {
+      //   dispatch(updateOfferAction(updatedOffer));
+      // }
+
+      showToast("Status updated successfully");
+    } catch (error) {
+      console.error("STATUS ERROR:", error?.response?.data || error.message);
+      showToast(
+        error?.response?.data?.message || "Failed to update status",
+        "error",
       );
     } finally {
       setLoading(false);
@@ -793,7 +829,6 @@ const handleUpdateOffer = async () => {
           Offer Banner Management
         </Typography>
 
-
         {!!errorText && (
           <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>
             {errorText}
@@ -801,7 +836,7 @@ const handleUpdateOffer = async () => {
         )}
 
         <Grid container spacing={3} alignItems="flex-start">
-          <Grid item xs={12} lg={5}>
+          <Grid size={{ xs: 12, }}>
             <Paper
               elevation={0}
               sx={{
@@ -819,6 +854,9 @@ const handleUpdateOffer = async () => {
                 <ThemeSelectorRow
                   selectedBg={selectedBg}
                   setSelectedBg={setSelectedBg}
+                  selectedCoupon={selectedCoupon}
+                  coupons={coupons}
+                  handleCouponSelect={handleCouponSelect}
                 />
 
                 <Divider />
@@ -839,23 +877,23 @@ const handleUpdateOffer = async () => {
                   onChange={(e) => setDescription(e.target.value)}
                 />
 
-              <TextField
-  fullWidth
-  label="Offer Code"
-  value={code}
-  onChange={(e) => {
-    const value = e.target.value
-      .toUpperCase()
-      .replace(/\s+/g, "");
-    setCode(value);
-  }}
-  inputProps={{
-    maxLength: 20,
-    style: { textTransform: "uppercase" },
-    pattern: "\\S+",
-  }}
-  helperText="Only uppercase letters/numbers, no spaces allowed"
-/>
+                <TextField
+                  fullWidth
+                  label="Offer Code"
+                  value={code}
+                  onChange={(e) => {
+                    const value = e.target.value
+                      .toUpperCase()
+                      .replace(/\s+/g, "");
+                    setCode(value);
+                  }}
+                  inputProps={{
+                    maxLength: 20,
+                    style: { textTransform: "uppercase" },
+                    pattern: "\\S+",
+                  }}
+                  helperText="Only uppercase letters/numbers, no spaces allowed"
+                />
 
                 <FormControl fullWidth>
                   <InputLabel>Status</InputLabel>
@@ -901,14 +939,14 @@ const handleUpdateOffer = async () => {
             </Paper>
           </Grid>
 
-          <Grid item xs={12} lg={7}>
+          <Grid size={{ xs: 12 }} >
             <Box
               sx={{
-                position: { lg: "sticky" },
-                top: { lg: 24 },
+
               }}
             >
               <OfferPreviewBanner
+                backgroundOptions={backgroundOptions}
                 offer={createPreviewOffer}
                 editable
                 existingImages={[]}
@@ -922,13 +960,14 @@ const handleUpdateOffer = async () => {
         <Divider sx={{ my: 5 }} />
 
         <Typography variant="h5" fontWeight={900} sx={{ mb: 3 }}>
-          Saved Offers
+          Saved Offers & Banners
         </Typography>
 
         <Stack spacing={4}>
           {offers.length > 0 ? (
             offers.map((offer) => (
               <OfferPreviewBanner
+                backgroundOptions={backgroundOptions}
                 key={offer._id}
                 offer={{
                   title: offer.title,
@@ -953,9 +992,9 @@ const handleUpdateOffer = async () => {
                       variant="outlined"
                       color="error"
                       startIcon={<DeleteOutlineIcon />}
-                      onClick={() =>{
-                        setSelectedUserId(offer._id)
-                        setOpenDelete(true)
+                      onClick={() => {
+                        setSelectedUserId(offer._id);
+                        setOpenDelete(true);
                       }}
                       sx={{ borderRadius: 2.5, textTransform: "none" }}
                     >
@@ -972,7 +1011,9 @@ const handleUpdateOffer = async () => {
                         border: "1px solid rgba(255,255,255,0.35)",
                       }}
                     >
-                      {offer.status === "active" ? "Set Inactive" : "Set Active"}
+                      {offer.status === "active"
+                        ? "Set Inactive"
+                        : "Set Active"}
                     </Button>
                   </>
                 }
@@ -997,6 +1038,80 @@ const handleUpdateOffer = async () => {
               </Typography>
             </Paper>
           )}
+          {banners.length > 0 ? (
+            banners?.map((offer) => (
+              <OfferPreviewBanner
+                backgroundOptions={backgroundOptions}
+                key={offer._id}
+                offer={{
+                  title: offer?.title,
+                  description: offer?.description,
+                  code: offer?.code,
+                  status: offer?.status,
+                  background: offer?.background,
+                  images: Array.isArray(offer?.image) ? offer?.image : [],
+                }}
+                actions={
+                  <>
+                    <Button
+                      variant="contained"
+                      startIcon={<EditIcon />}
+                      onClick={() => handleOpenEdit(offer)}
+                      sx={{ borderRadius: 2.5, textTransform: "none" }}
+                    >
+                      Edit
+                    </Button>
+
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={<DeleteOutlineIcon />}
+                      onClick={() => {
+                        setSelectedUserId(offer?._id);
+                        setOpenDelete(true);
+                      }}
+                      sx={{ borderRadius: 2.5, textTransform: "none" }}
+                    >
+                      Delete
+                    </Button>
+
+                    <Button
+                      variant="text"
+                      onClick={() => handleBannerStatus(offer)}
+                      sx={{
+                        borderRadius: 2.5,
+                        textTransform: "none",
+                        color: "#fff",
+                        border: "1px solid rgba(255,255,255,0.35)",
+                      }}
+                    >
+                      {offer?.status === "active"
+                        ? "Set Inactive"
+                        : "Set Active"}
+                    </Button>
+                  </>
+                }
+              />
+            ))
+          ) : (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 5,
+                borderRadius: 4,
+                textAlign: "center",
+                border: "1px solid #e7e9f0",
+                bgcolor: "#fff",
+              }}
+            >
+              <Typography variant="h6" fontWeight={800} sx={{ mb: 1 }}>
+                {loading ? "Loading offers..." : "No Banners yet"}
+              </Typography>
+              <Typography color="text.secondary">
+                Create your first banner to display it here.
+              </Typography>
+            </Paper>
+          )}
         </Stack>
 
         <Dialog
@@ -1015,6 +1130,9 @@ const handleUpdateOffer = async () => {
                   <ThemeSelectorRow
                     selectedBg={selectedBg}
                     setSelectedBg={setSelectedBg}
+                    selectedCoupon={selectedCoupon}
+                    coupons={coupons}
+                    handleCouponSelect={handleCouponSelect}
                   />
 
                   <TextField
@@ -1075,35 +1193,42 @@ const handleUpdateOffer = async () => {
                 </Stack>
               </Grid>
 
-            <Grid item xs={12} md={8}>
-  <OfferPreviewBanner
-    offer={editPreviewOffer}
-    editable
-    existingImages={existingImages}
-    onRemoveExistingImage={removeExistingImage}
-    onRemoveNewImage={removeEditNewImage}
-  />
+              <Grid item xs={12} md={8}>
+                <OfferPreviewBanner
+                  offer={editPreviewOffer}
+                  editable
+                  existingImages={existingImages}
+                  onRemoveExistingImage={removeExistingImage}
+                  onRemoveNewImage={removeEditNewImage}
+                />
 
-  {[...existingImages, ...editPreviewUrls].length > 0 && (
-    <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 2 }}>
-      {[...existingImages, ...editPreviewUrls].map((img, index) => (
-        <Box
-          key={index}
-          component="img"
-          src={img}
-          alt={`preview-${index}`}
-          sx={{
-            width: 72,
-            height: 72,
-            objectFit: "cover",
-            borderRadius: 2,
-            border: "1px solid #e5e7eb",
-          }}
-        />
-      ))}
-    </Stack>
-  )}
-</Grid>
+                {[...existingImages, ...editPreviewUrls].length > 0 && (
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    flexWrap="wrap"
+                    sx={{ mt: 2 }}
+                  >
+                    {[...existingImages, ...editPreviewUrls].map(
+                      (img, index) => (
+                        <Box
+                          key={index}
+                          component="img"
+                          src={img}
+                          alt={`preview-${index}`}
+                          sx={{
+                            width: 72,
+                            height: 72,
+                            objectFit: "cover",
+                            borderRadius: 2,
+                            border: "1px solid #e5e7eb",
+                          }}
+                        />
+                      ),
+                    )}
+                  </Stack>
+                )}
+              </Grid>
             </Grid>
           </DialogContent>
 
@@ -1118,34 +1243,34 @@ const handleUpdateOffer = async () => {
             </Button>
           </DialogActions>
         </Dialog>
-         <Dialog
-                open={openDelete}
-                onClose={() => setOpenDelete(false)}
-                fullScreen={fullScreenDialog}
-                fullWidth
-                maxWidth="xs"
-              >
-                <DialogTitle>Delete Offer?</DialogTitle>
-                <DialogContent>
-                  <DialogContentText>
-                    Are you sure you want to delete this offser? This action cannot be
-                    undone.
-                  </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={() => setOpenDelete(false)}>Cancel</Button>
-                  <Button
-                    color="error"
-                    variant="contained"
-                    onClick={() => {
-                      handleDeleteOffer(selectedUserId)
-                      setOpenDelete(false)
-                    }}
-                  >
-                    Yes, Delete
-                  </Button>
-                </DialogActions>
-              </Dialog>
+        <Dialog
+          open={openDelete}
+          onClose={() => setOpenDelete(false)}
+          fullScreen={fullScreenDialog}
+          fullWidth
+          maxWidth="xs"
+        >
+          <DialogTitle>Delete Offer?</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to delete this offser? This action cannot be
+              undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDelete(false)}>Cancel</Button>
+            <Button
+              color="error"
+              variant="contained"
+              onClick={() => {
+                handleDeleteOffer(selectedUserId);
+                setOpenDelete(false);
+              }}
+            >
+              Yes, Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         <Snackbar
           open={toast.open}

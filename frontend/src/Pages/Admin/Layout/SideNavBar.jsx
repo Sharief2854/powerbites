@@ -9,7 +9,6 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
-
 const drawerWidth = 260;
 const collapsedWidth = 80;
 
@@ -20,6 +19,9 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
     { text: 'Orders', icon: <ReceiptLongIcon /> },
     { text: 'Customers', icon: <PeopleIcon /> },
     { text: 'Analytics', icon: <BarChartIcon /> },
+    { text: 'Info', icon: <BarChartIcon /> },
+    { text: 'Coupons', icon: <BarChartIcon /> },
+    { text: 'Offers', icon: <SettingsIcon /> },
     { text: 'Settings', icon: <SettingsIcon /> },
   ];
 

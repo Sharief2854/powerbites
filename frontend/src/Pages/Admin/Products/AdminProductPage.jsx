@@ -11,10 +11,11 @@ import {
 } from "@mui/material";
 import { SnackbarProvider } from "notistack";
 import React, { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import api from "../../../api/axiosConfig";
 import Rating from "@mui/material/Rating";
 import StarIcon from "@mui/icons-material/Star";
+import { PrimaryButton } from "../../../Components/Common/Buttons";
 
 const labels = {
   0.5: "Useless",
@@ -42,7 +43,8 @@ export default function AdminProductPage() {
   const [product, setProduct] = useState([]);
 
   const { id } = useParams();
-
+  const navigate = useNavigate();
+  
   const ratingValue = Math.round((product?.rating || 0) * 2) / 2;
 
   const getItemData = async () => {
@@ -53,6 +55,7 @@ export default function AdminProductPage() {
       console.log(error.message);
     }
   };
+  
 
   useEffect(() => {
     getItemData();
@@ -73,6 +76,11 @@ export default function AdminProductPage() {
         >
           Product Details
         </Typography>
+        <PrimaryButton onClick={()=>navigate(`/admin/updateProduct/${id}`)}
+        sx={{position:'absolute',top:0,right:0,m:1}}
+        >
+          Update
+        </PrimaryButton>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 7 }}>
             <ImageList

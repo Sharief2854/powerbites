@@ -63,7 +63,7 @@ const ordersSchema= new mongoose.Schema({
     // changes: ensure default is one of the enum values
    orderStatus:{
     type:String,
-    enum:["order placed","preparing order", "order shipped", 
+    enum:["order placed","preparing order", "order shipped", "refunded",
         "order delivered", "order cancelled"],
     default:"order placed"
 
@@ -81,6 +81,19 @@ const ordersSchema= new mongoose.Schema({
 
    cancelledAt: {
     type: Date
+   },
+
+   refundId: {
+    type: String
+   },
+
+   refundAmount: {
+    type: Number
+   },
+
+   cancellationFee: {
+    type: Number,
+    default: 0
    },
    shippingAddress: {
       label: { type: String, required: true },
