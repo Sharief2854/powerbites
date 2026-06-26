@@ -610,11 +610,9 @@ function OrderList() {
     }
 
     try {
-      const response = await api.delete(`/orderStatus/customerCancelling/${orderToCancel}`, {
-        data: { reason: cancelReason } // Sending cancel reason payload
-      });
+      const response = await api.post(`/orderStatus/customerCancelling/${orderToCancel}`, { reason: cancelReason });
 
-      if (response.status === 200 || response.status === 204) {
+      if (response.status === 200) {
         // Optimistic UI state adjustment: update client side directly instead of firing fetchOrders()
         const updatedOrdersList = orders.map((o) => {
           if (o._id === orderToCancel) {
