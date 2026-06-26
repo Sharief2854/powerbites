@@ -29,7 +29,14 @@ async function getOrders(req, res) {
 
 async function getAllOrders(req, res) {
     try {
-        let orders = await ordersModel.find().populate("customer", "name email").populate("coupon");
+        let orders = await ordersModel.find().populate("customer", "name email").populate({
+            path: "products.product",
+            select: "name price",
+            model: "Product",
+            populate: {
+                path: "coupon",
+            }
+        });
 
         if (!orders) {
             return res.status(400).json({
