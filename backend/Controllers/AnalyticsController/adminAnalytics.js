@@ -39,10 +39,10 @@ async function analyticsPeriod(req, res) {
 
         const totalRevenue = orders.reduce((sum, order) => {
             return sum + (order.final_price || 0);
+
         }, 0);
 
         const customerSet = new Set();
-
         orders.forEach(order => {
             if (order.customer) {
                 customerSet.add(order.customer.toString());

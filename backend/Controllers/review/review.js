@@ -1,13 +1,13 @@
 const mongoose = require("mongoose");
-
+const userModel = require("../../Model/userModel")
 const ReviewModel = require("../../Model/reviewModel");
 
 async function getAllReviews(req, res) {
   try {
     const reviews = await ReviewModel.find()
       .populate("productId")
-      .populate("orderId");
-
+      // .populate("orderId");
+     .populate("userId", "name ");
     return res.status(200).json({
       success: true,
       count: reviews.length,
@@ -24,10 +24,13 @@ async function getAllReviews(req, res) {
 
 async function createReview(req,res){
     try{
-        
+        const userId = req.userId
+
+        // const getusers = await userModel.find()
         const{
             productId,
             orderId,
+         
             review,
             rating
         }=req.body;
@@ -43,6 +46,7 @@ async function createReview(req,res){
             const reviewData = await ReviewModel.create({
                 productId,
                 orderId,
+                userId,
                 review,
                 rating
             });

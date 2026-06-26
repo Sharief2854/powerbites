@@ -11,8 +11,13 @@ const reviewSchema = new mongoose.Schema(
     orderId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "orders",
-        required: true
+        required: false
     },
+     userId:{
+            type:mongoose.Schema.Types.ObjectId,    
+            ref:"users",
+            required:true
+        },
 
     review: {
         type: String,
