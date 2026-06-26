@@ -29,8 +29,23 @@ import CustomerProfile from "./Pages/Customer/Profile/CustomerProfiles";
 import CustomerEditProfile from "./Pages/Customer/Profile/CustomerEditProfile";
 import CustomerEditAddress from "./Pages/Customer/Profile/CustomerEditAddress";
 import EmailVerify from "./Pages/Common/EmailVerify";
+import OrderRecordsDashboard from "./Pages/Admin/Orders/OrderDetails";
+
 import Offers from "./Pages/Admin/Offers/Offers"
 import ReviewOfProducts from "./Pages/Customer/CustomerOrder/ReviewOfProducts";
+import { Reviews } from "@mui/icons-material";
+import CustomerReview from "./Pages/Customer/CustomerProducts/CustomerReview";
+import Coupon from "./Pages/Customer/Cart/Coupon";
+import AdminProductPage from "./Pages/Admin/Products/AdminProductPage";
+import OrderRecordsDashboardById from "./Pages/Admin/Orders/OrderDetailsById";
+//import DynamicAdminDashboard from "./Pages/Admin/Home/adminCharts";
+import CompanyInfo from "./Pages/Admin/MyCompany/CompanyInfo";
+import About from "./Pages/Common/About";
+import UpdateInfo from "./Pages/Admin/MyCompany/UpdateInfo";
+import Coupons from "./Pages/Admin/CouponAdmin/CouponAdmin";
+import CouponForm from "./Pages/Admin/CouponAdmin/CouponForm";
+import AllCoupon from "./Pages/Admin/CouponAdmin/CouponAdmin";
+import AdminDashboard from "./Pages/Admin/Home/adminCharts";
 
 
 function App() {
@@ -45,7 +60,7 @@ function App() {
         <Route path ="/verify-email" element={<EmailVerify/>}/>
         <Route path ="/verify-otp" element={<VerifyOtp/>}/>
         <Route path ="/login" element={<Login/>}/>
-        
+        <Route path ="/about" element={<About/>}/>
         <Route path ="/forget" element={<ForgotPassword/>}/>
         <Route path ="/forget/forgetverifyOtp" element={<ForgotVerifyOtp/>}/>
         <Route path ="/forget/forgetverifyOtp/resetpassword" element={<ResetPassword/>}/>
@@ -57,9 +72,17 @@ function App() {
         <Route index element={<Overview/>}/>
         <Route path ="/admin/overview" element={<Overview/>}/>
         <Route path ="/admin/customers" element={<UserDetails/>}/>
+        <Route path="/admin/orders" element ={<OrderRecordsDashboard/>}/>
+        <Route path="/admin/orders/:id" element ={<OrderRecordsDashboardById/>}/>
         <Route path="/admin/products" element={<AdminProducts/>}/>
+        <Route path="/admin/productlist/:id" element={<AdminProductPage/>}/>
         <Route path="/admin/products/updateProduct/:id" element={<UpdateProducts/>}/>
+        <Route path="/admin/info" element={<CompanyInfo/>}/>
+        <Route path="/admin/infoupdate/:id" element={<UpdateInfo/>}/>
+        <Route path="/admin/coupons" element={<AllCoupon/>}/>
+        <Route path="/admin/handlecoupon/:id" element={<CouponForm/>}/>
         <Route path="/admin/offers" element={<Offers/>}/>
+        <Route path="/admin/Analytics" element={<AdminDashboard/>}/>
         </Route>
 
         <Route path ="/customer" element={<ProtectedRoutes role="customer"><CustomerDashboard/></ProtectedRoutes>}>
@@ -67,16 +90,18 @@ function App() {
          <Route path ="/customer/home" element={<Home/>}/>
         <Route path="/customer/users" element={<UserDetails/>}/>
         <Route path="/customer/profile" element={<CustomerProfile/>}/>
+        <Route path ="/customer/about" element={<About/>}/>
         <Route path="/customer/products" element={<CustomerProducts/>}/>
         <Route path="/customer/productpage/:id" element={<ProductPage/>}/>
         <Route path="/customer/cart" element={<CustomerCart/>}/>
+        <Route path="/customer/coupon" element={<Coupon/>}/>
         <Route path ="/customer/editprofile" element={<CustomerEditProfile/>}/>
         <Route path ="/customer/editaddress" element={<CustomerEditAddress/>}/>
         <Route path ="/customer/editaddress/:id" element={<CustomerEditAddress/>}/>
         <Route path ="/customer/orderlist" element={<OrderList/>}/>
         <Route path ="/customer/reviews/:id" element={<ReviewOfProducts/>}/>
         </Route>
-
+        {/* <Route path="/review" element={<CustomerReview/>} /> */}
       </Routes>
             
       </BrowserRouter>

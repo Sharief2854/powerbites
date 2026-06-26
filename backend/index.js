@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors')
-const ConnectDB = require('./config/ConnectDB');
+const ConnectDB = require('./config/connectDB');
 const RegRouter = require("./Routes/Auth/Registration")
 const ResetRouter = require("./Routes/Auth/ResetPassword")
 const LoginRouter = require("./Routes/Auth/Login")
@@ -29,9 +29,12 @@ const ordersRouter = require('./Routes/Orders/ordersRouter');
 const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD');
 const orderStatusRouter = require('./Routes/OrderStatus/orderStatusUpdating');
 const dashboardRouter = require('./Routes/Dashboard/dashboardRoute')
-const productfiltering = require('./Routes/ProductfilteringRoutes/Productfiltering')
-const adminToamin = require("./Routes/AdminToadmin/adminToadminCurd")
-const CompanyDetails = require("./Routes/Company/CompanyRouter")
+const productfiltering = require('./Routes/ProductfilteringRoutes/Productfiltering');
+const AnalyticsRouter = require('./Routes/Analytics/analytics')
+const adminToamin = require ("./Routes/AdminToadmin/adminToadminCurd")
+let dealsRouter = require('./Routes/Deals/dealsRoute');
+const CompanyDetails =require("./Routes/CompanyDetails/CompanyDetails")
+const companyRouter = require("./Routes/CompanyDetails/CompanyDetails");
 
 
 
@@ -63,11 +66,14 @@ app.use("/offer",offerRouter)
 
 app.use("/adminToadmin",isAdmin,adminToamin)
 
+app.use("/company", companyRouter);
+
 app.use("/orders",ordersRouter)
 
 app.use("/coupon",couponRouter)
 app.use("/category",productCategoryRouter)
 app.use("/payment",PaymentRouter)
+app.use("/deals",isAdmin,dealsRouter)
 
 // Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter)
@@ -77,6 +83,7 @@ app.use("/orderStatus",orderStatusRouter)
 app.use("/dashboard",isAdmin,dashboardRouter)
 app.use("/products",productfiltering)
 app.use("/dashboard",dashboardRouter)
+app.use("/adminAnalytics",AnalyticsRouter)
 
 app.use("/company",CompanyDetails)
 

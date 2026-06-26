@@ -1,26 +1,21 @@
 import { enqueueSnackbar, SnackbarProvider } from "notistack";
 import api from "../../../api/axiosConfig";
 import { PrimaryButton } from "../../../Components/Common/Buttons";
-import { replace } from "react-router-dom";
+import { replace, useNavigate } from "react-router-dom";
+import { addValue, clearCart, getItems } from "../../../Redux/Slices/CM_CartSlice";
+import { useDispatch } from "react-redux";
 
-export default function PaymentButton({
-  amount,
-  addressId,
-  coupon_id = "",
-}) {
-  if(!addressId){
-    return
+export default function PaymentButton({ amount, addressId, coupon_id = "" }) {
+  if (!addressId) {
+    return;
   }
+  const navigate = useNavigate()
+  const dispatch = useDispatch();
   const handlePayment = async () => {
     try {
-      const { data: order } = await api.post(
-        "/payment/create-order",
-        {
-          amount
-        }
-      );
-      console.log(order);
-      
+      const { data: order } = await api.post("/payment/create-order", {
+        amount,
+      });
 
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -32,75 +27,50 @@ export default function PaymentButton({
 
         handler: async function (response) {
           try {
-            const { data } = await api.post(
-              "/payment/verify-payment",
-              {
-                ...response,
-                amount,
-                addressId,
-                coupon_id,
-              }
-            );
-
+            const { data } = await api.post("/payment/verify-payment", {
+              ...response,
+              amount,
+              addressId,
+              coupon_id,
+            });
             if (data.success) {
-              navigate('/customer/orderlist',{replace:true})
-              enqueueSnackbar(
-                "Payment successful",
-                {
-                  variant: "success",
-                }
-              );
+              enqueueSnackbar("Payment successfull!", { variant: "success" });
+              dispatch(clearCart())
+              navigate("/customer/orderlist");
             } else {
-              enqueueSnackbar(
-                "Payment verification failed",
-                {
-                  variant: "error",
-                }
-              );
+              enqueueSnackbar("Verification failed", { variant: "error" });
             }
           } catch (error) {
-            console.error(error);
-
-            enqueueSnackbar(
-              "Payment verification failed",
-              {
-                variant: "error",
-              }
-            );
+            console.log(error.message);
+            console.error("API Error", error.message);
+            enqueueSnackbar("Error verifying payment", { variant: "error" });
           }
-        },        
+        },
       };
 
       const razorpay = new window.Razorpay(options);
 
       razorpay.on("payment.failed", function (response) {
         console.error(response.error);
-
-        enqueueSnackbar(
-          response.error.description ||
-            "Payment failed",
-          {
-            variant: "error"
-          }
-        );
+        enqueueSnackbar(response.error.description || "Payment failed", {
+          variant: "error",
+        });
       });
 
       razorpay.open();
     } catch (error) {
       console.error(error);
+      console.log(error.message);
 
-      enqueueSnackbar(
-        "Unable to initiate payment",
-        {
-          variant: "error",
-        }
-      );
+      enqueueSnackbar("Unable to initiate payment", {
+        variant: "error",
+      });
     }
   };
 
   return (
     <>
-      <SnackbarProvider/>
+      <SnackbarProvider />
 
       <PrimaryButton
         onClick={handlePayment}

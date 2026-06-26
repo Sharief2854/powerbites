@@ -5,8 +5,8 @@ import {
   PrimaryButton,
   SecondaryButton,
 } from "../../../Components/Common/Buttons";
-import { useDispatch } from "react-redux";
-import { addToCart, addValue } from "../../../Redux/Slices/CM_CartSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addToCart, addValue, getItems } from "../../../Redux/Slices/CM_CartSlice";
 import {
   Box,
   Card,
@@ -14,11 +14,14 @@ import {
   Divider,
   Grid,
   IconButton,
+  Dialog,
   Paper,
   Stack,
   Typography,
   Chip,
   Rating,
+  Snackbar,
+  Button,
 } from "@mui/material";
 import { Add, DeleteOutlineRounded, Remove } from "@mui/icons-material";
 import Skeleton from "@mui/material/Skeleton";
@@ -28,6 +31,7 @@ import ShareIcon from "@mui/icons-material/Share";
 import { jwtDecode } from "jwt-decode";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import CustomerReview from "./CustomerReview";
 
 export default function ProductPage() {
   const [product, setProduct] = useState({});
@@ -35,6 +39,17 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(0);
   const [selectedImage, setSelectedImage] = useState(0);
   const [imageLoading, setImageLoading] = useState(true);
+  const [cartSnackbar, setCartSnackbar] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  const itemsCart= useSelector(state=>state.cart.items)
+  console.log(itemsCart);
+  
+  const handleOpenImageModal = (index = 0) => {
+    setActiveImageIndex(index);
+    setImageModalOpen(true);
+  };
 
   let token = localStorage.getItem("token");
   let decodeId = jwtDecode(token).id;
@@ -42,12 +57,18 @@ export default function ProductPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const handleNext = () => {
+    setActiveImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  const handlePrev = () => {
+    setActiveImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
   async function getProduct() {
     try {
-      const res = await api.get(`/admin/getprd/${id}`);
+      const res = await api.get(`/product/getprd/${id}`);
       setProduct(res.data.data);
       console.log(res.data.data);
-      
     } catch (error) {
       console.log(error);
     }
@@ -59,47 +80,89 @@ export default function ProductPage() {
     product?.price - (product?.price * product?.discount) / 100;
 
   async function addItem() {
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const res = await api.post("/cart/setCart", {
-      product,
-      quantity: 1,
-    });
+    try {
+      const existingItem = itemsCart.find(
+      (item) => item?.product === id
+    );
 
-    dispatch(addToCart(res.data.data));
-    setQuantity(1);
-  } catch (error) {
-    console.log(error);
-  } finally {
-    setLoading(false);
+    if (existingItem) {
+      await setCartQuantity(existingItem.quantity + 1);
+      return;
+    }
+
+      const res = await api.post("/cart/setCart", {
+        product: id,
+        customer: decodeId,
+        quantity: 1,
+      });
+
+      console.log(res.data);
+      
+      dispatch(addToCart(res.data.cartItem));
+      setQuantity(1);
+      setCartSnackbar(true);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
   }
-}
-const handleAddToCart = async () => {
-  await addItem();
-};
+  const handleAddToCart = async () => {
+    await addItem();
+  };
+  console.log(quantity);
+  
 
-const handleIncrease = () => {
-  setCartQuantity(quantity + 1);
-};
+  const handleIncrease = () => {
+    setCartQuantity(quantity + 1);
+  };
 
-const handleDecrease = () => {
+  const handleDecrease = async () => {
   if (quantity === 1) {
-    setCartQuantity(0);
+    const cartProduct = itemsCart.find(
+      (i) => i?.product === id
+    );
+
+    if (cartProduct) {
+      await deleteCart(cartProduct._id);
+    }
+
+    setQuantity(0);
   } else {
     setCartQuantity(quantity - 1);
   }
 };
+
+  async function getCart() {
+    setLoading(true);
+    try {
+      let res = await api.get(`/cart/getCart`);
+      dispatch(addValue(res.data.quantity));
+      dispatch(getItems(res.data.cart));
+      console.log(res.data.cart);
+    } catch (error) {
+      // enqueueSnackbar('')
+    } finally {
+      setLoading(false);
+    }
+  }
   async function setCartQuantity(newQty) {
     try {
       setLoading(true);
-
-      const res = await api.post(`/cart/setQuantity/${decodeId}`, {
+      let cartProduct = itemsCart.find((i)=>{
+        return i?.product==id?true:false
+      })
+      console.log(cartProduct);
+      
+      const res = await api.post(`/cart/setQuantity/${cartProduct._id}`, {
         productId: product?._id,
         quantity: newQty,
+        customer: decodeId,
       });
 
-      dispatch(addToCart(res.data.data));
+      // dispatch(addToCart(res.data.data));
       setQuantity(newQty);
     } catch (error) {
       console.log(error);
@@ -108,32 +171,55 @@ const handleDecrease = () => {
     }
   }
 
-  async function getQuantity(params) {
+  async function deleteCart(params) {
     setLoading(true);
+    
+      let cartProduct = itemsCart.find((i)=>{
+        return i?.product?._id==id?true:false
+      })
     try {
-      let res = await api.post(`/cart/setQuantity/${decodeId}`, {});
-      dispatch(addToCart(res.data.data));
+      let res = await api.delete(`/cart/deleteItem/${cartProduct._id}`);
+      await getCart();
+      setQuantity(0);
     } catch (error) {
     } finally {
       setLoading(false);
     }
   }
 
-  function checkOutPage() {
-    navigate(`/customer/cart`);
+async function checkOutPage() {
+  const cartItem = itemsCart?.find(
+    (item) => item?.product?._id === id
+  );
+
+  if (!cartItem) {
+    await addItem();
   }
 
+  navigate("/customer/cart");
+}
   useEffect(() => {
     getProduct();
+    const cartItem = itemsCart.find(
+    item => String(item?.product?._id) === String(id)
+  );
+  if (cartItem) {
+    console.log(cartItem);    
+    setQuantity(cartItem.quantity);
+
+  } else {
+    setQuantity(0);
+  }
   }, [id]);
   useEffect(() => {
     setImageLoading(true);
-  }, [selectedImage]);
+    getCart();
+  }, []);
 
-  const images = product?.image?.map(
-    (img) =>
-      `${img.replace(/\\/g, "/").replace(/^\/+/, "")}`,
-  ) || [];
+  const images =
+    product?.image?.map(
+      (img) => `${img.replace(/\\/g, "/").replace(/^\/+/, "")}`,
+    ) || [];
 
   if (loading && !product?._id) {
     return (
@@ -147,9 +233,47 @@ const handleDecrease = () => {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 } }}>
+    <Box sx={{ p: { xs: 2, md: 4, transition: "0.3s" } }}>
+      <Snackbar
+        open={cartSnackbar}
+        autoHideDuration={5000}
+        onClose={() => setCartSnackbar(false)}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        sx={{
+          top: "200px !important",
+        }}
+      >
+        <Paper
+          elevation={6}
+          sx={{
+            px: 2,
+            py: 1.5,
+            borderRadius: 3,
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+          }}
+        >
+          <Typography fontWeight={600}>Added to cart ✓</Typography>
+
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => navigate("/customer/cart")}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+            }}
+          >
+            Go to Cart
+          </Button>
+        </Paper>
+      </Snackbar>
       <Grid container spacing={4}>
-        <Grid size={{xs:12,sm:6,md:6,lg:6}}>
+        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
           <Card
             elevation={0}
             sx={{
@@ -169,11 +293,12 @@ const handleDecrease = () => {
               src={images[selectedImage] || "/no-image.png"}
               alt={product?.name}
               onLoad={() => setImageLoading(false)}
+              // onClick={() => handleOpenImageModal(0)}
               sx={{
                 width: "100%",
                 height: { xs: 320, md: 550 },
                 objectFit: "contain",
-                p: 2,
+                // p: 2,
                 display: imageLoading ? "none" : "block",
                 transition: "transform 0.3s ease",
                 "&:hover": {
@@ -191,7 +316,7 @@ const handleDecrease = () => {
               scrollbarWidth: "none",
             }}
           >
-            {images.slice(0, 4).map((img, index) => {
+            {images.map((img, index) => {
               const remaining = images.length - 4;
               return (
                 <Box
@@ -205,8 +330,7 @@ const handleDecrease = () => {
                     cursor: "pointer",
                     border: 2,
                     flexShrink: 0,
-                    borderColor:
-                      selectedImage === index ? "primary.main" : "divider",
+                    borderColor:selectedImage === index ? "primary.main" : "divider",
                     position: "relative",
                   }}
                 >
@@ -214,8 +338,7 @@ const handleDecrease = () => {
                     component="img"
                     src={img}
                     sx={{
-                      borderColor:
-                        selectedImage === index ? "primary.main" : "divider",
+                      borderColor:selectedImage === index ? "primary.main" : "divider",
                       transition: "all 0.2s ease",
                       width: "100%",
                       height: "100%",
@@ -223,8 +346,9 @@ const handleDecrease = () => {
                     }}
                   />
 
-                  {index === 3 && remaining > 0 && (
+                  {/* {index === 3 && remaining > 0 && (
                     <Box
+                      onClick={() => handleOpenImageModal(index)}
                       sx={{
                         position: "absolute",
                         inset: 0,
@@ -238,7 +362,7 @@ const handleDecrease = () => {
                     >
                       +{remaining}
                     </Box>
-                  )}
+                  )} */}
                 </Box>
               );
             })}
@@ -251,7 +375,7 @@ const handleDecrease = () => {
               {product?.name}
             </Typography>
 
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack direction="row" spacing={2}>
               {/* <Rating value={4.5} precision={0.5} readOnly /> */}
               <Typography>(N/A Reviews)</Typography>
             </Stack>
@@ -281,7 +405,7 @@ const handleDecrease = () => {
               </Typography>
             </Stack>
 
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack direction="row" spacing={2} sx={{alignItems:"end"}}>
               <Typography variant="h3" fontWeight={700} color="primary.main">
                 ₹{discountedPrice}
               </Typography>
@@ -308,59 +432,56 @@ const handleDecrease = () => {
 
             <Divider />
 
-            
-
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              
               {quantity === 0 ? (
-  <PrimaryButton
-    fullWidth
-    variant="contained"
-    sx={{
-      backgroundColor: "primary",
-      color: "#fff",
-      py: 1.1,
-      textTransform: "none",
-      fontWeight: 700,
-      fontSize: "0.95rem",
-      boxShadow: "none",
-      "&:hover": {
-        backgroundColor: "#10003c",
-        boxShadow: "none",
-      },
-    }}
-    onClick={handleAddToCart}
-  >
-    Add to Cart
-  </PrimaryButton>
-) : (
-  <Box
-    sx={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      border: "1px solid #e5e7eb",
-      borderRadius: 3,
-      px: 1,
-      py: 0.5,
-      width: "100%",
-    }}
-  >
-    <IconButton onClick={handleDecrease}>
-      {quantity === 1 ? (
-        <DeleteOutlineRounded color="error" />
-      ) : (
-        <RemoveIcon />
-      )}
-    </IconButton>
+                <PrimaryButton
+                  fullWidth
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "primary",
+                    color: "#fff",
+                    py: 1.1,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                    boxShadow: "none",
+                    "&:hover": {
+                      backgroundColor: "#10003c",
+                      boxShadow: "none",
+                    },
+                  }}
+                  onClick={handleAddToCart}
+                >
+                  Add to Cart
+                </PrimaryButton>
+              ) : (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 3,
+                    px: 1,
+                    py: 0.5,
+                    width: "100%",
+                  }}
+                >
+                  <IconButton onClick={handleDecrease}>
+                    {quantity === 1 ? (
+                      <DeleteOutlineRounded color="error" />
+                    ) : (
+                      <RemoveIcon />
+                    )}
+                  </IconButton>
 
-    <Typography fontWeight={600}>{quantity}</Typography>
+                  <Typography fontWeight={600}>{quantity}</Typography>
 
-    <IconButton onClick={handleIncrease}>
-      <AddIcon />
-    </IconButton>
-  </Box>
-)}
+                  <IconButton onClick={handleIncrease}>
+                    <AddIcon />
+                  </IconButton>
+                </Box>
+              )}
 
               <PrimaryButton size="large" fullWidth onClick={checkOutPage}>
                 Buy Now
@@ -369,6 +490,80 @@ const handleDecrease = () => {
           </Stack>
         </Grid>
       </Grid>
+      <Dialog
+        open={imageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            width: "80vw",
+            height: "80vh",
+            maxWidth: "80vw",
+            maxHeight: "80vh",
+            borderRadius: 2,
+            overflow: "hidden",
+            backgroundColor: "#000",
+          },
+        }}
+      >
+        <Box sx={{ position: "relative", p: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <img
+              src={images[activeImageIndex]}
+              style={{
+                maxHeight: "70vh",
+                maxWidth: "100%",
+                borderRadius: 10,
+              }}
+            />
+          </Box>
+
+          <IconButton
+            onClick={handlePrev}
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: 10,
+              transform: "translateY(-50%)",
+              background: "rgba(0,0,0,0.4)",
+              color: "primary",
+            }}
+          >
+            ‹
+          </IconButton>
+
+          <IconButton
+            onClick={handleNext}
+            sx={{
+              position: "absolute",
+              top: "50%",
+              right: 10,
+              transform: "translateY(-50%)",
+              background: "rgba(0,0,0,0.4)",
+              color: "primary",
+            }}
+          >
+            ›
+          </IconButton>          
+
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              mt: 2,
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          ></Box>
+        </Box>
+      </Dialog>
 
       <Paper
         elevation={2}
@@ -383,27 +578,26 @@ const handleDecrease = () => {
         </Typography>
 
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Typography fontWeight={600}>Category</Typography>
             <Typography color="text.secondary">
               {product?.category || "N/A"}
             </Typography>
           </Grid>
-
-          <Grid item xs={12} sm={6}>
+          {/* 
+          <Grid size={{xs:12 , sm:6}}>
             <Typography fontWeight={600}>Weight</Typography>
             <Typography color="text.secondary">
               {product?.weight || "N/A"}
             </Typography>
-          </Grid>
+          </Grid> */}
 
-          <Grid item xs={12} sm={6}>
+          {/* <Grid size={{xs:12 , sm:6}}>
             <Typography fontWeight={600}>Material</Typography>
             <Typography color="text.secondary">
               {product?.material || "N/A"}
             </Typography>
-          </Grid>
-
+          </Grid> */}
         </Grid>
       </Paper>
 
@@ -431,6 +625,7 @@ const handleDecrease = () => {
           <Typography color="text.secondary">No features available</Typography>
         )}
       </Paper>
+      <CustomerReview id={{id:product?._id}}/>
     </Box>
   );
 }

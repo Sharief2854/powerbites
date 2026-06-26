@@ -94,7 +94,6 @@ const Android12Switch = styled(Switch)(({ theme }) => ({
   },
 }));
 
-
 export default function AdminProducts() {
   const dispatch = useDispatch();
   const product = useSelector((state) => state.product.products);
@@ -104,36 +103,41 @@ export default function AdminProducts() {
   const [openModal, setOpenModal] = useState(false);
 
   const [categories, setCategories] = useState([]);
-const [openCategoryModal, setOpenCategoryModal] = useState(false);
-const [categoryName, setCategoryName] = useState("");
-const mountedRef = useRef(true);
+  const [openCategoryModal, setOpenCategoryModal] = useState(false);
+  const [categoryName, setCategoryName] = useState("");
+  const [editCategories,setEditCategories]= useState(null)
+  const [categoryDescription,setCategoryDescription] = useState('')
+  const mountedRef = useRef(true);
 
-useEffect(() => {
-  mountedRef.current = true;
+  useEffect(() => {
+    mountedRef.current = true;
 
-  getCategories();
+    getCategories();
 
-  return () => {
-    mountedRef.current = false;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  const handleOpenAddCategory = () => {
+    setEditCategories(null);
+    setCategoryName("");
+    setOpenCategoryModal(true);
   };
-}, []);
-
-const handleOpenAddCategory = () => {
-  setSelectedCategory(null);
-  setCategoryName("");
-  setOpenCategoryModal(true);
-};
-const handleEditCategory = (category) => {
-  setSelectedCategory(category);
+  const handleEditCategory = (category) => {
+    setEditCategories(category);
   setCategoryName(category.name);
+  setCategoryDescription(category.description || "");
   setOpenCategoryModal(true);
-};
+  };
 
-const handleCloseCategoryModal = () => {
-  setOpenCategoryModal(false);
-  setCategoryName("");
-  setSelectedCategory(null);
-};
+  const handleCloseCategoryModal = () => {
+    setOpenCategoryModal(false);
+    setCategoryName("");
+  setCategoryDescription("");
+  setEditCategories(null);
+    
+  };
 
   const [productData, setProductData] = useState({
     name: "",
@@ -141,7 +145,7 @@ const handleCloseCategoryModal = () => {
     price: "",
     stock: "",
     sendUpdates: false,
-    category: "i",
+    category: "",
     discount: "",
     isAvailable: true,
   });
@@ -155,7 +159,6 @@ const handleCloseCategoryModal = () => {
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  
   const openAddProductModal = () => {
     setOpenModal(true);
   };
@@ -176,59 +179,64 @@ const handleCloseCategoryModal = () => {
 
     setPhotos([]);
   };
+console.log(productData);
+
   const handleSaveCategory = async () => {
-  if (!categoryName.trim()) return;
+    if (!categoryName.trim()) return;
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    if (selectedCategory) {
-      await api.put(
-        `/category/updateProductCategory/${selectedCategory._id}`,
-        {
+      if (editCategories) {
+        await api.put(
+          `/category/updateProductCategory/${editCategories._id}`,
+          {
+            name: categoryName,
+            
+    description: categoryDescription,
+          },
+        );
+      } else {
+        await api.post("/category/addProductCategory", {
           name: categoryName,
-        }
-      );
-    } else {
-      await api.post("/category/addProductCategory", {
-        name: categoryName,
-      });
+          
+    description: categoryDescription,
+        });
+      }
+      await getCategories();
+      handleCloseCategoryModal();
+    } catch (error) {
+      console.error(error.message);
+    } finally {
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
-
-    await getCategories();
-    handleCloseCategoryModal();
-  } catch (error) {
-    console.error(error);
-  } finally {
-    if (mountedRef.current) {
-      setLoading(false);
-    }
-  }
-};
-const handleDeleteCategory = async (_id) => {
-  if (!selectedCategory) return;
-
-  const confirmDelete = window.confirm(
-    `Delete ${selectedCategory.name}?`
+  };
+  const handleDeleteCategory = async () => {
+  const category = categories.find(
+    (c) => {return String(c._id) === String(productData.category)?true:false}
   );
+console.log(category);
 
-  if (!confirmDelete) return;
+  if (!category) return;
 
   try {
     setLoading(true);
-
     await api.delete(
-      `category/deleteProductCategory/${_id}`
+      `/category/deleteProductCategory/${category._id}`
     );
 
     await getCategories();
-    handleCloseCategoryModal();
+
+    setProductData((prev) => ({
+      ...prev,
+      category: ""
+    }));
   } catch (error) {
-    console.error(error);
+    console.loh(error.message);
   } finally {
-    if (mountedRef.current) {
-      setLoading(false);
-    }
+    setLoading(false);
   }
 };
 
@@ -243,15 +251,34 @@ const handleDeleteCategory = async (_id) => {
 
   const handleImageChange = (e) => {
   const files = Array.from(e.target.files);
+  
+  const allowedTypes = [
+    "image/png",
+    "image/jpeg",
+    "image/jpg",
+    "image/webp",
+  ];
+
+  const validImages = files.filter((file) =>
+    allowedTypes.includes(file.type)
+  );
+
+  const invalidFiles = files.length - validImages.length;
+
+  if (invalidFiles > 0) {
+    enqueueSnackbar("Only image files (PNG, JPG, JPEG, WEBP) are allowed", { variant: "error" });
+  }
+
+  if (validImages.length === 0) {
+    return; 
+  }
 
   setPhotos((prev) => {
-    const newFiles = files.filter(
+    const newFiles = validImages.filter(
       (file) =>
         !prev.some(
-          (p) =>
-            p.file.name === file.name &&
-            p.file.size === file.size
-        )
+          (p) => p.file.name === file.name && p.file.size === file.size,
+        ),
     );
 
     return [
@@ -263,7 +290,6 @@ const handleDeleteCategory = async (_id) => {
     ];
   });
 };
-  
 
   const removeFile = (index) => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
@@ -277,14 +303,14 @@ const handleDeleteCategory = async (_id) => {
     setSortBy("");
     setInStockOnly(false);
   };
-  
 
   const getCategories = async () => {
     try {
       setLoading(true);
       const response = await api.get("/category/allCategories");
-
-      setCategories(response.data.categories || []);
+      setCategories(p=>response?.data?.categories?.filter((i)=>{
+        return i.isAvailable?i:null;
+      }) || []);
     } catch (error) {
       console.log(error);
     } finally {
@@ -307,6 +333,50 @@ const handleDeleteCategory = async (_id) => {
 
   const handlePost = async (e) => {
     e.preventDefault();
+    if (!productData.name.trim()) {
+      return enqueueSnackbar("Product name is required", {
+        variant: "error",
+      });
+    }
+
+    if (!productData.description.trim()) {
+      return enqueueSnackbar("Description is required", {
+        variant: "error",
+      });
+    }
+
+    if (!productData.price || Number(productData.price) <= 0) {
+      return enqueueSnackbar("Enter a valid price", {
+        variant: "error",
+      });
+    }
+
+    if (!productData.stock || Number(productData.stock) < 0) {
+      return enqueueSnackbar("Enter valid stock quantity", {
+        variant: "error",
+      });
+    }
+
+    if (!productData.category) {
+      return enqueueSnackbar("Please select a category", {
+        variant: "error",
+      });
+    }
+
+    if (
+      Number(productData.discount) < 0 ||
+      Number(productData.discount) > 100
+    ) {
+      return enqueueSnackbar("Discount must be between 0 and 100", {
+        variant: "error",
+      });
+    }
+
+    if (photos.length === 0) {
+      return enqueueSnackbar("At least one product image is required", {
+        variant: "error",
+      });
+    }
     try {
       const formData = new FormData();
       setLoading(true);
@@ -329,27 +399,28 @@ const handleDeleteCategory = async (_id) => {
         formData.append("file", photo.file);
       });
       formData.append("sendUpdates", productData.sendUpdates);
-      if (productData=="i"||!formData) {
-        enqueueSnackbar("All fields are required",{variant:'error'})
+      if (productData == "" || !formData) {
+        enqueueSnackbar("All fields are required", { variant: "error" });
       }
 
       const response = await api.post("/products/addProduct", formData);
-
-      console.log(response.data);
-
-      dispatch(postProducts(response.data.Product));
+      dispatch(postProducts(response.data.data));
+      if(response.data.data){
+        enqueueSnackbar("Product Added Successfully", {variant: "success"});
+      }
       closeAddProductModal();
     } catch (error) {
       console.log(error);
+      enqueueSnackbar("Failed to add Product, Please try again", {
+        variant: "error",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  // console.log(product);
-  
   const displayProducts = useMemo(() => {
-    let filtered = product;
+    let filtered = [...product];
     if (search.trim()) {
       filtered = filtered.filter((product) =>
         product?.name?.toLowerCase().includes(search.toLowerCase()),
@@ -392,7 +463,7 @@ const handleDeleteCategory = async (_id) => {
         break;
 
       case "newest":
-        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        filtered.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatyeAt));
         break;
 
       case "oldest":
@@ -417,10 +488,15 @@ const handleDeleteCategory = async (_id) => {
     maxPrice,
     sortBy,
   ]);
+  console.log(displayProducts);
 
+  
+                  const categoryMap = useMemo(() => {
+  return new Map(categories.map(c => [String(c._id), c]));
+}, [categories]);
   useEffect(() => {
     getProductsData();
-    getCategories()
+    getCategories();
   }, []);
   if (loading) {
     return (
@@ -434,7 +510,7 @@ const handleDeleteCategory = async (_id) => {
     <Box
       sx={{
         margin: "auto",
-        padding: "20px",
+        p:'1px',
         position: "relative",
         width: "100%",
         backgroundColor: "white",
@@ -443,26 +519,29 @@ const handleDeleteCategory = async (_id) => {
       }}
     >
       <SnackbarProvider />
-      <Grid container sx={{display:{xs:'grid',sm:'none'}}}>
-        <Grid size={{sx:12}}>
-      <Typography
-        align="center"
-        variant="h4"
-        gutterBottom
-        sx={{
-          color: "#3E1A89",
-          fontWeight: 700,
-          mb: 4,
-        }}
-      >
-        Product
-      </Typography>
-
+      <Grid container sx={{ display: { xs: "grid", sm: "none" } }}>
+        <Grid size={{ sx: 12 }}>
+          <Typography
+            align="center"
+            variant="h4"
+            gutterBottom
+            sx={{
+              color: "#3E1A89",
+              fontWeight: 700,
+              mb: 4,
+            }}
+          >
+            Product
+          </Typography>
         </Grid>
-        <Grid size={{sx:12}}>
-        <PrimaryButton onClick={openAddProductModal} sx={{float:'left', margin: "20px", }}>
-          Add Product
-        </PrimaryButton></Grid>
+        <Grid size={{ sx: 12 }}>
+          <PrimaryButton
+            onClick={openAddProductModal}
+            sx={{ float: "left", margin: "20px" }}
+          >
+            Add Product
+          </PrimaryButton>
+        </Grid>
       </Grid>
       <Typography
         align="center"
@@ -472,13 +551,19 @@ const handleDeleteCategory = async (_id) => {
           color: "#3E1A89",
           fontWeight: 700,
           mb: 4,
-          display:{xs:'none',sm:'block'}
+          display: { xs: "none", sm: "block" },
         }}
       >
         Product
       </Typography>
-      <Box sx={{ position: "absolute",
-          display:{xs:'none',sm:'block'}, top: 0, right: 0 }}>
+      <Box
+        sx={{
+          position: "absolute",
+          display: { xs: "none", sm: "block" },
+          top: 0,
+          right: 0,
+        }}
+      >
         <PrimaryButton onClick={openAddProductModal} sx={{ margin: "20px" }}>
           Add Product
         </PrimaryButton>
@@ -567,7 +652,7 @@ const handleDeleteCategory = async (_id) => {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 2 }}>
+                  <Grid size={{ xs: 12, md: 1 }}>
                     <FormControlLabel
                       control={
                         <Switch
@@ -597,7 +682,7 @@ const handleDeleteCategory = async (_id) => {
             <Grid container spacing={2}>
               {displayProducts?.length > 0 ? (
                 displayProducts.map((product) => (
-                  <ProductCard key={product._id} product={product} />
+                  <ProductCard key={product?._id} product={product} />
                 ))
               ) : (
                 <Typography
@@ -615,82 +700,77 @@ const handleDeleteCategory = async (_id) => {
         </Grid>
       </Grid>
 
-<Modal open={openModal} onClose={closeAddProductModal}>
-  <Box
-    sx={{
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      width: { xs: "95%", md: "800px" },
-      maxHeight: "90vh",
-      bgcolor: "background.paper",
-      borderRadius: 3,
-      boxShadow: 24,
-      overflow: "hidden",
-    }}
-  >
-    
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        p: 2,
-        borderBottom: "1px solid #e0e0e0",
-      }}
-    >
-      <Typography
-        variant="h6"
-        sx={{ color: "#3E1A89", fontWeight: 600 }}
-      >
-        Add Product
-      </Typography>
+      <Modal open={openModal} onClose={closeAddProductModal}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "95%", md: "800px" },
+            maxHeight: "90vh",
+            bgcolor: "background.paper",
+            borderRadius: 3,
+            boxShadow: 24,
+            overflow: "auto",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              p: 2,
+              borderBottom: "1px solid #e0e0e0",
+            }}
+          >
+            <Typography variant="h6" sx={{ color: "#3E1A89", fontWeight: 600 }}>
+              Add Product
+            </Typography>
 
-      <IconButton onClick={closeAddProductModal}>
-        <CloseIcon fontSize="small" />
-      </IconButton>
-    </Box>
+            <IconButton onClick={closeAddProductModal}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
 
-    <Stack
-      component="form"
-      onSubmit={handlePost}
-      spacing={2}
-      sx={{
-        p: 3,
-        overflowY: "auto",
-      }}
-    >
-      <FormControl fullWidth>
-        <InputLabel htmlFor="name">Product Name</InputLabel>
-        <OutlinedInput
-          id="name"
-          label="Product Name"
-          type="text"
-          placeholder="Product Name"
-          value={productData.name}
-          onChange={handleChange}
-          name="name"
-          sx={{ borderRadius: "10px" }}
-        />
-      </FormControl>
+          <Stack
+            component="form"
+            onSubmit={handlePost}
+            spacing={2}
+            sx={{
+              p: 3,
+              overflowY: "auto",
+            }}
+          >
+            <FormControl fullWidth>
+              <InputLabel htmlFor="name">Product Name</InputLabel>
+              <OutlinedInput
+                id="name"
+                label="Product Name"
+                type="text"
+                placeholder="Product Name"
+                value={productData.name}
+                onChange={handleChange}
+                name="name"
+                sx={{ borderRadius: "10px" }}
+              />
+            </FormControl>
 
-      <FormControl fullWidth margin="normal">
-        <InputLabel htmlFor="description">Description</InputLabel>
-        <OutlinedInput
-          id="description"
-          type="text"
-          value={productData.description}
-          onChange={handleChange}
-          name="description"
-          label="Description"
-          multiline
-          rows={4}
-          sx={{ borderRadius: "10px" }}
-        />
-      </FormControl>
-
-      
+            <FormControl fullWidth margin="normal">
+              <InputLabel htmlFor="description">Description</InputLabel>
+              <OutlinedInput
+                id="description"
+                type="text"
+                value={productData.description}
+                onChange={handleChange}
+                name="description"
+                label="Description"
+                multiline
+                rows={4}
+                sx={{ borderRadius: "10px" }}
+              />
+            </FormControl>
+ 
             <Button
               component="label"
               variant="contained"
@@ -709,20 +789,20 @@ const handleDeleteCategory = async (_id) => {
               Upload Images
               <VisuallyHiddenInput
                 type="file"
+                accept="image/png, image/jpeg, image/jpg, image/webp"
                 name="photo"
                 onChange={handleImageChange}
                 multiple
               />
             </Button>
 
-
-{photos.length > 0 && (
+            {photos.length > 0 && (
               <Box
                 sx={{
-    display: "flex",
-    width: "100%",
-    height: "100%",
-    py: 1,
+                  display: "flex",
+                  width: "100%",
+                  height: "100%",
+                  py: 1,
                 }}
               >
                 <Stack
@@ -768,15 +848,15 @@ const handleDeleteCategory = async (_id) => {
                         }}
                       >
                         <img
-        src={file.preview}
-        alt=""
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          display: "block",
-        }}
-      />
+                          src={file.preview}
+                          alt=""
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            display: "block",
+                          }}
+                        />
                         <ImageListItemBar
                           position="top"
                           actionIcon={
@@ -799,7 +879,6 @@ const handleDeleteCategory = async (_id) => {
                 </Stack>
               </Box>
             )}
-
 
             {/* <Box
   sx={{
@@ -836,290 +915,220 @@ const handleDeleteCategory = async (_id) => {
   ))}
 </Box> */}
 
-<Box
-  sx={{
-    display: "flex",
-    alignItems: "center",
-    border: "1px solid",
-    borderColor: "divider",
-    borderRadius: 2,
-  }}
->
-  <FormControl fullWidth >
-    <Select
-      name="category"
-      value={productData.category}
-      defaultValue={"i"}
-      label="Category"
-      onChange={handleChange}
-      sx={{
-        "& fieldset": {
-          border: "none",
-        },
-      }}
-    >
-      <MenuItem value="i" >--Select Category--</MenuItem>
-      {categories.map((item) => (
-        <MenuItem key={item._id} value={item._id}>
-          {item.name}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 2,
+              }}
+            >
+              <FormControl fullWidth>
+                <Select
+                  name="category"
+                  value={productData.category || ""}
+                  onChange={handleChange}
+                  displayEmpty
+                  sx={{
+                    "& fieldset": {
+                      border: "none",
+                    },
+                  }}
+                >
+                  <MenuItem value="">--Select Category--</MenuItem>
 
-  <Divider orientation="vertical" flexItem />
+                  {categories.map((item) => (
+                    <MenuItem key={item._id} value={item._id}>
+                      {item.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Divider orientation="vertical" flexItem />
 
-  <IconButton
-    color="primary"
-    onClick={handleOpenAddCategory}
-  >
-    <AddIcon />
-  </IconButton>
+              <IconButton color="primary" onClick={handleOpenAddCategory}>
+                <AddIcon />
+              </IconButton>
 
-  <IconButton
-    color="rgba(23, 75, 231, 0.8)"
-    disabled={!productData.category}
-    onClick={() => {
-      const category = categories.find(
-        (c) => c._id === productData.category
-      );
+              <IconButton
+                color="rgba(23, 75, 231, 0.8)"
+                disabled={!productData.category}
+                onClick={() => {
+const category = categoryMap.get(String(productData.category));
 
-      if (category) {
-        handleEditCategory(category);
-      }
-    }}
-  >
-    <EditIcon />
-  </IconButton>
+                  if (category) {
+                    handleEditCategory(category);
+                  }
+                }}
+              >
+                <EditIcon />
+              </IconButton>
 
-  <IconButton
-    color="error"
-    disabled={!productData.category}
-    onClick={() =>
-      handleDeleteCategory(productData.category)
-    }
-  >
-    <DeleteIcon />
-  </IconButton>
-</Box>
-{/* <Box display="flex" gap={1}>
-  <FormControl >
-  <InputLabel>Category</InputLabel>
+              <IconButton
+                color="error"
+                disabled={!productData.category}
+  onClick={
+      handleDeleteCategory}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Box>
 
-    <Select
-    name="category"
-    value={productData.category}
-    label="Category"
-    onChange={handleChange}
-  >
-    {categories.map((item) => (
-      <MenuItem
-        value={item.name}
-        key={item._id}
-      >
-        {item.name}
-      </MenuItem>
-      
-    ))}
-    <Divider />
+            <Dialog
+              open={openCategoryModal}
+              onClose={handleCloseCategoryModal}
+              maxWidth="sm"
+              fullWidth
+            >
+              <DialogTitle>
+                {editCategories ? "Update Category" : "Add Category"}
+              </DialogTitle>
 
-    <MenuItem
-      onClick={(e) => {
-        e.stopPropagation();
-        handleOpenAddCategory();
-      }}
-      sx={{
-        color: "primary.main",
-        fontWeight: 600,
-        display: "flex",
-        gap: 1,
-      }}
-    >
-      <AddIcon />
-      Add New Category
-    </MenuItem>
-  </Select>
-  </FormControl>
-
-  <IconButton
-    onClick={() => {
-      const category = categories.find(
-        (c) => c._id === productData.category
-      );
-
-      if (category){ handleEditCategory(category)};
-    }}
-  >
-    <EditIcon />
-  </IconButton>
-
-  <IconButton
-    color="error"
-    onClick={() =>
-      handleDeleteCategory(productData.category)
-    }
-  >
-    <DeleteIcon />
-  </IconButton>
-</Box> */}
-<Dialog
-  open={openCategoryModal}
-  onClose={handleCloseCategoryModal}
-  maxWidth="sm"
+              <DialogContent>
+                <TextField
+                  fullWidth
+                  label="Category Name"
+                  value={categoryName}
+                  onChange={(e) => setCategoryName(e.target.value)}
+                  sx={{ mt: 1 }}
+                />
+                <TextField
   fullWidth
->
-  <DialogTitle>
-    {selectedCategory
-      ? "Update Category"
-      : "Add Category"}
-  </DialogTitle>
+  label="Category Description"
+  value={categoryDescription}
+  onChange={(e) => setCategoryDescription(e.target.value)}
+  sx={{ mt: 2 }}
+  multiline
+  rows={3}
+/>
+              </DialogContent>
 
-  <DialogContent>
-    <TextField
-      fullWidth
-      label="Category Name"
-      value={categoryName}
-      onChange={(e) =>
-        setCategoryName(e.target.value)
-      }
-      sx={{ mt: 1 }}
-    />
-  </DialogContent>
+              <DialogActions>
+                <Button onClick={handleCloseCategoryModal} disabled={loading}>
+                  Cancel
+                </Button>
 
-  <DialogActions>
-    <Button
-      onClick={handleCloseCategoryModal}
-      disabled={loading}
-    >
-      Cancel
-    </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleSaveCategory}
+                  disabled={loading || !categoryName.trim()}
+                >
+                  {loading ? "Saving..." : editCategories ? "Update" : "Add"}
+                </Button>
+              </DialogActions>
+            </Dialog>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, md: 4 }}>
+                <FormControl fullWidth margin="normal">
+                  <InputLabel shrink>Price</InputLabel>
+                  <OutlinedInput
+                    label="Price"
+                    type="number"
+                    name="price"
+                    value={productData.price}
+                    onChange={handleChange}
+                    onWheel={(e) => e.target.blur()}
+                    inputProps={{ min: 0 }}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <span style={{ color: "#3E1A89" }}>₹</span>
+                      </InputAdornment>
+                    }
+                    sx={{ borderRadius: "10px" }}
+                  />
+                </FormControl>
+              </Grid>
 
-    <Button
-      variant="contained"
-      onClick={handleSaveCategory}
-      disabled={loading || !categoryName.trim()}
-    >
-      {loading
-        ? "Saving..."
-        : selectedCategory
-        ? "Update"
-        : "Add"}
-    </Button>
-  </DialogActions>
-</Dialog>
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Price</InputLabel>
-            <OutlinedInput
-              label="Price"
-              type="number"
-              name="price"
-              value={productData.price}
-              onChange={handleChange}
-              onWheel={(e)=>e.preventDefault()}
-              inputProps={{min:0}}
-              startAdornment={
-                <InputAdornment position="start">
-                  <span style={{ color: "#3E1A89" }}>₹</span>
-                </InputAdornment>
+              <Grid size={{ xs: 12, md: 3 }}>
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>Discount</InputLabel>
+                  <OutlinedInput
+                    type="number"
+                    name="discount"
+                    value={productData.discount}
+                    onChange={handleChange}
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <span style={{ color: "#3E1A89" }}>%</span>
+                      </InputAdornment>
+                    }
+                    label="Discount"
+                    onWheel={(e) => e.target.blur()}
+                    inputProps={{ min: 0 }}
+                    sx={{ borderRadius: "10px" }}
+                  />
+                </FormControl>
+              </Grid>
+            </Grid>
+
+            <FormControl fullWidth>
+              <InputLabel>Stock</InputLabel>
+              <OutlinedInput
+                label="Stock"
+                type="number"
+                onWheel={(e) => e.target.blur()}
+                name="stock"
+                value={productData.stock}
+                onChange={handleChange}
+                sx={{ borderRadius: "10px" }}
+              />
+            </FormControl>
+
+            <FormControlLabel
+              label="Available"
+              sx={{ color: "#3E1A89", mt: 1 }}
+              control={
+                <Android12Switch
+                  checked={productData.isAvailable}
+                  onChange={() =>
+                    setProductData({
+                      ...productData,
+                      isAvailable: !productData.isAvailable,
+                    })
+                  }
+                />
               }
-              sx={{ borderRadius: "10px" }}
             />
-          </FormControl>
-        </Grid>
 
-        <Grid size={{ xs: 12, md: 3 }}>
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Discount</InputLabel>
-            <OutlinedInput
-              type="number"
-              name="discount"
-              value={productData.discount}
-              onChange={handleChange}
-              endAdornment={
-                <InputAdornment position="end">
-                  <span style={{ color: "#3E1A89" }}>%</span>
-                </InputAdornment>
-              }
-              label="Discount"
-              onWheel={(e)=>e.preventDefault()}
-              inputProps={{min:0}}
-              sx={{ borderRadius: "10px" }}
-            />
-          </FormControl>
-        </Grid>
-      </Grid>
+            <Box
+              sx={{
+                pt: 2,
+                mt: 1,
+                borderTop: "1px solid #e0e0e0",
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                justifyContent: "space-between",
+                alignItems: { xs: "flex-start", sm: "center" },
+                gap: 2,
+              }}
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox name="sendUpdates" onChange={handleChange} />
+                }
+                label="Send updates to Customers"
+              />
 
-      <FormControl fullWidth>
-        <InputLabel>Stock</InputLabel>
-        <OutlinedInput
-          label="Stock"
-          type="number"
-          name="stock"
-          value={productData.stock}
-          onChange={handleChange}
-          sx={{ borderRadius: "10px" }}
-        />
-      </FormControl>
-
-      <FormControlLabel
-        label="Available"
-        sx={{ color: "#3E1A89", mt: 1 }}
-        control={
-          <Android12Switch
-            checked={productData.isAvailable}
-            onChange={() =>
-              setProductData({
-                ...productData,
-                isAvailable: !productData.isAvailable,
-              })
-            }
-          />
-        }
-      />
-
-      <Box
-        sx={{
-          pt: 2,
-          mt: 1,
-          borderTop: "1px solid #e0e0e0",
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          justifyContent: "space-between",
-          alignItems: { xs: "flex-start", sm: "center" },
-          gap: 2,
-        }}
-      >
-        <FormControlLabel
-          control={
-            <Checkbox
-              name="sendUpdates"
-              onChange={handleChange}
-            />
-          }
-          label="Send updates to Customers"
-        />
-
-        <PrimaryButton
-          type="submit"
-          sx={{
-            backgroundColor: "#3E1A89",
-            color: "white",
-            textTransform: "none",
-            fontWeight: 600,
-            "&:hover": {
-              backgroundColor: "#3E1A89",
-              opacity: 0.9,
-            },
-          }}
-        >
-          Add Product
-        </PrimaryButton>
-      </Box>
-    </Stack>
-  </Box>
-</Modal>
+              <PrimaryButton
+                type="submit"
+                sx={{
+                  backgroundColor: "#3E1A89",
+                  color: "white",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  "&:hover": {
+                    backgroundColor: "#3E1A89",
+                    opacity: 0.9,
+                  },
+                }}
+              >
+                Add Product
+              </PrimaryButton>
+            </Box>
+          </Stack>
+        </Box>
+      </Modal>
       {/* <Modal
         open={openModal}
         onClose={closeAddProductModal}

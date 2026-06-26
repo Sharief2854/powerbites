@@ -28,7 +28,6 @@ const ordersSchema= new mongoose.Schema({
         },
         discounted_price:{
             type:Number,
-            required:true
         },
         offer:{
             type:mongoose.Schema.Types.ObjectId,
@@ -54,21 +53,22 @@ const ordersSchema= new mongoose.Schema({
     },
     coupon:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"cuopon"
+        ref:"coupon"
         
     },
     final_price:{
         type:Number,
         required:true
     },
-    //chnages made by anil for the cancelling the order from here
+    // changes: ensure default is one of the enum values
    orderStatus:{
     type:String,
-    enum:["order placed","preparing order", "order shipped", 
+    enum:["order placed","preparing order", "order shipped", "refunded",
         "order delivered", "order cancelled"],
-    default:"order not cancelled"
+    default:"order placed"
 
    },
+
 
    cancelledBy: {
     type: String,
@@ -83,11 +83,25 @@ const ordersSchema= new mongoose.Schema({
     type: Date
    },
 
+   refundId: {
+    type: String
+   },
 
-   address:{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:"Address",
-    required:true
+   refundAmount: {
+    type: Number
+   },
+
+   cancellationFee: {
+    type: Number,
+    default: 0
+   },
+   shippingAddress: {
+      label: { type: String, required: true },
+      street: { type: String, required: true },
+      city: { type: String, required: true },
+      state: { type: String, required: true },
+      pincode: { type: Number, required: true },
+      country: { type: String, required: true }
    }
     
 },

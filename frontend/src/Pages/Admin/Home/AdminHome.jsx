@@ -206,8 +206,22 @@ import {
   Typography,
   TableSortLabel,
   Pagination,
-  Stack
+  Stack,
+  Card,
+  CardContent
 } from '@mui/material';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  BarChart,
+  Bar
+} from "recharts";
 import React, { useEffect, useState } from 'react';
 import api from '../../../api/axiosConfig';
 
@@ -271,9 +285,19 @@ function Overview() {
     { id: '#100220', name: 'Jane Smith', date: '2024-05-15 13:45', status: 'Out for Delivery', amount: '$28.00' },
   ];
 
+  const datachart = [
+  { month: "Jan", sales: 1000 },
+  { month: "Feb", sales: 3050 },
+  { month: "Mar", sales: 2000 },
+  { month: "Apr", sales: 4500 },
+];
+
   useEffect(() => {
     getData();
+      console.log("data",data)
+
   }, []);
+
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3 } }}>
@@ -284,40 +308,93 @@ function Overview() {
           { title: 'Total Customers', val: data.totalCustomers },
           { title: 'Active Orders', val: data.Orders },
           { title: 'Total Products', val: data.totalProducts },
-          { title: 'Total Revenue', val: data.totalRevenue || '$0.00' } // added a default fallback for revenue
+          { title: 'Total Revenue', val: data.totalRevenue || '$52.00' },// added a default fallback for revenue
+          { title: 'Order Place', val: 5 || '0.00' },// added a default fallback for revenue
+          { title: 'Preparing Order', val: 3|| '0.00' },// added a default fallback for revenue
+          { title: 'Order shipped', val: 5 || '0.00' },// added a default fallback for revenue
+          { title: 'Order Cancelled', val: 2 || '0.00' },// added a default fallback for revenue
         ].map((card, index) => (
           <Grid item xs={12} sm={6} md={3} key={index}>
             <Paper
               elevation={0}
               sx={{
+                // p: 3,
+                // borderRadius: '16px',
+                // border: '1px solid #E5E7EB',
+                // bgcolor: '#ffffff',
+                // transition: 'all 0.3s ease',
+                // '&:hover': {
+                //   transform: 'translateY(-4px)',
+                //   boxShadow: '0 12px 25px rgba(0,0,0,0.06)',
+                // },
+                borderLeft: '5px solid #2196f3', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' ,
                 p: 3,
                 borderRadius: '16px',
-                border: '1px solid #E5E7EB',
+                //border: '1px solid #E5E7EB',
                 bgcolor: '#ffffff',
                 transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: '0 12px 25px rgba(0,0,0,0.06)',
-                },
+                
               }}
             >
+               
               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, mb: 1 }}>
                 {card.title}
               </Typography>
               <Typography variant="h4" sx={{ fontWeight: 700, color: '#1E1154', fontSize: { xs: '1.75rem', sm: '2.25rem' } }}>
-                {card.val ?? 0}
+                {card.val ?? 10}
               </Typography>
-              <Typography variant="caption" color="#22C55E" sx={{ fontWeight: 600, display: 'block', mt: 1 }}>
-                +12.5% from last month
-              </Typography>
+              
             </Paper>
           </Grid>
         ))}
 
+<Grid size={{sm:12}}>
+  <Card sx={{minWidth:275,boxShadow:3,p:2}}>
+    <CardContent>
+      <Typography> Weekly Visitors</Typography>
+      <ResponsiveContainer width='100%' height={300}>
+        <LineChart data ={datachart}>
+          <CartesianGrid strokeDasharray='3.3' />
+        <XAxis dataKey="month"/>
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line 
+        type="monotoneX"
+        dataKey ="sales"
+        
+        stroke ="#8884d8"
+        />
+        </LineChart>
+      </ResponsiveContainer>
+    </CardContent>
+
+    <CardContent>
+      <Typography> Weekly Visitors</Typography>
+      <ResponsiveContainer width='100%' height={300}>
+        <BarChart data ={datachart}>
+         
+        <XAxis dataKey="month"/>
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar 
+        type="monotoneX"
+        dataKey ="sales"
+        
+        stroke ="#8884d8"
+        />
+        </BarChart>
+      </ResponsiveContainer>
+    </CardContent>
+
+  </Card>
+</Grid>
+
         {/* Orders Table Container Block */}
         <Grid item xs={12}>
           
-          {/* Title Header with Responsive Layout */}
+          {/* Title Header with Responsive Layout
           <Box 
             sx={{ 
               mb: 2, 
@@ -333,7 +410,7 @@ function Overview() {
             <Typography variant="caption" sx={{ color: 'gray', fontStyle: 'italic' }}>
               — What's Happening Orders refers to in the recent pending orders
             </Typography>
-          </Box>
+          </Box> */}
 
           {/* Table container configuration built for all viewports */}
           <TableContainer 
