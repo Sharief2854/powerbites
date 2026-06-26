@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors')
+const cors = require('cors');
 const ConnectDB = require('./config/connectDB');
 const RegRouter = require("./Routes/Auth/Registration")
 const ResetRouter = require("./Routes/Auth/ResetPassword")
@@ -13,6 +13,7 @@ const CartRouter = require('./Routes/Cart/cartRouter');
 const bannerRouter = require('./Routes/Banner/bannerRoutes');
 const offerRouter = require('./Routes/Offer/offerRouter');
 const multer = require('multer');
+const conditionalJsonParser = require('./MiddleWare/jsonParserMiddleware');
 
 const couponRouter = require('./Routes/Coupon/couponRouter');
 
@@ -31,9 +32,9 @@ const orderStatusRouter = require('./Routes/OrderStatus/orderStatusUpdating');
 const dashboardRouter = require('./Routes/Dashboard/dashboardRoute')
 const productfiltering = require('./Routes/ProductfilteringRoutes/Productfiltering');
 const AnalyticsRouter = require('./Routes/Analytics/analytics')
-
+const adminToamin = require ("./Routes/AdminToadmin/adminToadminCurd")
 let dealsRouter = require('./Routes/Deals/dealsRoute');
-
+const CompanyDetails =require("./Routes/CompanyDetails/CompanyDetails")
 const companyRouter = require("./Routes/CompanyDetails/CompanyDetails");
 
 
@@ -43,13 +44,21 @@ ConnectDB()
 // app.post("/upload",)
 const app = express()
 app.use(cors())
-app.use(express.json())
+
+// Use the conditional JSON parser middleware.
+// IMPORTANT: The webhook route needs the raw body for signature verification.
+// We apply the raw parser specifically for this route.
+app.use('/api/payment/refund-webhook', express.raw({ type: 'application/json' }));
+
+// This is crucial for the Razorpay webhook to work correctly.
+app.use(conditionalJsonParser);
+
 app.use("/upload", express.static("upload"));
 const path = require("path");
 
-app.use("/upload", express.static(path.join(__dirname, "upload"))
+app.use("/upload", express.static(path.join(__dirname, "upload")))
 
-);
+
 
 
 
@@ -61,9 +70,10 @@ app.use("/resetPass",ResetRouter)
 app.use("/crudAdmin",isAdmin,adminRouter)
 app.use("/cart",isCustomer,CartRouter)
 app.use("/products",ProductRouter)
-app.use("/banner",bannerRouter)
+app.use("/banner", bannerRouter)
 app.use("/offer",offerRouter)
 
+app.use("/adminToadmin",isAdmin,adminToamin)
 
 app.use("/company", companyRouter);
 
@@ -71,7 +81,7 @@ app.use("/orders",ordersRouter)
 
 app.use("/coupon",couponRouter)
 app.use("/category",productCategoryRouter)
-app.use("/payment",PaymentRouter)
+app.use("/api/payment",PaymentRouter)
 app.use("/deals",isAdmin,dealsRouter)
 
 // Customer profile updating routes with authentication middleware
@@ -80,10 +90,11 @@ app.use("/developer",DeveloperRouter)
 app.use("/review",reviewRouter)
 app.use("/orderStatus",orderStatusRouter)
 app.use("/dashboard",isAdmin,dashboardRouter)
-app.use("/product",productfiltering)
+app.use("/products",productfiltering)
 app.use("/dashboard",dashboardRouter)
 app.use("/adminAnalytics",AnalyticsRouter)
 
+app.use("/company",CompanyDetails)
 
 
 // Global error handling middleware to catch Multer errors safely

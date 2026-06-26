@@ -63,8 +63,8 @@ const ordersSchema= new mongoose.Schema({
     // changes: ensure default is one of the enum values
    orderStatus:{
     type:String,
-    enum:["order placed","preparing order", "order shipped", "refunded",
-        "order delivered", "order cancelled"],
+    enum:["order placed","preparing order", "order shipped", "refund pending",
+        "refunded", "order delivered", "order cancelled"],
     default:"order placed"
 
    },
