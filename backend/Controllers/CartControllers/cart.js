@@ -209,9 +209,10 @@ async function applyCoupon(req, res) {
 
             const couponPercent = Number(coupon.discount) || 0;
             let totalCouponDiscount = (subtotal * couponPercent) / 100;
-            const maxDiscount = Number(coupon.max_discount);
-            if (!Number.isNaN(maxDiscount)) {
-                totalCouponDiscount = Math.min(totalCouponDiscount, maxDiscount);
+            const maxDiscount = coupon.max_discount; // Keep as number or undefined
+
+            if (typeof maxDiscount === 'number' && totalCouponDiscount > maxDiscount) {
+                totalCouponDiscount = maxDiscount;
             }
 
             // apply proportional coupon discount to each cart item and mark unified
