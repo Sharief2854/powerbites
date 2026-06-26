@@ -79,7 +79,6 @@ async function updateCompany(req, res) {
     phone: req.body.phone,
     founder: req.body.founder,
     licence: req.body.licence,
-
     certification, 
 
     socialMedia,
