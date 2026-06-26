@@ -99,7 +99,7 @@ export default function HomemadeFoodGrid() {
         <Grid container spacing={{ xs: 2, sm: 3 }} alignItems="stretch">
   {filterProducts.length > 0 ? (
     filterProducts.map((product) => (
-  <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
+  <Grid size={{ xs: 12, sm: 6, md: 4,  }} key={product._id}>
   <Card
     sx={{
       width: "400px",

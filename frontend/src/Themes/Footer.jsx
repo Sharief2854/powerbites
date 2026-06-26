@@ -20,23 +20,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { getInfo } from "../Redux/Slices/AdminSlice/CompanyInfoSlice";
 import api from "../api/axiosConfig";
 
-export default function AboutAndFooter() {
-  const company = useSelector((state) => state.companyInfo.info);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const getCompany = async () => {
-    try {
-      let res = await api.get("/company/get");
-      dispatch(getInfo(res.data.data));
-    } catch (error) {
-      console.log(error.message);
-    }
-  };
-
-  useEffect(() => {
-    getCompany();
-  }, []);
-
+export default function AboutAndFooter({company}) {
+  console.log("hertc",company);
+  
   return (
     <>
       <Box
@@ -146,7 +132,7 @@ export default function AboutAndFooter() {
                 variant="h6"
                 sx={{ fontWeight: 800, mb: 2, color: "primary.contrastText" }}
               >
-                Homemade Foods
+                {company?.companyName}
               </Typography>
 
               <Typography
@@ -167,14 +153,7 @@ export default function AboutAndFooter() {
               >
                 Quick Links
               </Typography>
-              <Stack spacing={1}>
-                <Link
-                  href="/customer/home"
-                  underline="none"
-                  color="secondary.main"
-                >
-                  Home
-                </Link>
+              <Stack spacing={1}>                
                 <Link
                   href="/customer/about"
                   underline="none"

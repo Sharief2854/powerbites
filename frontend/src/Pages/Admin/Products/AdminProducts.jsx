@@ -510,7 +510,7 @@ console.log(category);
     <Box
       sx={{
         margin: "auto",
-        padding: "20px",
+        p:'1px',
         position: "relative",
         width: "100%",
         backgroundColor: "white",

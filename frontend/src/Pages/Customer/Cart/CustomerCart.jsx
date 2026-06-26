@@ -9,6 +9,7 @@ import {
   MenuItem,
   Select,
   Stack,
+  Paper,
   Typography,
   Button,
   Checkbox,
@@ -38,6 +39,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import EditIcon from "@mui/icons-material/Edit";
+import StarIcon from "@mui/icons-material/Star";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import {
   addToCart,
@@ -889,9 +891,7 @@ export default function CustomerCart() {
                 </Button>
               </DialogActions>
             </Dialog>
-
-            {cartItems?.map((item) => (
-              <Card
+{cartItems?.map((item) => (<Card
                 key={item._id}
                 sx={{
                   mb: 2,
@@ -978,19 +978,30 @@ export default function CustomerCart() {
                   </Box>
                 </Stack>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography
-                    sx={{
-                      fontWeight: 700,
-                      fontSize: "1rem",
-                      color: "#111827",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {item?.product?.name}
-                  </Typography>
+                  <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="flex-start"
+        flexWrap="wrap"
+      >
+        <Typography
+          variant="h6"
+          fontWeight={700}
+          color="#1f2937"
+        >
+          {item.product.name}
+        </Typography>
 
+        <Chip
+          size="small"
+          color={item.product.isAvailable ? "success" : "error"}
+          label={
+            item.product.isAvailable
+              ? "Available"
+              : "Out of Stock"
+          }
+        />
+      </Stack>
                   <Typography
                     sx={{
                       fontSize: "0.85rem",
@@ -1001,16 +1012,32 @@ export default function CustomerCart() {
                     {item?.product?.description}
                   </Typography>
 
-                  <Chip
-                    size="small"
-                    label="In Cart"
-                    sx={{
-                      mt: 1,
-                      bgcolor: "rgba(62,26,137,0.08)",
-                      color: "#3E1A89",
-                      fontWeight: 600,
-                    }}
-                  />
+                  <Stack
+  direction="row"
+  spacing={1}
+  flexWrap="wrap"
+  useFlexGap
+  sx={{ mt: 1 }}
+>
+  <Chip
+    size="small"
+    label="In Cart"
+    sx={{
+      bgcolor: "rgba(62,26,137,0.08)",
+      color: "#3E1A89",
+      fontWeight: 600,
+    }}
+  />
+
+  <Chip
+    size="small"
+    icon={<StarIcon sx={{ fontSize: 16 }} />}
+    label={`${item?.product?.rating || 0}`}
+    color="warning"
+    variant="outlined"
+    sx={{ fontWeight: 600 }}
+  />
+</Stack>
                 </Box>
 
                 {/* <Box sx={{ textAlign: "center" }}>
@@ -1100,25 +1127,9 @@ export default function CustomerCart() {
                   >
                     Remove
                   </Button>
-
-                  <Button
-                    size="small"
-                    variant="contained"
-                    sx={{
-                      borderRadius: 99,
-                      textTransform: "none",
-                      fontSize: "0.75rem",
-                      px: 2,
-                      bgcolor: "#3E1A89",
-                      "&:hover": { bgcolor: "#2C1265" },
-                    }}
-                    onClick={() => saveForLater(item._id)}
-                  >
-                    Save
-                  </Button>
                 </Box>
               </Card>
-            ))}
+              ))}
           </Stack>
         </Grid>
 
@@ -1342,3 +1353,23 @@ export default function CustomerCart() {
     </Box>
   );
 }
+
+{/* 
+                  <Button
+                    size="small"
+                    variant="contained"
+                    sx={{
+                      borderRadius: 99,
+                      textTransform: "none",
+                      fontSize: "0.75rem",
+                      px: 2,
+                      bgcolor: "#3E1A89",
+                      "&:hover": { bgcolor: "#2C1265" },
+                    }}
+                    onClick={() => saveForLater(item._id)}
+                  >
+                    Save
+                  </Button> */}
+                  /* {
+              
+           */
