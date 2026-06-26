@@ -82,7 +82,7 @@ app.use("/orderStatus",orderStatusRouter)
 app.use("/dashboard",isAdmin,dashboardRouter)
 app.use("/product",productfiltering)
 app.use("/dashboard",dashboardRouter)
-app.use("/adminAnalytics",isAdmin,AnalyticsRouter)
+app.use("/adminAnalytics",AnalyticsRouter)
 
 
 
