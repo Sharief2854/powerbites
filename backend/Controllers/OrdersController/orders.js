@@ -29,14 +29,17 @@ async function getOrders(req, res) {
 
 async function getAllOrders(req, res) {
     try {
-        let orders = await ordersModel.find().populate("customer", "name email").populate({
-            path: "products.product",
-            select: "name price",
-            model: "Product",
-            populate: {
-                path: "coupon",
-            }
-        });
+        let orders = await ordersModel.find()
+            .sort({ createdAt: -1 }) // Show most recent orders first
+            .populate("customer", "name email") // Populate customer details
+            .populate("coupon") // Populate the main coupon applied to the order
+            .populate({
+                path: "products.product",
+                select: "name price",
+                model: "Product"
+                // The deep populate for product-specific coupons is kept
+                // populate: { path: "coupon" } 
+            });
 
         if (!orders) {
             return res.status(400).json({
