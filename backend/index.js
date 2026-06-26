@@ -31,9 +31,9 @@ const orderStatusRouter = require('./Routes/OrderStatus/orderStatusUpdating');
 const dashboardRouter = require('./Routes/Dashboard/dashboardRoute')
 const productfiltering = require('./Routes/ProductfilteringRoutes/Productfiltering');
 const AnalyticsRouter = require('./Routes/Analytics/analytics')
-
+const adminToamin = require ("./Routes/AdminToadmin/adminToadminCurd")
 let dealsRouter = require('./Routes/Deals/dealsRoute');
-
+const CompanyDetails =require("./Routes/CompanyDetails/CompanyDetails")
 const companyRouter = require("./Routes/CompanyDetails/CompanyDetails");
 
 
@@ -47,9 +47,9 @@ app.use(express.json())
 app.use("/upload", express.static("upload"));
 const path = require("path");
 
-app.use("/upload", express.static(path.join(__dirname, "upload"))
+app.use("/upload", express.static(path.join(__dirname, "upload")))
 
-);
+
 
 
 
@@ -64,6 +64,7 @@ app.use("/products",ProductRouter)
 app.use("/banner",bannerRouter)
 app.use("/offer",offerRouter)
 
+app.use("/adminToadmin",isAdmin,adminToamin)
 
 app.use("/company", companyRouter);
 
@@ -80,10 +81,11 @@ app.use("/developer",DeveloperRouter)
 app.use("/review",reviewRouter)
 app.use("/orderStatus",orderStatusRouter)
 app.use("/dashboard",isAdmin,dashboardRouter)
-app.use("/product",productfiltering)
+app.use("/products",productfiltering)
 app.use("/dashboard",dashboardRouter)
 app.use("/adminAnalytics",AnalyticsRouter)
 
+app.use("/company",CompanyDetails)
 
 
 // Global error handling middleware to catch Multer errors safely
