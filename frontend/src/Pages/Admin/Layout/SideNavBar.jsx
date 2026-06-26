@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Tooltip, Drawer, Toolbar } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
@@ -7,8 +7,14 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import PeopleIcon from '@mui/icons-material/People';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import SettingsIcon from '@mui/icons-material/Settings';
+import BusinessIcon from '@mui/icons-material/Business';
+import AdUnitsIcon from '@mui/icons-material/AdUnits';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import api from '../../../api/axiosConfig';
+import { getInfo } from '../../../Redux/Slices/AdminSlice/CompanyInfoSlice';
 const drawerWidth = 260;
 const collapsedWidth = 80;
 
@@ -19,18 +25,48 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
     { text: 'Orders', icon: <ReceiptLongIcon /> },
     { text: 'Customers', icon: <PeopleIcon /> },
     { text: 'Analytics', icon: <BarChartIcon /> },
-    { text: 'Info', icon: <BarChartIcon /> },
-    { text: 'Coupons', icon: <BarChartIcon /> },
-    { text: 'Offers', icon: <SettingsIcon /> },
+    { text: 'Info', icon: <BusinessIcon /> },
+    { text: 'Coupons', icon: <ConfirmationNumberIcon /> },
+    { text: 'Banners', icon: <AdUnitsIcon /> },
     { text: 'Settings', icon: <SettingsIcon /> },
   ];
 
   const navigate = useNavigate();
 
+  const company = useSelector((state) => state.companyInfo.info);
+  const dispatch = useDispatch();
+  const getCompany = async () => {
+    try {
+      let res = await api.get("/company/get");
+      dispatch(getInfo(res.data.data));
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  useEffect(() => {
+    getCompany();
+  }, []);
+
   const getDrawerContent = (isExpanded) => (
     <Box sx={{ height: '100%', bgcolor: '#1E1154', color: 'white', display: 'flex', flexDirection: 'column' }}>
       <Toolbar sx={{ px: isExpanded ? 3 : 2, justifyContent: isExpanded ? 'flex-start' : 'center' }}>
         {isExpanded ? (
+          <><Box
+              component="img"
+              src={company.companyImage}
+              alt="DRC Logo"
+              sx={{
+                width: 36,
+                height: 36,
+                mr:'1px',
+                objectFit: "cover",
+                borderRadius: "50%",
+                background: "#fff",
+                boxShadow: "0px 6px 18px rgba(62, 26, 137, 0.15)",
+              }}
+            />
+          
           <Typography
             variant="h5"
             sx={{
@@ -47,11 +83,24 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
             }}
             onClick={() => navigate('/admin')}
           >
-            🍔 <span style={{ color: '#A78BFA' }}>PowerBites</span>
-          </Typography>
+             <span style={{ color: '#A78BFA' }}>  {company.companyName}</span>
+          </Typography></>
         ) : (
           <Tooltip title="PowerBites" placement="right">
-            <Box sx={{ fontSize: 24, color: '#A78BFA' }}>🍔</Box>
+            <Box
+              component="img"
+              src={company.companyImage}
+              alt="DRC Logo"
+              sx={{
+                width: 36,
+                height: 36,
+                mr:'1px',
+                objectFit: "cover",
+                borderRadius: "50%",
+                background: "#fff",
+                boxShadow: "0px 6px 18px rgba(62, 26, 137, 0.15)",
+              }}
+            />
           </Tooltip>
         )}
       </Toolbar>

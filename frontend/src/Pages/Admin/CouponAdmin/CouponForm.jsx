@@ -7,6 +7,8 @@ import {
   Button,
   Stack,
   Chip,
+  Select,
+  MenuItem,
   TextField,
   Divider,
 } from "@mui/material";
@@ -14,6 +16,7 @@ import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import React, { useEffect, useState } from 'react'
 import api from '../../../api/axiosConfig';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { enqueueSnackbar, SnackbarProvider } from "notistack";
 
 const inputStyles = {
   '& .MuiOutlinedInput-root': {
@@ -48,6 +51,7 @@ const initialCoupon = {
   code: "",
   discount: "",
   max_discount: "",
+  status: "",
   min_order_value: "",
   starts_At: "",
   ends_At: "",
@@ -93,7 +97,7 @@ const handleSubmit = async () => {
         `/coupon/updateCoupon/${editingCoupon._id}`,
         couponForm
       );
-      // enqueueSnackbar("Coupon updated successfully", { variant: 'success' });
+      enqueueSnackbar("Coupon updated successfully", { variant: 'success' });
     } else {
       let res = await api.post(
         "/coupon/setCoupon",
@@ -101,9 +105,9 @@ const handleSubmit = async () => {
       );
       console.log(res.data);
       
-      navigate('/admin/coupon')
-      // enqueueSnackbar("Coupon created successfully", { variant: 'success' });
+      enqueueSnackbar("Coupon created successfully", { variant: 'success' });
     }
+      navigate('/admin/coupons')
 
     setCouponForm(initialCoupon);
     setEditingCoupon(null);
@@ -133,6 +137,7 @@ useEffect(() => {
             description: targetCoupon.description || "",
             code: targetCoupon.code || "",
             discount: targetCoupon.discount || "",
+            status: targetCoupon.status || "",
             max_discount: targetCoupon.max_discount || "",
             min_order_value: targetCoupon.min_order_value || "",
             starts_At: targetCoupon.starts_At ? targetCoupon.starts_At.slice(0, 16) : "",
@@ -165,6 +170,7 @@ return (
       overflow: "hidden",
     }}
   >
+    <SnackbarProvider/>
     
     <Button
       onClick={() => window.history.back()}
@@ -266,6 +272,23 @@ return (
           onChange={(e) => setCouponForm({ ...couponForm, max_discount: e.target.value })}
           sx={inputStyles}
         />
+        <FormControl fullWidth sx={inputStyles}>
+  <InputLabel>Status</InputLabel>
+
+  <Select
+    value={couponForm.status}
+    label="Status"
+    onChange={(e) =>
+      setCouponForm({
+        ...couponForm,
+        status: e.target.value,
+      })
+    }
+  >
+    <MenuItem value="Active">Active</MenuItem>
+    <MenuItem value="inActive">Inactive</MenuItem>
+  </Select>
+</FormControl>
 
 <FormControl fullWidth sx={inputStyles}>
   <InputLabel shrink sx={{ color: "#3E1A89" }}>
@@ -290,14 +313,14 @@ return (
 
 <FormControl fullWidth sx={inputStyles}>
   <InputLabel shrink sx={{ color: "#3E1A89" }}>
-    Rnds At
+    Ends At
   </InputLabel>
 
   <OutlinedInput
     type="datetime-local"
-    value={couponForm.starts_At}
+    value={couponForm.ends_At}
     onChange={(e) =>
-      setCouponForm({ ...couponForm, starts_At: e.target.value })
+      setCouponForm({ ...couponForm, ends_At: e.target.value })
     }
     label="Starts At"
     sx={{

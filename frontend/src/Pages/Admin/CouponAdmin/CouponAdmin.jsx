@@ -9,6 +9,11 @@ import {
   Stack,
   Chip,
   Divider,
+  Dialog,
+  DialogContentText,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import React, { useEffect, useState } from 'react'
 import api from "../../../api/axiosConfig";
@@ -19,8 +24,11 @@ export default function AllCoupon() {
 
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
+  const [message, setMessage] = useState(null);
 
   const navigate = useNavigate();
+
 
   const getCoupons = async () => {
   try {
@@ -36,11 +44,12 @@ export default function AllCoupon() {
 };
 
 
-const deleteCoupon = async (id) => {
+const handleConfirmDelete = async () => {
+    if (!confirmDelete.couponId) return;
+    setConfirmDelete({ open: false, couponId: null });
   try {
-    await api.delete(`/coupon/deleteCoupon/${id}`);
-
-    getCoupons();
+    await api.delete(`/coupon/deleteCoupon/${confirmDelete.couponId}`);
+    setCoupons(p=>p.filter((i)=>i._id!==confirmDelete.couponId));
   } catch (err) { enqueueSnackbar(err?.response?.data?.message,{variant:'error'});
   }
 };
@@ -217,7 +226,7 @@ useEffect(() => {
                 <Button
                   variant="outlined"
                   color="error"
-                  onClick={() => deleteCoupon(coupon._id)}
+                  onClick={() => setConfirmDelete({ open: true, couponId: coupon._id})}
                   sx={{
                     minWidth: '50px',
                     borderRadius: '10px',
@@ -254,7 +263,26 @@ useEffect(() => {
             </CardContent>
           </Card>
         );
-      })}
+      })}<Dialog
+              open={confirmDelete.open} 
+              onClose={() => setConfirmDelete({ open: false, id: null })}
+              slotProps={{ backdrop: {}, paper: { sx: { borderRadius: 3, p: 1, maxWidth: 400 } } }}
+            >
+              <DialogTitle fontWeight={700} sx={{ pb: 1 }}>Delete Coupon?</DialogTitle>
+              <DialogContent>
+                <DialogContentText variant="body2" color="text.secondary">
+                  Are you sure you want to delete this coupon? This action cannot be undone.
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions sx={{ px: 3, pb: 2, pt: 1 }}>
+                <Button onClick={() => setConfirmDelete({ open: false, id: null })} sx={{ textTransform: 'none', color: "text.secondary" }}>
+                  Cancel
+                </Button>
+                <Button onClick={handleConfirmDelete} color="error" variant="contained" disableElevation sx={{ textTransform: 'none', borderRadius: 2, fontWeight: 600 }}>
+                  Confirm Delete
+                </Button>
+              </DialogActions>
+            </Dialog>
     </Box>
 </>  
 )

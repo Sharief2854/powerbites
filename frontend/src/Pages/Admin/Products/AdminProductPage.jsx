@@ -62,7 +62,7 @@ export default function AdminProductPage() {
   }, []);
   return (
     <div>
-      <Box sx={{ width: "100%" }}>
+      <Box sx={{ width: "100%",position:'relative' }}>
         <SnackbarProvider />
         <Typography
           align="center"
@@ -76,7 +76,7 @@ export default function AdminProductPage() {
         >
           Product Details
         </Typography>
-        <PrimaryButton onClick={()=>navigate(`/admin/updateProduct/${id}`)}
+        <PrimaryButton onClick={()=>navigate(`/admin/products/updateProduct/${id}`)}
         sx={{position:'absolute',top:0,right:0,m:1}}
         >
           Update

@@ -111,7 +111,9 @@ export default function ProductCard({ product }) {
   </Typography>
 
   <Button
-    onClick={handleCreateBanner}
+    onClick={(e)=>{
+      e.stopPropagation();
+      handleCreateBanner}}
     sx={{
       position: "relative",
       overflow: "hidden",
@@ -149,7 +151,7 @@ export default function ProductCard({ product }) {
         top: "4px",
         left: "6px",
         width: "35%",
-        height: "40%",
+        height: "60%",
         borderRadius: "10px",
         background:
           "linear-gradient(to bottom right, rgba(255,255,255,0.45), transparent)",

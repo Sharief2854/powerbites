@@ -80,7 +80,7 @@ function App() {
         <Route path="/admin/infoupdate/:id" element={<UpdateInfo/>}/>
         <Route path="/admin/coupons" element={<AllCoupon/>}/>
         <Route path="/admin/handlecoupon/:id" element={<CouponForm/>}/>
-        <Route path="/admin/offers" element={<Offers/>}/>
+        <Route path="/admin/banners" element={<Offers/>}/>
         <Route path="/admin/Analytics" element={<DynamicAdminDashboard/>}/>
         </Route>
 

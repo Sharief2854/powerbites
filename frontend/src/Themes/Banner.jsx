@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Box, Typography, Paper, Container, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import api from "../api/axiosConfig";
 
-const banners = [
+const banne = [
   {
     title: "Exclusive",
     subtitle: "Homemade food offer for you!",
@@ -75,6 +76,7 @@ function HomemadeFoodBanner() {
   const [currentBanner, setCurrentBanner] = useState(0);
   const [currentImage, setCurrentImage] = useState(0);
   const [pausedUntil, setPausedUntil] = useState(null);
+  const [banners, setBanners] = useState(banne);
 
   const activeBanner = banners[currentBanner];
   const isPaused = pausedUntil && Date.now() < pausedUntil;
@@ -126,7 +128,19 @@ function HomemadeFoodBanner() {
     setCurrentImage(index);
     pauseSlider();
   };
+  const getBanners = async () => {
+    try {
+      let res = await api.get("/banner/getBanners")
+      setBanners(res.data.banners)
+    } catch (error) {
+      
+    }
+  }
 
+  useEffect(() => {
+    getBanners()
+  }, [])
+  
   return (
     <Box>
       <Container maxWidth="lg">
