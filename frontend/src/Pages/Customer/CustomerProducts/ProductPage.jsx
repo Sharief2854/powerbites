@@ -625,7 +625,7 @@ async function checkOutPage() {
           <Typography color="text.secondary">No features available</Typography>
         )}
       </Paper>
-      <CustomerReview />
+      <CustomerReview id={{id:product?._id}}/>
     </Box>
   );
 }
