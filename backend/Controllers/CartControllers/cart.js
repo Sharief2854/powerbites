@@ -132,7 +132,10 @@ async function setQuantity(req, res) {
 async function getCart(req, res) {
     try {
         let userId = req.userId;
-        let cart = await cartModel.find({ customer: userId }).populate("product coupon");
+        let cart = await cartModel.find({ customer: userId })
+            .populate("product")
+            .populate("coupon")
+            .populate("unifiedCoupon");
 
         if (!cart || cart.length === 0) {
             return res.status(400).json({
@@ -140,9 +143,19 @@ async function getCart(req, res) {
             });
         }
 
+        // Normalize the coupon data so the frontend doesn't have to worry about it.
+        // We'll ensure the `coupon` field always has the right data.
+        const processedCart = cart.map(item => {
+            const itemJson = item.toJSON();
+            if (itemJson.isUnified && itemJson.unifiedCoupon) {
+                itemJson.coupon = itemJson.unifiedCoupon;
+            }
+            return itemJson;
+        });
+
         res.status(200).json({
             message: "Items fetched successfully",
-            cart
+            cart: processedCart
         });
     }
     catch (err) {
@@ -168,6 +181,13 @@ async function applyCoupon(req, res) {
         if (!coupon) {
             return res.status(404).json({
                 message: "Coupon not found"
+            });
+        }
+
+        const now = new Date();
+        if (coupon.status !== "Active" || now < coupon.starts_At || now > coupon.ends_At) {
+            return res.status(400).json({
+                message: "This coupon is either invalid or has expired."
             });
         }
 
@@ -199,9 +219,6 @@ async function applyCoupon(req, res) {
             }
 
             // validate coupon status and min order value
-            if (coupon.status !== "Active") {
-                return res.status(400).json({ message: "Coupon is not active" });
-            }
             const minOrderValue = Number(coupon.min_order_value) || 0;
             if (subtotal < minOrderValue) {
                 return res.status(400).json({ message: `Coupon requires minimum order value of ${minOrderValue}` });
@@ -209,10 +226,9 @@ async function applyCoupon(req, res) {
 
             const couponPercent = Number(coupon.discount) || 0;
             let totalCouponDiscount = (subtotal * couponPercent) / 100;
-            const maxDiscount = coupon.max_discount; // Keep as number or undefined
-
-            if (typeof maxDiscount === 'number' && totalCouponDiscount > maxDiscount) {
-                totalCouponDiscount = maxDiscount;
+            const maxDiscount = Number(coupon.max_discount);
+            if (!Number.isNaN(maxDiscount)) {
+                totalCouponDiscount = Math.min(totalCouponDiscount, maxDiscount);
             }
 
             // apply proportional coupon discount to each cart item and mark unified

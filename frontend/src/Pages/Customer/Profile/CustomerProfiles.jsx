@@ -95,7 +95,7 @@ function CustomerProfile({ onBack }) {
     try {
       const id = getUserId();
       const response = await api.get(`/updateCustomerProfile/getPhoto/${id}`);
-      //console.log("response photos :", response.data);
+      console.log("response photos :", response.data);
       const imagePath =
         response.data?.image ||
         response.data?.user?.image ||

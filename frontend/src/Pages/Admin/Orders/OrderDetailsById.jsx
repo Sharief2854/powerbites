@@ -840,6 +840,7 @@ console.log('activeBackendOrder',activeBackendOrder)
             } 
           : order
       );
+      console.log("updatedList",updatedList)
       dispatch(getOrder(updatedList));
       
       setCancelDialogOpen(false);

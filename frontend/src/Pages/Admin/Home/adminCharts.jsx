@@ -677,8 +677,9 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import CancelIcon from '@mui/icons-material/Cancel';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import KitchenIcon from '@mui/icons-material/Kitchen';
+import api from '../../../api/axiosConfig';
 
-const api = axios;
+//const api = axios;
 
 export default function AdminDashboard() {
   const theme = useTheme();
@@ -749,6 +750,12 @@ export default function AdminDashboard() {
         api.get(`/adminAnalytics/totalProductsSold?year=${year}`).catch(() => ({ data: {} })),
         api.get(`/adminAnalytics/cancelledOrdersAnalytics?year=${year}&month=${month}`).catch(() => ({ data: {} }))
       ]);
+      console.log("resSpec", resSpec.data)
+      console.log("resStat", resStat.data)
+      console.log("resBest", resBest.data)
+      console.log("resCust", resCust.data)
+      console.log("resOrd", resOrd.data)
+      console.log("resQty", resQty.data)
 
       const totalRevenue = resSpec.data?.analytics?.totalRevenue || resSpec.data?.totalRevenue || 0;
       const hasRealData = totalRevenue > 100 || (resSpec.data?.data && resSpec.data.data.length > 0);
