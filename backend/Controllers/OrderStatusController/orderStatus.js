@@ -1,4 +1,5 @@
 const ordersModel = require("../../Model/orderModel");
+const { getIo } = require("../../socket"); // We will create this helper
 const razorpay = require("../../config/razorpayConfig");
 const transporter = require("../../config/emailConfig");
 
