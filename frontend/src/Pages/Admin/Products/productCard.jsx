@@ -43,7 +43,7 @@ export default function ProductCard({ product }) {
   const handleCreateBanner = async () => {
     try {
       let response = await api.post("banner/setbanner", {
-        productId: product?._id,
+        productId: product?._id,bannerType:"product"
       });
     } catch (error) {
       enqueueSnackbar(error.message, { variant: "error" });

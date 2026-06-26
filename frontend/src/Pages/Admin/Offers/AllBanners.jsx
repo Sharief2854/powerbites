@@ -144,14 +144,14 @@ export default function OfferPreviewBanner({
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            px: { xs: 2, sm: 3, md: 4 },
+            px: { xs: 2, sm: 3, },
             pb: { xs: 4, md: 0 },
           }}
         >
           <Box
             sx={{
               width: "100%",
-              maxWidth: { xs: "100%", sm: 420, md: 500 },
+              maxWidth: { xs: "100%"},
             }}
           >
             <AutoCarousel

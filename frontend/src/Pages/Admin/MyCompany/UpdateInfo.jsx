@@ -618,6 +618,7 @@ formData.append("companyName", companyData.companyName || "");
       enqueueSnackbar(res.data.message, {
         variant: "success",
       });
+      navigate("/admin/info");
     } catch (error) {
       console.log(error.message);
       

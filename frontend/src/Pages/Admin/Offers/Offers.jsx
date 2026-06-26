@@ -105,17 +105,13 @@ const backgroundOptions = [
   },
 ];
 
-function ThemeSelectorRow({ selectedBg, setSelectedBg, coupons = [] }) {
-  const [selectedCoupons, setSelectedCoupons] = useState([]);
-
-  const handleCouponSelect = (couponId) => {
-    if (selectedCoupons.includes(couponId)) {
-      setSelectedCoupons((prev) => prev.filter((id) => id !== couponId));
-    } else {
-      setSelectedCoupons((prev) => [...prev, couponId]);
-    }
-  };
-
+function ThemeSelectorRow({
+  selectedBg,
+  setSelectedBg,
+  selectedCoupon,
+  coupons,
+  handleCouponSelect,
+}) {
   return (
     <Box>
       <Box>
@@ -176,38 +172,118 @@ function ThemeSelectorRow({ selectedBg, setSelectedBg, coupons = [] }) {
 
         <Grid container spacing={2}>
           {coupons?.map((coupon) => {
-            const selected = selectedCoupons.includes(coupon._id);
-
+            const selected = selectedCoupon === coupon?._id;
             return (
-              <Grid item xs={12} sm={6} md={4} key={coupon._id}>
+              <Grid item xs={12} sm={6} md={4} key={coupon?._id}>
                 <Card
-                  onClick={() => handleCouponSelect(coupon._id)}
-                  sx={{
-                    cursor: "pointer",
-                    border: selected
-                      ? "2px solid #3E1A89"
-                      : "1px solid #e5e7eb",
-                    transition: "0.2s",
-                  }}
-                >
-                  <CardContent>
-                    <Typography fontWeight={700}>{coupon.title}</Typography>
+  onClick={() => handleCouponSelect(coupon?._id)}
+  sx={{
+    cursor: "pointer",
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: 4,
+    border: selected ? "2px solid #3E1A89" : "1px solid rgba(62,26,137,0.15)",
+    background: "#fff",
+    transition: "all 0.25s ease",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "start",
 
-                    <Typography variant="body2" color="text.secondary">
-                      {coupon.description}
-                    </Typography>
+    boxShadow: selected
+      ? "0 15px 40px rgba(62,26,137,0.25)"
+      : "0 8px 25px rgba(62,26,137,0.08)",
+    transition: "all 0.25s ease",
+    "&:hover": {
+      boxShadow: "0 18px 45px rgba(62,26,137,0.18)",
+      transform: "translateY(-2px)",
+    },
 
-                    <Typography mt={1}>
-                      Code: <strong>{coupon.code}</strong>
-                    </Typography>
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "40%",
+      background:
+        "linear-gradient(180deg, rgba(62,26,137,0.15), rgba(255,255,255,0))",
+      pointerEvents: "none",
+    },
 
-                    <Typography>Discount: {coupon.discount}%</Typography>
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      inset: 0,
+      borderRadius: "inherit",
+      boxShadow: selected
+        ? "inset 0 0 0 1px rgba(62,26,137,0.4)"
+        : "none",
+      pointerEvents: "none",
+    },
+  }}
+>
+  <CardContent
+    sx={{
+      position: "relative",
+      zIndex: 1,
+      py: 3,
+    }}
+  >
+    <Typography
+      fontWeight={800}
+      sx={{
+        fontSize: "1.1rem",
+        color: "#3E1A89",
+        letterSpacing: 0.5,
+      }}
+    >
+      {coupon?.title}
+    </Typography>
 
-                    {coupon.max_discount && (
-                      <Typography>Max: ₹{coupon.max_discount}</Typography>
-                    )}
-                  </CardContent>
-                </Card>
+    <Typography
+      mt={1.5}
+      sx={{
+        fontSize: "0.9rem",
+        color: "#3E1A89",
+      }}
+    >
+      Code:{" "}
+      <strong
+        style={{
+          color: "#3E1A89",
+          padding: "2px 8px",
+          borderRadius: "6px",
+          fontWeight: 700,
+        }}
+      >
+        {coupon?.code}
+      </strong>
+    </Typography>
+
+    <Typography
+      mt={2}
+      sx={{
+        fontWeight: 400,
+        color: "#3E1A89",
+      }}
+    >
+      {coupon?.discount}% OFF
+    </Typography>
+
+    {coupon?.max_discount && (
+      <Typography
+        mt={1}
+        sx={{
+          fontSize: "0.85rem",
+          color: "#3E1A89",
+          opacity: 0.8,
+        }}
+      >
+        Max Savings: ₹{coupon?.max_discount}
+      </Typography>
+    )}
+  </CardContent>
+</Card>
               </Grid>
             );
           })}
@@ -243,20 +319,17 @@ export function AutoCarousel({
   if (!images.length) {
     return (
       <Box
-        sx={{
-          width: "100%",
-          height: { xs: 240, sm: 300, md: 320 },
-          borderRadius: 4,
-          bgcolor: "rgba(255,255,255,0.92)",
-          display: "flex",
-          alignItems: "center",
+        sx={{width: { xs: "100%", sm: 240 }, 
+        height: { xs: 240, sm: 300 },
+        display: 'flex',
+        alignItems: 'center',
           justifyContent: "center",
           textAlign: "center",
           px: 3,
           boxShadow: "0 14px 35px rgba(0,0,0,0.18)",
         }}
       >
-        <Typography color="text.secondary" fontWeight={700}>
+        <Typography color="text.secondary" fontWeight={700} sx={{color:'#fff',fontSize:30}}>
           Upload images to preview the banner
         </Typography>
       </Box>
@@ -377,6 +450,17 @@ export default function Offers() {
   const [openDelete, setOpenDelete] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
 
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+  const [coupons, setCoupons] = useState([]);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState("");
+  const [banners,setBanners] = useState([]);
+
+
+  const handleCouponSelect = (couponId) => {
+    setSelectedCoupon((prev) => (prev === couponId ? null : couponId));
+  };
+
   const [toast, setToast] = useState({
     open: false,
     severity: "success",
@@ -418,6 +502,7 @@ export default function Offers() {
 
       const res = await api.get("/offer/getOffers");
       const fetchedOffers = res?.data?.offers || res?.data?.data || [];
+
       dispatch(getOffer(fetchedOffers));
     } catch (error) {
       console.error("GET ERROR:", error?.response?.data || error.message);
@@ -428,8 +513,42 @@ export default function Offers() {
     }
   };
 
+  const fetchCoupons = async () => {
+    try {
+      setLoading(true);
+      setErrorText("");
+
+      const res = await api.get("/coupon/getCoupons");
+      const fetchedCoupons = res?.data?.coupons || res?.data?.data || [];
+      setCoupons(fetchedCoupons);
+    } catch (error) {
+      setErrorText(error?.response?.data?.message || "Failed to load coupons");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchBanners = async () => {
+    try {
+      setLoading(true);
+      setErrorText("");
+
+      const res = await api.get("/banner/allBanners");
+      const fetchedB = res?.data?.banners || res?.data?.data || [];
+      console.log(fetchedB);
+      
+      setBanners(fetchedB);
+    } catch (error) {
+      setErrorText(error?.response?.data?.message || "Failed to load coupons");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchOffers();
+    fetchCoupons();
+    fetchBanners();
   }, []);
 
   const resetCreateForm = () => {
@@ -492,7 +611,7 @@ export default function Offers() {
       formData.append("code", code);
       formData.append("status", status);
       formData.append("background", selectedBg.name);
-
+      formData.append("coupon", selectedCoupon);
       images.forEach((file) => {
         formData.append("file", file);
       });
@@ -657,6 +776,33 @@ export default function Offers() {
       setLoading(false);
     }
   };
+  const handleBannerStatus = async (offer) => {
+    const nextStatus = offer.status === "active" ? "inactive" : "active";
+
+    try {
+      setLoading(true);
+
+      const res = await api.put(`/banner/bannerStatus/${offer._id}`, {
+        status: nextStatus,
+      });
+
+      const updatedOffer = res?.data?.offer || res?.data?.status;
+      await fetchBanners();
+      // if (updatedOffer) {
+      //   dispatch(updateOfferAction(updatedOffer));
+      // }
+
+      showToast("Status updated successfully");
+    } catch (error) {
+      console.error("STATUS ERROR:", error?.response?.data || error.message);
+      showToast(
+        error?.response?.data?.message || "Failed to update status",
+        "error",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const createPreviewOffer = {
     title,
@@ -690,7 +836,7 @@ export default function Offers() {
         )}
 
         <Grid container spacing={3} alignItems="flex-start">
-          <Grid size={{ xs: 12, lg: 3 }}>
+          <Grid size={{ xs: 12, }}>
             <Paper
               elevation={0}
               sx={{
@@ -708,6 +854,9 @@ export default function Offers() {
                 <ThemeSelectorRow
                   selectedBg={selectedBg}
                   setSelectedBg={setSelectedBg}
+                  selectedCoupon={selectedCoupon}
+                  coupons={coupons}
+                  handleCouponSelect={handleCouponSelect}
                 />
 
                 <Divider />
@@ -790,11 +939,10 @@ export default function Offers() {
             </Paper>
           </Grid>
 
-          <Grid item xs={12} lg={7}>
+          <Grid size={{ xs: 12 }} >
             <Box
               sx={{
-                position: { lg: "sticky" },
-                top: { lg: 24 },
+
               }}
             >
               <OfferPreviewBanner
@@ -812,7 +960,7 @@ export default function Offers() {
         <Divider sx={{ my: 5 }} />
 
         <Typography variant="h5" fontWeight={900} sx={{ mb: 3 }}>
-          Saved Offers
+          Saved Offers & Banners
         </Typography>
 
         <Stack spacing={4}>
@@ -890,6 +1038,80 @@ export default function Offers() {
               </Typography>
             </Paper>
           )}
+          {banners.length > 0 ? (
+            banners?.map((offer) => (
+              <OfferPreviewBanner
+                backgroundOptions={backgroundOptions}
+                key={offer._id}
+                offer={{
+                  title: offer?.title,
+                  description: offer?.description,
+                  code: offer?.code,
+                  status: offer?.status,
+                  background: offer?.background,
+                  images: Array.isArray(offer?.image) ? offer?.image : [],
+                }}
+                actions={
+                  <>
+                    <Button
+                      variant="contained"
+                      startIcon={<EditIcon />}
+                      onClick={() => handleOpenEdit(offer)}
+                      sx={{ borderRadius: 2.5, textTransform: "none" }}
+                    >
+                      Edit
+                    </Button>
+
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={<DeleteOutlineIcon />}
+                      onClick={() => {
+                        setSelectedUserId(offer?._id);
+                        setOpenDelete(true);
+                      }}
+                      sx={{ borderRadius: 2.5, textTransform: "none" }}
+                    >
+                      Delete
+                    </Button>
+
+                    <Button
+                      variant="text"
+                      onClick={() => handleBannerStatus(offer)}
+                      sx={{
+                        borderRadius: 2.5,
+                        textTransform: "none",
+                        color: "#fff",
+                        border: "1px solid rgba(255,255,255,0.35)",
+                      }}
+                    >
+                      {offer?.status === "active"
+                        ? "Set Inactive"
+                        : "Set Active"}
+                    </Button>
+                  </>
+                }
+              />
+            ))
+          ) : (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 5,
+                borderRadius: 4,
+                textAlign: "center",
+                border: "1px solid #e7e9f0",
+                bgcolor: "#fff",
+              }}
+            >
+              <Typography variant="h6" fontWeight={800} sx={{ mb: 1 }}>
+                {loading ? "Loading offers..." : "No Banners yet"}
+              </Typography>
+              <Typography color="text.secondary">
+                Create your first banner to display it here.
+              </Typography>
+            </Paper>
+          )}
         </Stack>
 
         <Dialog
@@ -908,6 +1130,9 @@ export default function Offers() {
                   <ThemeSelectorRow
                     selectedBg={selectedBg}
                     setSelectedBg={setSelectedBg}
+                    selectedCoupon={selectedCoupon}
+                    coupons={coupons}
+                    handleCouponSelect={handleCouponSelect}
                   />
 
                   <TextField

@@ -53,7 +53,7 @@ export default function CompanyInfo() {
         )}
       </Box>
       <Box>
-        {false ? (
+        {company?._id ? (
           <Box
             maxWidth="lg"
             fullWidth
