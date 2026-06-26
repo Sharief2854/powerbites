@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors')
+const cors = require('cors');
 const ConnectDB = require('./config/connectDB');
 const RegRouter = require("./Routes/Auth/Registration")
 const ResetRouter = require("./Routes/Auth/ResetPassword")
@@ -13,6 +13,7 @@ const CartRouter = require('./Routes/Cart/cartRouter');
 const bannerRouter = require('./Routes/Banner/bannerRoutes');
 const offerRouter = require('./Routes/Offer/offerRouter');
 const multer = require('multer');
+const conditionalJsonParser = require('./MiddleWare/jsonParserMiddleware');
 
 const couponRouter = require('./Routes/Coupon/couponRouter');
 
@@ -43,7 +44,15 @@ ConnectDB()
 // app.post("/upload",)
 const app = express()
 app.use(cors())
-app.use(express.json())
+
+// Use the conditional JSON parser middleware.
+// IMPORTANT: The webhook route needs the raw body for signature verification.
+// We apply the raw parser specifically for this route.
+app.use('/api/payment/refund-webhook', express.raw({ type: 'application/json' }));
+
+// This is crucial for the Razorpay webhook to work correctly.
+app.use(conditionalJsonParser);
+
 app.use("/upload", express.static("upload"));
 const path = require("path");
 
@@ -61,7 +70,7 @@ app.use("/resetPass",ResetRouter)
 app.use("/crudAdmin",isAdmin,adminRouter)
 app.use("/cart",isCustomer,CartRouter)
 app.use("/products",ProductRouter)
-app.use("/banner",bannerRouter)
+app.use("/banner", bannerRouter)
 app.use("/offer",offerRouter)
 
 app.use("/adminToadmin",isAdmin,adminToamin)
@@ -72,7 +81,7 @@ app.use("/orders",ordersRouter)
 
 app.use("/coupon",couponRouter)
 app.use("/category",productCategoryRouter)
-app.use("/payment",PaymentRouter)
+app.use("/api/payment",PaymentRouter)
 app.use("/deals",isAdmin,dealsRouter)
 
 // Customer profile updating routes with authentication middleware

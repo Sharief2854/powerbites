@@ -1,5 +1,6 @@
 const ordersModel = require("../../Model/orderModel");
 const razorpay = require("../../config/razorpayConfig");
+const RefundModel = require("../../Model/refundModel");
 const transporter = require("../../config/emailConfig");
 
 async function updateOrderStatus(req, res) {
@@ -399,7 +400,7 @@ async function customerCancellingOrder(req, res) {
         if (refundAmount > 0) {
             try {
                 refund = await razorpay.payments.refund(order.paymentID, {
-                    amount: refundAmount * 100, // Amount in paise
+                    amount: Math.round(refundAmount * 100), // Ensure amount is an integer
                     speed: "normal",
                     notes: {
                         reason: `Customer cancellation: ${reason}`,
@@ -411,6 +412,16 @@ async function customerCancellingOrder(req, res) {
                 console.error("Razorpay refund failed:", refundError);
                 return res.status(500).json({ message: "Refund processing failed. Please contact support.", error: refundError.message });
             }
+
+            // Create a new record in the Refund collection
+            await RefundModel.create({
+                order: orderId,
+                paymentId: order.paymentID,
+                refundId: refund.id,
+                amount: refundAmount,
+                cancellationFee: cancellationFee,
+                notes: refund.notes
+            });
         }
         // --- End Refund Logic ---
 
@@ -418,7 +429,7 @@ async function customerCancellingOrder(req, res) {
             { _id: orderId },
             {
                 $set: {
-                    orderStatus: "order cancelled",
+                    orderStatus: "refund pending",
                     cancelledBy: "customer",
                     cancelReason: reason,
                     cancelledAt: new Date(),
@@ -612,6 +623,16 @@ async function cancelOrderByAdmin(req, res) {
                 console.error("Razorpay refund failed (Admin):", refundError);
                 return res.status(500).json({ message: "Refund processing failed. Please contact support.", error: refundError.message });
             }
+
+            // Create a new record in the Refund collection for admin cancellation
+            await RefundModel.create({
+                order: orderId,
+                paymentId: order.paymentID,
+                refundId: refund.id,
+                amount: refundAmount,
+                cancellationFee: 0,
+                notes: refund.notes
+            });
         }
         // --- End Refund Logic ---
 
@@ -619,7 +640,7 @@ async function cancelOrderByAdmin(req, res) {
             { _id: orderId },
             {
                 $set: {
-                    orderStatus: "order cancelled",
+                    orderStatus: "refund pending",
                     cancelledBy: "admin",
                     cancelReason: reason,
                     cancelledAt: new Date(),
