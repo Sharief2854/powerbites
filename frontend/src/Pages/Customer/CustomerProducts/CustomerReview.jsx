@@ -57,7 +57,8 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid'; // Using MUI's latest responsive Grid
 
-function CustomerReview() {
+function CustomerReview(props) {
+  const {id}= props;
   // Customized default mock data for PowerBites (Nutritious Food Brand)
   const [reviews, setReview] = useState([
     { 
