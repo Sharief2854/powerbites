@@ -1,12 +1,13 @@
 const express = require("express");
 const ordersModel = require("../../Model/orderModel");
-const {analyticsPeriod,analyticSpecific, topSellingProducts, leastSellingProducts, bestSellingProduct,totalCustomers,totalOrders, totalProductsSold, orderStatusSummary, cancelledOrdersAnalytics} = require("../../Controllers/AnalyticsController/adminAnalytics");
+const {analyticsPeriod,analyticSpecific, topSellingProducts, leastSellingProducts, bestSellingProduct,totalCustomers,totalOrders, totalProductsSold, orderStatusSummary, cancelledOrdersAnalytics, topCustomer} = require("../../Controllers/AnalyticsController/adminAnalytics");
 
 const router = express.Router();
 
 //getting products analytics for admin API
 router.get("/analytics/:period",analyticsPeriod);
 
+//getting specific month and year
 router.get("/analyticSpecifc",analyticSpecific)
 
 //getting best sold products per year month and week
@@ -32,6 +33,9 @@ router.get("/orderStatusSummary",orderStatusSummary)
 
 //cancelled orders
 router.get("/cancelledOrdersAnalytics",cancelledOrdersAnalytics)
+
+//getting top customer
+router.get("/topCustomer",topCustomer)
 
 
 
