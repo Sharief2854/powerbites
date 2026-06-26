@@ -42,6 +42,9 @@ import OrderRecordsDashboardById from "./Pages/Admin/Orders/OrderDetailsById";
 import CompanyInfo from "./Pages/Admin/MyCompany/CompanyInfo";
 import About from "./Pages/Common/About";
 import UpdateInfo from "./Pages/Admin/MyCompany/UpdateInfo";
+import Coupons from "./Pages/Admin/CouponAdmin/CouponAdmin";
+import CouponForm from "./Pages/Admin/CouponAdmin/CouponForm";
+import AllCoupon from "./Pages/Admin/CouponAdmin/CouponAdmin";
 import AdminDashboard from "./Pages/Admin/Home/adminCharts";
 
 
@@ -76,6 +79,8 @@ function App() {
         <Route path="/admin/products/updateProduct/:id" element={<UpdateProducts/>}/>
         <Route path="/admin/info" element={<CompanyInfo/>}/>
         <Route path="/admin/infoupdate/:id" element={<UpdateInfo/>}/>
+        <Route path="/admin/coupons" element={<AllCoupon/>}/>
+        <Route path="/admin/handlecoupon/:id" element={<CouponForm/>}/>
         <Route path="/admin/offers" element={<Offers/>}/>
         <Route path="/admin/Analytics" element={<AdminDashboard/>}/>
         </Route>
