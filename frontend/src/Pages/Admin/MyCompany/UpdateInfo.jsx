@@ -526,28 +526,29 @@ const [openDelete, setOpenDelete] = useState(false);
       });
     }
   };
-  const handleDelete = async () => {
-  try {
-    setLoading(true);
+//   const handleDelete = async () => {
+//   try {
+//     setLoading(true);
 
-    let res = await api.delete(`/company/delete/${id}`);
+//     let res = await api.delete(`/company/delete/${id}`);
 
-    emqueueSnackbar(res.data.message, {
-      variant: "success",
-    });
+//     emqueueSnackbar(res.data.message, {
+//       variant: "success",
+//     });
 
-    setOpenDelete(false);
-    navigate("/company");
-  } catch (error) {
-    emqueueSnackbar(error.message, {
-      variant: "error",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+//     setOpenDelete(false);
+//     navigate("/company");
+//   } catch (error) {
+//     enqueueSnackbar(error.message, {
+//       variant: "error",
+//     });
+//   } finally {
+//     setLoading(false);
+//   }
+// };
 
-  const handlePost = async () => {
+  const handlePost = async (e) => {
+    e.preventDefault();
     try {
       const formData = new FormData();
 formData.append("companyName", companyData.companyName || "");
@@ -595,6 +596,9 @@ formData.append("companyName", companyData.companyName || "");
       "customFields",
       JSON.stringify(formattedCustomFields)
     );
+    formData.forEach((value, key) => {
+      console.log(key, value);
+    })
       let res;
 
       if (id === "add") {
@@ -615,6 +619,8 @@ formData.append("companyName", companyData.companyName || "");
         variant: "success",
       });
     } catch (error) {
+      console.log(error.message);
+      
       enqueueSnackbar(error.message, {
         variant: "error",
       });
@@ -629,7 +635,7 @@ formData.append("companyName", companyData.companyName || "");
     <Box sx={{ position: "relative" }}>
       <SecondaryButton
         sx={{ position: { xs: "relative" }, top: -9, left: -2 }}
-        onClick={() => navigate("/admin/companyInfo")}
+        onClick={() => navigate("/admin/info")}
       >
         ←Back
       </SecondaryButton>
@@ -695,7 +701,6 @@ formData.append("companyName", companyData.companyName || "");
         }}
         fullWidth
       />
-
       <IconButton
         color="error"
         onClick={() => {
@@ -734,7 +739,7 @@ formData.append("companyName", companyData.companyName || "");
   + Add Custom Field
 </Button>
 
-<Stack
+<Stack 
   direction="row"
   sx={{
     justifyContent: "space-between",
@@ -747,17 +752,16 @@ formData.append("companyName", companyData.companyName || "");
     Submit
   </PrimaryButton>
 
-  <Button
+  {/* <Button
     variant="outlined"
     color="error"
     sx={{borderRadius:'20px',ml:1}}
     onClick={() => setOpenDelete(true)}
   >
-    Delete
-  </Button>
+    
+  </Button> */}
 </Stack>
         </Stack>
-
 
 <Dialog
   open={openDelete}
@@ -767,7 +771,7 @@ formData.append("companyName", companyData.companyName || "");
 
   <DialogContent>
     <Typography>
-      Are you sure you want to delete this company? This action cannot be undone.
+      Are you sure you want to delete ? This action cannot be undone.
     </Typography>
   </DialogContent>
 
@@ -779,7 +783,7 @@ formData.append("companyName", companyData.companyName || "");
     <Button
       color="error"
       variant="contained"
-      onClick={handleDelete}
+      
     >
       Delete
     </Button>
@@ -793,7 +797,6 @@ formData.append("companyName", companyData.companyName || "");
           fullWidth
         >
           <DialogTitle>Add New Field</DialogTitle>
-
           <DialogContent>
             <Stack spacing={3} mt={1}>
               <TextField

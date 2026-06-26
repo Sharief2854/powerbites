@@ -43,15 +43,17 @@ export default function CompanyInfo() {
         <Typography variant="h6" color="initial">
           My Company Info
         </Typography>
-        <IconButton
-          onClick={() => navigate(`/admin/infoupdate/${company?._id}`)}
-          sx={{ position: "absolute", right: 0, top: 0}}
-        >
-          <EditIcon />
-        </IconButton>
+        {company?._id && (
+          <IconButton
+            onClick={() => navigate(`/admin/infoupdate/${company?._id}`)}
+            sx={{ position: "absolute", right: 0, top: 0 }}
+          >
+            <EditIcon />
+          </IconButton>
+        )}
       </Box>
       <Box>
-        {company ? (
+        {false ? (
           <Box
             maxWidth="lg"
             fullWidth
@@ -95,7 +97,7 @@ export default function CompanyInfo() {
 
             <DialogContent sx={{ p: 4 }}>
               <Grid container spacing={3}>
-                <Grid item xs={12} md={8}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Paper
                     elevation={0}
                     sx={{
@@ -152,7 +154,7 @@ export default function CompanyInfo() {
                   </Paper>
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Stack spacing={3}>
                     <Paper
                       elevation={0}
@@ -231,68 +233,28 @@ export default function CompanyInfo() {
                         color="#3E1A89"
                         mb={2}
                       >
-                        Social Presence
+                        Socials
                       </Typography>
-
-                      <Stack spacing={1}>
-                        {company?.socialMedia?.instagram && (
-                          <PrimaryButton
-                            fullWidth
-                            variant="outlined"
-                            sx={{
-                              borderColor: "#3E1A89",
-                            }}
-                          >
-                            Instagram
-                          </PrimaryButton>
-                        )}
-
-                        {company?.socialMedia?.facebook && (
-                          <PrimaryButton
-                            fullWidth
-                            variant="outlined"
-                            sx={{
-                              borderColor: "#3E1A89",
-                            }}
-                          >
-                            Facebook
-                          </PrimaryButton>
-                        )}
-
-                        {company?.socialMedia?.linkedin && (
-                          <PrimaryButton
-                            fullWidth
-                            variant="outlined"
-                            sx={{
-                              borderColor: "#3E1A89",
-                            }}
-                          >
-                            LinkedIn
-                          </PrimaryButton>
-                        )}
-
-                        {company?.socialMedia?.twitter && (
-                          <PrimaryButton
-                            fullWidth
-                            variant="outlined"
-                            sx={{
-                              borderColor: "#3E1A89",
-                            }}
-                          >
-                            Twitter
-                          </PrimaryButton>
-                        )}
-
-                        {company?.socialMedia?.youtube && (
-                          <PrimaryButton
-                            fullWidth
-                            variant="outlined"
-                            sx={{
-                              borderColor: "#3E1A89",
-                            }}
-                          >
-                            YouTube
-                          </PrimaryButton>
+                      <Stack
+                      gap={1}
+                        direction="row"
+                        sx={{ mt: 1, flexWrap: "wrap" }}
+                        // spacing={2}
+                      >
+                        {Object.keys(company?.socialMedia || {}).map(
+                          (item, index) => (
+                            <PrimaryButton
+                              fullWidth
+                              key={index}
+                              variant="outlined"
+                              sx={{ borderColor: "#3E1A89",mr:1,mb:1 }}
+                              onClick={() =>
+                                window.open(company?.socialMedia[item])
+                              }
+                            >
+                              {item}
+                            </PrimaryButton>
+                          ),
                         )}
                       </Stack>
                     </Paper>
@@ -301,20 +263,18 @@ export default function CompanyInfo() {
               </Grid>
             </DialogContent>
           </Box>
-        ):(
-          <Box>
+        ) : (
+          <Stack sx={{ alignItems: "center" }}>
             <Typography variant="h5" color="initial">
               Add Company Details
             </Typography>
             <PrimaryButton
-              onClick={() => {
-                navigate(`/admin/infoupdate/${add}`);
-              }}
+              onClick={() => navigate(`/admin/infoupdate/add`)}
             >
-              <EditIcon />
+              +{/* <AddIcon /> */}
             </PrimaryButton>
-          </Box>
-        ) }
+          </Stack>
+        )}
       </Box>
     </Box>
   );

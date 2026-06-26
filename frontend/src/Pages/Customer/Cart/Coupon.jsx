@@ -157,7 +157,8 @@ export default function Coupon({ setOpen, applyCoupon }) {
   }}
 />
       </Box>
-      {couponList?.length < 0 ? (<Box
+      {couponList?.length < 0 ? (
+        <Box
   sx={{
     py: 8,
     px: 3,
@@ -231,7 +232,6 @@ export default function Coupon({ setOpen, applyCoupon }) {
     New offers coming soon ✨
   </Typography>
 </Box>) : (
-        
         <Stack spacing={2}><Typography
   sx={{
     color: "#3E1A89",
@@ -244,13 +244,17 @@ export default function Coupon({ setOpen, applyCoupon }) {
 >
   Have a Coupon?
 </Typography>
+        <Grid container spacing={2}>
           {couponList?.map((coupon) => (
+          <Grid size={{ xs: 12, md: 4 }}>
+        
             <Box
   key={coupon._id}
   onClick={() => handleCouponSelect(coupon)}
   sx={{
     position: "relative",
     overflow: "hidden",
+    height:300,
     cursor: "pointer",
     p: 2.5,
     borderRadius: "20px",
@@ -288,6 +292,7 @@ export default function Coupon({ setOpen, applyCoupon }) {
   }}
 >
   <Grid container spacing={1}
+  sx={{justifyContent:'space-between'}}
   >
     <Grid size={{ xs: 12, md: 3 }}>
       <Typography
@@ -333,16 +338,15 @@ export default function Coupon({ setOpen, applyCoupon }) {
       </Typography>
     </Grid>
 
-    <Grid size={{ xs: 12, md: 9 }}
+    <Grid size={{ xs: 12, md: 6 }}
       sx={{
         bgcolor: "#fff",
         color: "#3E1A89",
         px: 2,
         py: 1,
-        flexGrow: 1,
         borderRadius: "16px",
-        // textAlign: "center",
         minWidth: 100,
+        maxHeight:100
       }}
     >
       <Typography
@@ -408,8 +412,12 @@ export default function Coupon({ setOpen, applyCoupon }) {
   >
     Tap to apply →
   </Typography>
-</Box>))}
+</Box>
+        </Grid>))
+}
+        </Grid>
         </Stack>
+
       )}
     </Box>
   );

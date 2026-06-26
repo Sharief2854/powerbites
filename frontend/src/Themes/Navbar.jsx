@@ -21,9 +21,11 @@ import HomeIcon from "@mui/icons-material/Home";
 import PersonIcon from "@mui/icons-material/Person";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { Link } from "react-router-dom";
+import { Chip } from "@mui/material";
 
 const pages = [
   { name: "Login", path: "/login", icon: <LoginIcon fontSize="small" /> },
+  { name: "About Us", path: "/about", icon: <LoginIcon fontSize="small" /> },
   {
     name: "Registration",path: "/verify-email",icon: <PersonAddAlt1Icon fontSize="small" />,
   },
@@ -31,7 +33,7 @@ const pages = [
 
 
 
-function ResponsiveAppBar() {
+function ResponsiveAppBar({company}) {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -98,7 +100,7 @@ function ResponsiveAppBar() {
               fontSize: { md: "1.1rem", lg: "1.2rem" },
             }}
           >
-            POWER BITES
+            {company.companyName}
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -175,15 +177,17 @@ function ResponsiveAppBar() {
               ))}
             </Menu>
           </Box>
-
-          <RestaurantMenuIcon
+          <Chip
+          
+          />
+          {/* <RestaurantMenuIcon
             sx={{
               display: { xs: "flex", md: "none" },
               mr: 1,
               color: "primary.contrastText",
               fontSize: 25,
             }}
-          />
+          /> */}
 
           <Typography
             onClick={handleLogoRefresh}
@@ -202,7 +206,7 @@ function ResponsiveAppBar() {
               fontSize: { xs: "0.95rem", sm: "1.1rem" },
             }}
           >
-            POWER BITES
+            {company.companyName}
           </Typography>
 
           <Box
