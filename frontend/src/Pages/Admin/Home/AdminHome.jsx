@@ -341,7 +341,7 @@ function Overview() {
                 {card.title}
               </Typography>
               <Typography variant="h4" sx={{ fontWeight: 700, color: '#1E1154', fontSize: { xs: '1.75rem', sm: '2.25rem' } }}>
-                ₹{card.val ?? 10}
+                {card.val ?? 10}
               </Typography>
               
             </Paper>
