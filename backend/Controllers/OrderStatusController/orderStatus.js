@@ -578,7 +578,7 @@ async function cancelOrderByAdmin(req, res) {
         const order = await ordersModel.findById(orderId)
             .populate("customer")
             .populate("products.product")
-            .populate("address");
+            .populate("shippingAddress");
 
         if (!order) {
             return res.status(404).json({
