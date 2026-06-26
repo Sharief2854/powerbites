@@ -24,7 +24,6 @@ const upload = require('./config/multerConfig');
 const PaymentRouter = require('./Routes/Payments/razorpayRoutes');
 const DeveloperRouter = require('./Routes/DevepolerRoutes/Devepoler');
 const reviewRouter = require('./Routes/Review/Review');
-// const productCategoryRouter =require("./Routes/ProcutsCatoegory/categoryCRUD")
 const ordersRouter = require('./Routes/Orders/ordersRouter');
 
 const productCategoryRouter = require('./Routes/ProcutsCatoegory/categoryCRUD');
@@ -34,13 +33,16 @@ const productfiltering = require('./Routes/ProductfilteringRoutes/Productfilteri
 const AnalyticsRouter = require('./Routes/Analytics/analytics')
 const adminToamin = require ("./Routes/AdminToadmin/adminToadminCurd")
 let dealsRouter = require('./Routes/Deals/dealsRoute');
-const CompanyDetails =require("./Routes/CompanyDetails/CompanyDetails")
 const companyRouter = require("./Routes/CompanyDetails/CompanyDetails");
 
 
 
 
 ConnectDB()
+
+const http = require('http');
+const { Server } = require("socket.io");
+
 // app.post("/upload",)
 const app = express()
 app.use(cors())
@@ -53,14 +55,23 @@ app.use('/api/payment/refund-webhook', express.raw({ type: 'application/json' })
 // This is crucial for the Razorpay webhook to work correctly.
 app.use(conditionalJsonParser);
 
-app.use("/upload", express.static("upload"));
 const path = require("path");
-
 app.use("/upload", express.static(path.join(__dirname, "upload")))
 
 );
 
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:5173", // Your frontend URL
+        methods: ["GET", "POST"]
+    }
+});
 
+require('./socket').init(io); // Initialize your socket module
+io.on('connection', (socket) => {
+    console.log('A user connected with socket ID:', socket.id);
+});
 
 
 
@@ -91,12 +102,8 @@ app.use("/developer",DeveloperRouter)
 app.use("/review",reviewRouter)
 app.use("/orderStatus",orderStatusRouter)
 app.use("/dashboard",isAdmin,dashboardRouter)
-app.use("/products",productfiltering)
-app.use("/dashboard",dashboardRouter)
+app.use("/filter-products",productfiltering) // Changed path to avoid conflict
 app.use("/adminAnalytics",AnalyticsRouter)
-
-app.use("/company",CompanyDetails)
-
 
 // Global error handling middleware to catch Multer errors safely
 app.use((err, req, res, next) => {
@@ -108,6 +115,6 @@ app.use((err, req, res, next) => {
     next(err);
 });
 
-app.listen(4500,()=>{
+server.listen(4500,()=>{
     console.log("server is running on port 4500")
 })
