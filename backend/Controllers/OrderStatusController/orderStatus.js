@@ -432,13 +432,13 @@ async function customerCancellingOrder(req, res) {
             { _id: orderId },
             {
                 $set: {
-                    orderStatus: "refund pending",
-                    cancelledBy: "customer",
-                    cancelReason: reason,
-                    cancelledAt: new Date(),
-                    refundId: refund ? refund.id : null,
-                    refundAmount: refundAmount,
-                    cancellationFee: cancellationFee,
+                orderStatus: "refund pending",
+                cancelledBy: "customer",
+                cancelReason: reason,
+                cancelledAt: new Date(),
+                refundId: refund ? refund.id : null,
+                refundAmount: refundAmount,
+                cancellationFee: cancellationFee,
                     $push: { historyStatuses: "order cancelled" } // Add to history
                 }
             }
@@ -646,15 +646,14 @@ async function cancelOrderByAdmin(req, res) {
         await ordersModel.updateOne(
             { _id: orderId },
             {
-                $set: {
-                    orderStatus: "refund pending",
-                    cancelledBy: "admin",
-                    cancelReason: reason,
-                    cancelledAt: new Date(),
-                    refundId: refund ? refund.id : null,
-                    refundAmount: refundAmount,
-                    cancellationFee: 0 // No fee for admin cancellation
-                }
+                orderStatus: "refund pending",
+                cancelledBy: "admin",
+                cancelReason: reason,
+                cancelledAt: new Date(),
+                refundId: refund ? refund.id : null,
+                refundAmount: refundAmount,
+                cancellationFee: 0, // No fee for admin cancellation
+                $push: { historyStatuses: "order cancelled" }
             }
         );
 

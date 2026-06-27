@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
+const cors = require('cors')
 const ConnectDB = require('./config/connectDB');
 const RegRouter = require("./Routes/Auth/Registration")
 const ResetRouter = require("./Routes/Auth/ResetPassword")
@@ -57,6 +57,7 @@ app.use(conditionalJsonParser);
 
 const path = require("path");
 app.use("/upload", express.static(path.join(__dirname, "upload")))
+
 
 
 const server = http.createServer(app);

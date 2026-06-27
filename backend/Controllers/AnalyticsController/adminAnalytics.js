@@ -163,9 +163,6 @@ async function analyticSpecific(req, res) {
             });
         }
 
-        // ==========================
-        // Analytics
-        // ==========================
 
         const totalOrders = orders.length;
 
@@ -216,9 +213,7 @@ async function analyticSpecific(req, res) {
 
         });
 
-        // ==========================
-        // Table Data
-        // ==========================
+       
 
         const orderData = orders.map(order => ({
             _id: order._id,
@@ -229,9 +224,6 @@ async function analyticSpecific(req, res) {
             final_price: order.final_price
         }));
 
-        // ==========================
-        // Response
-        // ==========================
 
         return res.status(200).json({
 

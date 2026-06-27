@@ -12,7 +12,5 @@ router.post("/verify-payment",isCustomer, verifyPayment);
 // Route for processing refunds, accessible only by admins
 router.post("/refund", isAdmin, refundPayment);
 
-// Route for handling Razorpay webhooks (must be public)
-router.post("/refund-webhook", handleWebhook);
-
-module.exports = router;
+// Route for Razorpay to send webhook events
+router.post("/webhook", handleWebhook);

@@ -1,40 +1,22 @@
-import { Box, Card, CardContent, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import React from "react";
 
 function CustomerCardAuth({ title, children, sx }) {
   return (
     <Box
       sx={{
+        width: "100%",
         display: "flex",
+        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        width: "100%",
+        ...sx,
       }}
     >
-      <Card
-        sx={{
-          width: "100%",
-        //   maxWidth: 800,
-          borderRadius: 3,
-          boxShadow: 5,
-          ...sx
-        }}
-      >
-        <CardContent
-          sx={{
-            p: { xs: 1, sm: 2 },
-          }}
-        >
-          <Typography 
-          variant="h4" 
-          align="center" 
-          
-          >
-            {title}
-        </Typography>
-          {children}
-        </CardContent>
-      </Card>
+      {title && (
+        <Typography variant="h4" align="center" gutterBottom>{title}</Typography>
+      )}
+      {children}
     </Box>
   );
 }
