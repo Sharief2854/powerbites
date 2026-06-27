@@ -729,6 +729,7 @@ import RefundIcon from '@mui/icons-material/AttachMoney';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../../api/axiosConfig';
+import { socket } from '../../../socket';
 import { getOrder } from '../../../Redux/Slices/AdminSlice/OrderListSlice';
 
 const BASE_STEPS = ["order placed", "preparing order", "order shipped", "order delivered", "completed"];
@@ -739,8 +740,9 @@ const STEP_LABELS_MAP = {
   "order shipped": "Order Shipped",
   "order delivered": "Order Delivered",
   "completed": "Order Completed",
-  "order cancelled": "Order Cancelled",
-  "refund": "Refund Processed"
+  "order cancelled": "Order Cancelled", // Status for when cancellation is initiated
+  "refund pending": "Refund Pending", // Status while waiting for webhook
+  "refunded": "Refund Processed" // Final status after webhook confirmation
 };
 
 export default function OrderRecordsDashboardById() {
@@ -751,6 +753,7 @@ export default function OrderRecordsDashboardById() {
   const [loading, setLoading] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancelReasonInput, setCancelReasonInput] = useState("");
+  const [isRefunding, setIsRefunding] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
   const rawOrderList = useSelector((state) => state.orderlist?.orderlist || []);
@@ -778,7 +781,8 @@ console.log('activeBackendOrder',activeBackendOrder)
     })) : []
   } : null;
 
-  const isCancelled = activeOrder?.orderStatus === "order cancelled";
+  const isCancelled = ["order cancelled", "refund pending", "refunded"].includes(activeOrder?.orderStatus);
+  const isRefundPending = activeOrder?.orderStatus === "refund pending";
   const canCancel = ["order placed", "preparing order"].includes(activeOrder?.orderStatus || "");
 
   // DYNAMIC ADAPTIVE PROGRESS STEPPER BUILDER
@@ -791,7 +795,7 @@ console.log('activeBackendOrder',activeBackendOrder)
         activeOrder.historyStatuses.includes(s) || s === "order placed"
       );
       // Append immediate tracking parameters right underneath it
-      return [...stepsBeforeCancellation, "order cancelled", "refund"];
+      return [...stepsBeforeCancellation, "order cancelled", "refund pending", "refunded"];
     }
     
     return BASE_STEPS;
@@ -818,6 +822,28 @@ console.log('activeBackendOrder',activeBackendOrder)
     }
   }, [dispatch, rawOrderList.length]);
 
+  // WebSocket listener for real-time updates on this specific order
+  useEffect(() => {
+    socket.connect();
+
+    function onOrderUpdate(updatedOrder) {
+      // Only react to updates for the currently viewed order
+      if (updatedOrder._id === routeOrderId) {
+        console.log(`Real-time update for order ${routeOrderId}:`, updatedOrder);
+        triggerSnackbar(`Order status updated to: ${updatedOrder.orderStatus}`, 'info');
+        
+        const updatedList = rawOrderList.map(order => 
+          order._id === updatedOrder._id ? { ...order, ...updatedOrder } : order
+        );
+        dispatch(getOrder(updatedList));
+      }
+    }
+
+    socket.on('orderUpdate', onOrderUpdate);
+
+    return () => { socket.off('orderUpdate', onOrderUpdate); socket.disconnect(); };
+  }, [dispatch, rawOrderList, routeOrderId, triggerSnackbar]);
+
   const triggerSnackbar = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
   };
@@ -832,7 +858,7 @@ console.log('activeBackendOrder',activeBackendOrder)
         order._id === routeOrderId 
           ? { 
               ...order, 
-              orderStatus: "order cancelled", 
+              orderStatus: "refund pending", 
               cancelledBy: "admin", 
               cancelReason: cancelReasonInput.trim(),
               // Preserve tracking data array blocks for local mutation mapping updates
@@ -924,6 +950,18 @@ console.log('activeBackendOrder',activeBackendOrder)
               Cancel Order
             </Button>
           )}
+          {isRefundPending && (
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleManualRefund}
+              disabled={isRefunding}
+              startIcon={isRefunding ? <CircularProgress size={16} color="inherit" /> : <RefundIcon />}
+              sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700, boxShadow: 'none' }}
+            >
+              {isRefunding ? 'Refunding...' : 'Manual Refund'}
+            </Button>
+          )}
         </Stack>
       </Box>
 
@@ -992,10 +1030,10 @@ console.log('activeBackendOrder',activeBackendOrder)
               <Box sx={{ p: 4, bgcolor: '#fff' }}>
                 {isCancelled && (
                   <Box sx={{ mb: 3, p: 2, bgcolor: '#FFF5F5', borderLeft: '4px solid #EF4444', borderRadius: '4px' }}>
-                    <Typography variant="body2" sx={{ color: '#991B1B', fontWeight: 700 }}>
-                      Cancelled Reason Frame:
+                    <Typography variant="body2" sx={{ color: '#991B1B', fontWeight: 700, textTransform: 'capitalize' }}>
+                      Order Cancelled by: {activeOrder.cancelledBy}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: '#7F1D1D', display: 'block', mt: 0.5, fontSize: '0.85rem' }}>
+                    <Typography variant="body2" sx={{ color: '#7F1D1D', display: 'block', mt: 0.5, fontSize: '0.85rem' }}>
                       {activeOrder.cancelReason || "No descriptive context reason compiled."}
                     </Typography>
                   </Box>
@@ -1004,10 +1042,10 @@ console.log('activeBackendOrder',activeBackendOrder)
                 <Stepper orientation="vertical">
                   {workflowSteps.map((stepKey) => {
                     const isCompleted = activeOrder?.historyStatuses?.includes(stepKey) || 
-                                       activeOrder?.orderStatus === stepKey ||
-                                       (stepKey === "refund" && isCancelled); // Auto-illuminate refund if cancellation runs true
+                                       activeOrder?.orderStatus === stepKey || 
+                                       (stepKey === 'refunded' && activeOrder?.orderStatus === 'refunded');
                     
-                    const isClickable = !isCancelled && stepKey !== "refund" && stepKey !== "order cancelled";
+                    const isClickable = !isCancelled && !["refund pending", "refunded"].includes(stepKey);
 
                     return (
                       <Step key={stepKey} completed={isCompleted}>
@@ -1025,7 +1063,8 @@ console.log('activeBackendOrder',activeBackendOrder)
                           <Typography 
                             fontWeight={isCompleted ? 800 : 600}
                             color={stepKey === "order cancelled" ? "error.main" : 
-                                   stepKey === "refund" ? "#10B981" : "#334155"}
+                                   stepKey === "refunded" ? "#10B981" :
+                                   stepKey === "refund pending" ? "#D97706" : "#334155"}
                           >
                             {STEP_LABELS_MAP[stepKey]}
                           </Typography>

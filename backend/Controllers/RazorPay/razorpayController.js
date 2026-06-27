@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const razorpay = require("../../config/razorpayConfig");
-const RefundModel = require("../../Model/refundModel");
 const cartModel = require("../../Model/cartModel");
+const { getIo } = require("../../socket");
 const ordersModel = require("../../Model/orderModel");
 const ProductModel = require("../../Model/ProductModel");
 const couponModel = require("../../Model/couponModel");
@@ -218,6 +218,54 @@ const verifyPayment = async (req, res) => {
     }
 };
 
+const handleWebhook = async (req, res) => {
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    const signature = req.headers["x-razorpay-signature"];
+
+    try {
+        // 1. Validate the webhook signature
+        const shasum = crypto.createHmac("sha256", secret);
+        shasum.update(JSON.stringify(req.body));
+        const digest = shasum.digest("hex");
+
+        if (digest !== signature) {
+            return res.status(400).json({ status: "Signature is not valid" });
+        }
+
+        const event = req.body.event;
+        const payload = req.body.payload;
+
+        // 2. Handle the 'refund.processed' event
+        if (event === 'refund.processed') {
+            const refundEntity = payload.refund.entity;
+            const orderIdFromNotes = refundEntity.notes?.order_id;
+
+            if (orderIdFromNotes) {
+                const order = await ordersModel.findById(orderIdFromNotes);
+
+                if (order && order.orderStatus !== 'refunded') {
+                    // 3. Update order status to 'refunded'
+                    order.orderStatus = 'refunded';
+                    if (!order.historyStatuses.includes('refunded')) {
+                        order.historyStatuses.push('refunded');
+                    }
+                    await order.save();
+
+                    // 4. Emit a WebSocket event to notify the frontend
+                    getIo().emit("orderUpdate", order);
+                    console.log(`Order ${orderIdFromNotes} status updated to refunded.`);
+                }
+            }
+        }
+
+        res.json({ status: "ok" });
+
+    } catch (error) {
+        console.error("Error handling Razorpay webhook:", error);
+        res.status(500).json({ status: "error", message: error.message });
+    }
+};
+
 const refundPayment = async (req, res) => {
     try {
         const { orderId, amount } = req.body;
@@ -269,62 +317,6 @@ const refundPayment = async (req, res) => {
 
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
-    }
-};
-
-const handleWebhook = async (req, res) => {
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-    const signature = req.headers["x-razorpay-signature"];
-
-    try {
-        // The request body is a raw buffer. Do not parse it yet.
-        // 1. Verify the webhook signature
-        const shasum = crypto.createHmac("sha256", secret);
-        shasum.update(req.body); // Use the raw body directly
-        const digest = shasum.digest("hex");
-
-        if (digest !== signature) {
-            console.warn("Webhook signature mismatch.");
-            return res.status(400).json({ status: "Signature mismatch" });
-        }
-        
-        // If signature is okay, now we can safely parse the body.
-        const event = JSON.parse(req.body.toString());
-
-        // 2. Process the event
-        if (event.event === "refund.processed") {
-            const refund = event.payload.refund.entity;
-            const refundDoc = await RefundModel.findOne({ refundId: refund.id });
-
-            if (refundDoc) {
-                refundDoc.status = 'processed';
-                await refundDoc.save();
-
-                // Also update the main order status
-                await ordersModel.updateOne(
-                    { _id: refundDoc.order, orderStatus: 'refund pending' },
-                    { $set: { orderStatus: 'order cancelled' } }
-                );
-                console.log(`Refund ${refund.id} processed and order ${refundDoc.order} updated.`);
-            }
-        } else if (event.event === "refund.failed") {
-            const refund = event.payload.refund.entity;
-            const refundDoc = await RefundModel.findOne({ refundId: refund.id });
-
-            if (refundDoc) {
-                refundDoc.status = 'failed';
-                await refundDoc.save();
-                // You might want to send an email to an admin here
-                console.error(`Refund ${refund.id} for order ${refundDoc.order} failed.`);
-            }
-            console.error("Refund failed webhook received:", event.payload);
-        }
-
-        res.json({ status: "ok" });
-
-    } catch (error) {
-        console.error("Error handling Razorpay webhook:", error);
-        res.status(500).json({ status: "error", message: error.message });
     }
 };
 
