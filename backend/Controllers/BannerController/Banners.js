@@ -1,4 +1,5 @@
 const bannerModel = require("../../Model/bannerSchema");
+const ProductModel = require("../../Model/ProductModel");
 
 
 
@@ -40,18 +41,30 @@ async function  setBanner(req, res) {
             }
         });
 
-        if (!req.files || req.files.length === 0) {
-            return res.status(400).json({ message: "At least one banner image is required." });
-        }
-        
-
         if (!body.title || !body.description) {
             return res.status(400).json({ 
                 message: "Missing required fields: 'name', 'title', 'description', and 'user' are required." 
             });
         }
 
-        const imagePaths = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path}`);
+        let imagePaths;
+
+        // If a product is linked, use its images. Otherwise, use uploaded files.
+        if (body.product && body.product !== "undefined" && body.product !== "") {
+            const product = await ProductModel.findById(body.product);
+            if (!product) {
+                return res.status(404).json({ message: "Associated product not found." });
+            }
+            if (!product.image || product.image.length === 0) {
+                return res.status(400).json({ message: "The associated product has no images to use for the banner." });
+            }
+            imagePaths = product.image;
+        } else {
+            if (!req.files || req.files.length === 0) {
+                return res.status(400).json({ message: "At least one banner image is required when no product is linked." });
+            }
+            imagePaths = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path}`);
+        }
 
         const bannerData = {
             ...body,
@@ -59,9 +72,8 @@ async function  setBanner(req, res) {
         };
 
         // Prevent CastError if frontend sends empty strings or "undefined" for ObjectIds
-        if (!bannerData.product || bannerData.product === "undefined") delete bannerData.product;
-        if (!bannerData.offer || bannerData.offer === "undefined") delete bannerData.offer;
-        if (!bannerData.coupon || bannerData.coupon === "undefined") delete bannerData.coupon;
+        if (!bannerData.product || bannerData.product === "undefined" || bannerData.product === "") delete bannerData.product;
+        if (!bannerData.coupon || bannerData.coupon === "undefined" || bannerData.coupon === "") delete bannerData.coupon;
 
         const newBanner = await bannerModel.create(bannerData);
         if (!newBanner) {
