@@ -34,12 +34,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import { useDispatch, useSelector } from "react-redux";
 import api from "../../../api/axiosConfig";
-import {
-  addOffer,
-  getOffer,
-  deleteOffer as deleteOfferAction,
-  updateOffer as updateOfferAction,
-} from "../../../Redux/Slices/OffserSlice";
 import OfferPreviewBanner from "./AllBanners";
 
 const backgroundOptions = [
@@ -176,7 +170,7 @@ function ThemeSelectorRow({
             return (
               <Grid item xs={12} sm={6} md={4} key={coupon?._id}>
                 <Card
-  onClick={() => handleCouponSelect(coupon?._id)}
+  onClick={() => handleCouponSelect(coupon)}
   sx={{
     cursor: "pointer",
     position: "relative",
@@ -426,7 +420,7 @@ export function AutoCarousel({
   );
 }
 
-export default function Offers() {
+export default function Banners() {
   const theme = useTheme();
   const fullScreenDialog = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -439,7 +433,7 @@ export default function Offers() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [code, setCode] = useState("");
-  const [status, setStatus] = useState("inactive");
+  const [status, setStatus] = useState("inActive");
   const [selectedBg, setSelectedBg] = useState(backgroundOptions[0]);
   const [images, setImages] = useState([]);
 
@@ -457,8 +451,21 @@ export default function Offers() {
   const [banners,setBanners] = useState([]);
 
 
-  const handleCouponSelect = (couponId) => {
-    setSelectedCoupon((prev) => (prev === couponId ? null : couponId));
+  const handleCouponSelect = (coupon) => {
+     const isSelected = selectedCoupon === coupon._id;
+
+  if (isSelected) {
+    setSelectedCoupon(null);
+    setTitle("");
+    setDescription("");
+    setCode("");
+    return;
+  }
+
+  setSelectedCoupon(coupon._id);
+  setTitle(coupon.title ?? "");
+  setDescription(coupon.description ?? coupon.title ?? "");
+  setCode(coupon.code ?? "");
   };
 
   const [toast, setToast] = useState({
@@ -512,7 +519,6 @@ export default function Offers() {
       setLoading(false);
     }
   };
-
   const fetchCoupons = async () => {
     try {
       setLoading(true);
@@ -520,7 +526,8 @@ export default function Offers() {
 
       const res = await api.get("/coupon/getCoupons");
       const fetchedCoupons = res?.data?.coupons || res?.data?.data || [];
-      setCoupons(fetchedCoupons);
+      
+      setCoupons(p=>fetchedCoupons.filter((coupon) => coupon.status === "Active"));
     } catch (error) {
       setErrorText(error?.response?.data?.message || "Failed to load coupons");
     } finally {
@@ -535,8 +542,7 @@ export default function Offers() {
 
       const res = await api.get("/banner/allBanners");
       const fetchedB = res?.data?.banners || res?.data?.data || [];
-      console.log(fetchedB);
-      
+
       setBanners(fetchedB);
     } catch (error) {
       setErrorText(error?.response?.data?.message || "Failed to load coupons");
@@ -546,7 +552,6 @@ export default function Offers() {
   };
 
   useEffect(() => {
-    fetchOffers();
     fetchCoupons();
     fetchBanners();
   }, []);
@@ -555,7 +560,7 @@ export default function Offers() {
     setTitle("");
     setDescription("");
     setCode("");
-    setStatus("inactive");
+    setStatus("inActive");
     setImages([]);
     setSelectedBg(backgroundOptions[0]);
   };
@@ -568,7 +573,7 @@ export default function Offers() {
     setTitle("");
     setDescription("");
     setCode("");
-    setStatus("inactive");
+    setStatus("inActive");
     setSelectedBg(backgroundOptions[0]);
   };
 
@@ -615,24 +620,19 @@ export default function Offers() {
       images.forEach((file) => {
         formData.append("file", file);
       });
-
-      const res = await api.post("/offer/setOffer", formData, {
+      const res = await api.post("/banner/setBanner", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
-      if (res?.data?.offer) {
-        dispatch(addOffer(res.data.offer));
-      }
-
       resetCreateForm();
-      showToast("Offer created successfully");
-      await fetchOffers();
+      showToast("Banner created successfully");
+      await fetchBanners();
     } catch (error) {
       console.error("CREATE ERROR:", error?.response?.data || error.message);
       showToast(
-        error?.response?.data?.message || "Failed to create offer",
+        error?.response?.data?.message || "Failed to create banner",
         "error",
       );
     } finally {
@@ -640,17 +640,16 @@ export default function Offers() {
     }
   };
 
-  const handleDeleteOffer = async (id) => {
+  const handleDeleteBanner = async (id) => {
     try {
       setLoading(true);
-      await api.delete(`/offer/deleteOffer/${id}`);
-      dispatch(deleteOfferAction(id));
-      showToast("Offer deleted successfully");
-      await fetchOffers();
+      await api.delete(`/banner/deleteBanner/${id}`);
+      showToast("Banner deleted successfully");
+      await fetchBanners();
     } catch (error) {
       console.error("DELETE ERROR:", error?.response?.data || error.message);
       showToast(
-        error?.response?.data?.message || "Failed to delete offer",
+        error?.response?.data?.message || "Failed to delete banner",
         "error",
       );
     } finally {
@@ -658,17 +657,17 @@ export default function Offers() {
     }
   };
 
-  const handleOpenEdit = (offer) => {
-    setEditId(offer._id);
-    setTitle(offer.title || "");
-    setDescription(offer.description || "");
-    setCode(offer.code || "");
-    setStatus((offer.status || "inactive").toLowerCase());
+  const handleOpenEdit = (banner) => {
+    setEditId(banner._id);
+    setTitle(banner.title || "");
+    setDescription(banner.description || "");
+    setCode(banner.code || "");
+    setStatus((banner.status || "inActive").toLowerCase());
     setSelectedBg(
-      backgroundOptions.find((bg) => bg.name === offer.background) ||
+      backgroundOptions.find((bg) => bg.name === banner.background) ||
         backgroundOptions[0],
     );
-    setExistingImages(Array.isArray(offer.image) ? offer.image : []);
+    setExistingImages(Array.isArray(banner.image) ? banner.image : []);
     setNewImages([]);
     setOpenEdit(true);
   };
@@ -697,7 +696,7 @@ export default function Offers() {
   const removeEditNewImage = (index) => {
     setNewImages((prev) => prev.filter((_, i) => i !== index));
   };
-  const handleUpdateOffer = async () => {
+  const handleUpdateBanner = async () => {
     if (!title || !description || !code) {
       showToast("Please fill title, description and code", "error");
       return;
@@ -723,25 +722,19 @@ export default function Offers() {
         formData.append("file", file);
       });
 
-      const res = await api.put(`/offer/updateOffer/${editId}`, formData, {
+      const res = await api.put(`/banner/updateBanner/${editId}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
-      const updatedOffer = res?.data?.offer;
-
-      if (updatedOffer) {
-        dispatch(updateOfferAction(updatedOffer));
-      }
-
       resetEditForm();
-      showToast("Offer updated successfully");
-      await fetchOffers();
+      showToast("Banner updated successfully");
+      await fetchBanners();
     } catch (error) {
       console.error("UPDATE ERROR:", error?.response?.data || error.message);
       showToast(
-        error?.response?.data?.message || "Failed to update offer",
+        error?.response?.data?.message || "Failed to update banner",
         "error",
       );
     } finally {
@@ -749,35 +742,7 @@ export default function Offers() {
     }
   };
   const handleStatusToggle = async (offer) => {
-    const nextStatus = offer.status === "active" ? "inactive" : "active";
-
-    try {
-      setLoading(true);
-
-      const res = await api.patch(`/offer/updateStatus/${offer._id}`, {
-        status: nextStatus,
-      });
-
-      const updatedOffer = res?.data?.offer || res?.data?.status;
-
-      if (updatedOffer) {
-        dispatch(updateOfferAction(updatedOffer));
-      }
-
-      showToast("Status updated successfully");
-      await fetchOffers();
-    } catch (error) {
-      console.error("STATUS ERROR:", error?.response?.data || error.message);
-      showToast(
-        error?.response?.data?.message || "Failed to update status",
-        "error",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handleBannerStatus = async (offer) => {
-    const nextStatus = offer.status === "active" ? "inactive" : "active";
+    const nextStatus = offer.status === "Active" ? "inActive" : "Active";
 
     try {
       setLoading(true);
@@ -788,9 +753,6 @@ export default function Offers() {
 
       const updatedOffer = res?.data?.offer || res?.data?.status;
       await fetchBanners();
-      // if (updatedOffer) {
-      //   dispatch(updateOfferAction(updatedOffer));
-      // }
 
       showToast("Status updated successfully");
     } catch (error) {
@@ -825,8 +787,8 @@ export default function Offers() {
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f8fafc", py: { xs: 3, md: 5 } }}>
       <Container maxWidth="lg">
-        <Typography variant="h4" fontWeight={900} sx={{ mb: 1 }}>
-          Offer Banner Management
+        <Typography variant="h4" fontWeight={900} sx={{ mb: 1, color: "text.primary" }}>
+          Banner Management
         </Typography>
 
         {!!errorText && (
@@ -836,7 +798,7 @@ export default function Offers() {
         )}
 
         <Grid container spacing={3} alignItems="flex-start">
-          <Grid size={{ xs: 12, }}>
+          <Grid item xs={12} md={5} lg={4}>
             <Paper
               elevation={0}
               sx={{
@@ -847,8 +809,8 @@ export default function Offers() {
               }}
             >
               <Stack spacing={2.5}>
-                <Typography variant="h6" fontWeight={800}>
-                  Create Offer
+                <Typography variant="h6" fontWeight={800} sx={{ color: "text.primary" }}>
+                  Create Banner
                 </Typography>
 
                 <ThemeSelectorRow
@@ -863,7 +825,7 @@ export default function Offers() {
 
                 <TextField
                   fullWidth
-                  label="Offer Title"
+                  label="Banner Title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                 />
@@ -879,7 +841,7 @@ export default function Offers() {
 
                 <TextField
                   fullWidth
-                  label="Offer Code"
+                  label="Banner Code"
                   value={code}
                   onChange={(e) => {
                     const value = e.target.value
@@ -902,8 +864,8 @@ export default function Offers() {
                     label="Status"
                     onChange={(e) => setStatus(e.target.value)}
                   >
-                    <MenuItem value="active">Active</MenuItem>
-                    <MenuItem value="inactive">Inactive</MenuItem>
+                    <MenuItem value="Active">Active</MenuItem>
+                    <MenuItem value="inActive">InActive</MenuItem>
                   </Select>
                 </FormControl>
 
@@ -933,17 +895,15 @@ export default function Offers() {
                   disabled={loading}
                   sx={{ borderRadius: 3, py: 1.3, textTransform: "none" }}
                 >
-                  {loading ? "Saving..." : "Save Offer"}
+                  {loading ? "Saving..." : "Save Banner"}
                 </Button>
               </Stack>
             </Paper>
           </Grid>
 
-          <Grid size={{ xs: 12 }} >
+          <Grid item xs={12} md={7} lg={8}>
             <Box
-              sx={{
-
-              }}
+              sx={{ position: 'sticky', top: 80 }}
             >
               <OfferPreviewBanner
                 backgroundOptions={backgroundOptions}
@@ -960,103 +920,29 @@ export default function Offers() {
         <Divider sx={{ my: 5 }} />
 
         <Typography variant="h5" fontWeight={900} sx={{ mb: 3 }}>
-          Saved Offers & Banners
+          Saved Banners & Offers
         </Typography>
 
-        <Stack spacing={4}>
-          {offers.length > 0 ? (
-            offers.map((offer) => (
-              <OfferPreviewBanner
-                backgroundOptions={backgroundOptions}
-                key={offer._id}
-                offer={{
-                  title: offer.title,
-                  description: offer.description,
-                  code: offer.code,
-                  status: offer.status,
-                  background: offer.background,
-                  images: Array.isArray(offer.image) ? offer.image : [],
-                }}
-                actions={
-                  <>
-                    <Button
-                      variant="contained"
-                      startIcon={<EditIcon />}
-                      onClick={() => handleOpenEdit(offer)}
-                      sx={{ borderRadius: 2.5, textTransform: "none" }}
-                    >
-                      Edit
-                    </Button>
-
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      startIcon={<DeleteOutlineIcon />}
-                      onClick={() => {
-                        setSelectedUserId(offer._id);
-                        setOpenDelete(true);
-                      }}
-                      sx={{ borderRadius: 2.5, textTransform: "none" }}
-                    >
-                      Delete
-                    </Button>
-
-                    <Button
-                      variant="text"
-                      onClick={() => handleStatusToggle(offer)}
-                      sx={{
-                        borderRadius: 2.5,
-                        textTransform: "none",
-                        color: "#fff",
-                        border: "1px solid rgba(255,255,255,0.35)",
-                      }}
-                    >
-                      {offer.status === "active"
-                        ? "Set Inactive"
-                        : "Set Active"}
-                    </Button>
-                  </>
-                }
-              />
-            ))
-          ) : (
-            <Paper
-              elevation={0}
-              sx={{
-                p: 5,
-                borderRadius: 4,
-                textAlign: "center",
-                border: "1px solid #e7e9f0",
-                bgcolor: "#fff",
-              }}
-            >
-              <Typography variant="h6" fontWeight={800} sx={{ mb: 1 }}>
-                {loading ? "Loading offers..." : "No offers yet"}
-              </Typography>
-              <Typography color="text.secondary">
-                Create your first offer banner to display it here.
-              </Typography>
-            </Paper>
-          )}
+      <Stack spacing={4}>
           {banners.length > 0 ? (
-            banners?.map((offer) => (
+            banners?.map((banner) => (
               <OfferPreviewBanner
                 backgroundOptions={backgroundOptions}
-                key={offer._id}
+                key={banner._id}
                 offer={{
-                  title: offer?.title,
-                  description: offer?.description,
-                  code: offer?.code,
-                  status: offer?.status,
-                  background: offer?.background,
-                  images: Array.isArray(offer?.image) ? offer?.image : [],
+                  title: banner?.title,
+                  description: banner?.description,
+                  code: banner?.code,
+                  status: banner?.status,
+                  background: banner?.background,
+                  images: Array.isArray(banner?.image) ? banner?.image : [],
                 }}
                 actions={
                   <>
                     <Button
                       variant="contained"
                       startIcon={<EditIcon />}
-                      onClick={() => handleOpenEdit(offer)}
+                      onClick={() => handleOpenEdit(banner)} // This was correct, but ensuring it's clear.
                       sx={{ borderRadius: 2.5, textTransform: "none" }}
                     >
                       Edit
@@ -1067,7 +953,7 @@ export default function Offers() {
                       color="error"
                       startIcon={<DeleteOutlineIcon />}
                       onClick={() => {
-                        setSelectedUserId(offer?._id);
+                        setSelectedUserId(banner?._id);
                         setOpenDelete(true);
                       }}
                       sx={{ borderRadius: 2.5, textTransform: "none" }}
@@ -1077,7 +963,7 @@ export default function Offers() {
 
                     <Button
                       variant="text"
-                      onClick={() => handleBannerStatus(offer)}
+                      onClick={() => handleStatusToggle(banner)}
                       sx={{
                         borderRadius: 2.5,
                         textTransform: "none",
@@ -1085,8 +971,8 @@ export default function Offers() {
                         border: "1px solid rgba(255,255,255,0.35)",
                       }}
                     >
-                      {offer?.status === "active"
-                        ? "Set Inactive"
+                      {banner?.status === "Active"
+                        ? "Set inActive"
                         : "Set Active"}
                     </Button>
                   </>
@@ -1104,8 +990,8 @@ export default function Offers() {
                 bgcolor: "#fff",
               }}
             >
-              <Typography variant="h6" fontWeight={800} sx={{ mb: 1 }}>
-                {loading ? "Loading offers..." : "No Banners yet"}
+              <Typography variant="h6" fontWeight={800} sx={{ mb: 1, color: "text.primary" }}>
+                {loading ? "Loading banners..." : "No Banners yet"}
               </Typography>
               <Typography color="text.secondary">
                 Create your first banner to display it here.
@@ -1121,7 +1007,7 @@ export default function Offers() {
           maxWidth="lg"
           fullScreen={fullScreenDialog}
         >
-          <DialogTitle>Edit Offer</DialogTitle>
+          <DialogTitle>Edit Banner</DialogTitle>
 
           <DialogContent dividers>
             <Grid container spacing={3}>
@@ -1137,7 +1023,7 @@ export default function Offers() {
 
                   <TextField
                     fullWidth
-                    label="Offer Title"
+                    label="Banner Title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                   />
@@ -1152,11 +1038,22 @@ export default function Offers() {
                   />
 
                   <TextField
-                    fullWidth
-                    label="Offer Code"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                  />
+                  fullWidth
+                  label="Banner Code"
+                  value={code}
+                  onChange={(e) => {
+                    const value = e.target.value
+                      .toUpperCase()
+                      .replace(/\s+/g, "");
+                    setCode(value);
+                  }}
+                  inputProps={{
+                    maxLength: 20,
+                    style: { textTransform: "uppercase" },
+                    pattern: "\\S+",
+                  }}
+                  helperText="Only uppercase letters/numbers, no spaces allowed"
+                />
 
                   <FormControl fullWidth>
                     <InputLabel>Status</InputLabel>
@@ -1165,8 +1062,8 @@ export default function Offers() {
                       label="Status"
                       onChange={(e) => setStatus(e.target.value)}
                     >
-                      <MenuItem value="active">Active</MenuItem>
-                      <MenuItem value="inactive">Inactive</MenuItem>
+                      <MenuItem value="Active">Active</MenuItem>
+                      <MenuItem value="inActive">InActive</MenuItem>
                     </Select>
                   </FormControl>
 
@@ -1195,6 +1092,7 @@ export default function Offers() {
 
               <Grid item xs={12} md={8}>
                 <OfferPreviewBanner
+                  backgroundOptions={backgroundOptions}
                   offer={editPreviewOffer}
                   editable
                   existingImages={existingImages}
@@ -1236,10 +1134,10 @@ export default function Offers() {
             <Button onClick={resetEditForm}>Cancel</Button>
             <Button
               variant="contained"
-              onClick={handleUpdateOffer}
+              onClick={handleUpdateBanner}
               disabled={loading}
             >
-              {loading ? "Updating..." : "Update Offer"}
+              {loading ? "Updating..." : "Update Banner"}
             </Button>
           </DialogActions>
         </Dialog>
@@ -1250,10 +1148,10 @@ export default function Offers() {
           fullWidth
           maxWidth="xs"
         >
-          <DialogTitle>Delete Offer?</DialogTitle>
+          <DialogTitle>Delete Banner?</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Are you sure you want to delete this offser? This action cannot be
+              Are you sure you want to delete this banner? This action cannot be
               undone.
             </DialogContentText>
           </DialogContent>
@@ -1263,7 +1161,7 @@ export default function Offers() {
               color="error"
               variant="contained"
               onClick={() => {
-                handleDeleteOffer(selectedUserId);
+                handleDeleteBanner(selectedUserId);
                 setOpenDelete(false);
               }}
             >

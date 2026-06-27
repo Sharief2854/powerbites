@@ -2,7 +2,7 @@ import { Box, ImageList, Stack,Button, Typography } from '@mui/material'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import api from '../../api/axiosConfig'
-import { getInfo } from '../../Redux/Slices/AdminSlice/CompanyInfoSlice'
+import { fetchCompanyInfo } from '../../Redux/Slices/AdminSlice/CompanyInfoSlice'
 import { PrimaryButton } from '../../Components/Common/Buttons'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
@@ -26,21 +26,11 @@ export default function About() {
     }
   }
 
-  const second = async () => {
-    try {
-      let res = await api.get("/company/get")
-      dispatch(getInfo(res.data.data))
-    } catch (error) {
-      console.log(error.message)
-    }
-  }
-
 
   useEffect(() => {
     first()
-    second()
-    
-  }, [])
+    dispatch(fetchCompanyInfo())
+  }, [dispatch])
   
   return (
     <Box>

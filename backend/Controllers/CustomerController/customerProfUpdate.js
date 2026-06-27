@@ -224,66 +224,75 @@ async function getCustomerProfile(req, res) {
 //uploading and updating phtot
 async function postCustomerPhoto(req, res) {
     try {
-        let userId = req.userId;
+
+        const userId = req.userId;
 
         if (!userId) {
             return res.status(401).json({
-                message: "Unauthorized: User ID missing in token"
+                success: false,
+                message: "Unauthorized"
             });
         }
+
         if (!req.file) {
             return res.status(400).json({
-                message: "Validation Error: Please select an image file to upload."
+                success: false,
+                message: "Please select an image"
             });
         }
-        console.log("File received:", req.file);
-    
-        const rawpath = req.file.path;
+
+        const imagePath = req.file.path.replace(/\\/g, "/");
 
         const baseUrl = `${req.protocol}://${req.get("host")}`;
-        const imageUrl = `${baseUrl}/${rawpath}`;
+
+        const imageUrl = `${baseUrl}/${imagePath}`;
 
         const updatedUser = await userModel.findByIdAndUpdate(
             userId,
-            { image: imageUrl },
-            { new: true }
+            {
+                image: imageUrl
+            },
+            {
+                new: true
+            }
         );
 
-        res.status(200).json({
+        return res.status(200).json({
+            success: true,
             message: "Photo uploaded successfully",
-            photo: imageUrl,   // ✅ direct usable URL
+            photo: imageUrl,
             user: updatedUser
         });
 
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
+            success: false,
             message: error.message
         });
     }
 }
-
 //getcustomer Photo
 async function getCustomerPhoto(req, res) {
     try {
-        let userId = req.userId;
 
-        const user = await userModel.findById(userId);
+        const user = await userModel.findById(req.userId);
 
         if (!user || !user.image) {
             return res.status(404).json({
+                success: false,
                 message: "Photo not found"
             });
         }
 
-        const baseUrl = `${req.protocol}://${req.get("host")}`;
-
-        res.status(200).json({
+        return res.status(200).json({
+            success: true,
             message: "Photo retrieved successfully",
-            photo: `${baseUrl}/${user.image}`
+            photo: user.image
         });
 
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
+            success: false,
             message: error.message
         });
     }

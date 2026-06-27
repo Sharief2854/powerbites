@@ -56,11 +56,10 @@ import {
   addValue,
   getItems,
   removeCartItem,
-  updateCart,
+  updateCartQuantity,
 } from "../../../Redux/Slices/CM_CartSlice";
 import PaymentButton from "../Payments/PaymentButton";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import Coupon from "./Coupon";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import CustomerCardAuth from "../Profile/CustomerCardAuth";
@@ -220,6 +219,8 @@ function AddressModal({
         `/updateCustomerProfile/addAddress/${userId}`,
         payload,
       );
+      console.log(response.data);
+      
       setUpdateAddress(response.data.address);
       if (setAddress) {
         setAddress((prevAddresses) => [
@@ -227,6 +228,7 @@ function AddressModal({
           response.data.address,
         ]);
       }
+      onClose();
       enqueueSnackbar("Address added successfully!", {
         variant: "success",
       });
@@ -247,7 +249,6 @@ function AddressModal({
         text: "Address added!",
         type: "success",
       });
-      onClose();
     } catch (err) {
       console.error("Address save error:", err.response?.data || err.message);
       enqueueSnackbar(`${err.response?.data || err.message}`, {
@@ -261,7 +262,14 @@ function AddressModal({
 
   const availableStates = countriesData[addressForm.country] || [];
 
-  return (
+  return (    
+  <Dialog
+    open={open}
+    onClose={onClose}
+    fullWidth
+    maxWidth="md"
+  >
+    <DialogContent>
     <Box sx={{ p: { xs: 2, sm: 4 }, bgcolor: "#fdfefe", minHeight: "100vh", display: "flex", alignItems: "center" }}>
       <CustomerCardAuth>
         <Paper
@@ -425,7 +433,7 @@ function AddressModal({
               <Button
                 variant="text"
                 startIcon={<ArrowBackIcon />}
-                onClick={() => navigate("/customer/profile")}
+                onClick={onClose}
                 sx={{ color: "text.secondary", px: 3, py: 1.2 }}
                 fullWidth={{ xs: true, sm: false }}
               >
@@ -447,23 +455,24 @@ function AddressModal({
         </Paper>
       </CustomerCardAuth>
     </Box>
+    </DialogContent>
+    </Dialog>
   );
 }
 
 export default function CustomerCart() {
   const cartItems = useSelector((state) => state.cart.items);
+  const cartStatus = useSelector((state) => state.cart.status);
   const quantity = useSelector((state) => state.cart.cartValue);
 
   let token = localStorage.getItem("token");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   let decodeId = jwtDecode(token).id;
-  const [qty, setQty] = useState(1);
   const [addresses, setAddress] = useState([]);
   const [totalPrice, setTotalPrice] = useState();
   const [open, setOpen] = React.useState(false);
   const [updateAddress, setUpdateAddress] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [openAddress, setOpenAddress] = useState(false);
   const [coupon, setCoupon] = useState("");
   const theme = useTheme();
@@ -474,8 +483,6 @@ export default function CustomerCart() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [removeId, setRemoveId] = useState("");
-
-  const [openCoupon, setOpenCoupon] = useState(false);
 
   const handleAddress = () => {
     setIsModalOpen(true);
@@ -495,6 +502,7 @@ export default function CustomerCart() {
   // const discountedPrice =
   //   product?.price - (product?.price * product?.discount) / 100;
 
+  
   const handleRemoveCoupon = () => {
     setCoupon(null);
 
@@ -506,6 +514,7 @@ export default function CustomerCart() {
     const priceInPaise = Math.round(Number(item?.product?.price) * 100);
     return total + priceInPaise * item?.quantity;
   }, 0);
+console.log(cartItems);
 
   const couponDiscount =
     cartItems[0]?.coupon && Math.floor(subtotal/100) >= cartItems[0]?.coupon.min_order_value
@@ -532,21 +541,6 @@ export default function CustomerCart() {
       console.log(error.message);
     }
   }
-  //   const round2 = (num) => Math.round(num * 100) / 100;
-
-  // function calculateCart(cartItems, shipping = 49.99, discount = 0) {
-
-  //   const itemsWithTotal = cartItems.map((item) => {
-  //     const price = Number(item.price);
-  //     const quantity = Number(item.quantity);
-
-  //     const lineTotal = round2(price * quantity);
-
-  //     return {
-  //       ...item,
-  //       lineTotal,
-  //     };
-  //   });
 
   //   // Subtotal
   //   const subtotal = round2(
@@ -570,35 +564,13 @@ export default function CustomerCart() {
   //     total: total.toFixed(2),
   //   };
   // }
-  //get Cart Details
-
-  async function getCart() {
-    setLoading(true);
-    try {
-      let res = await api.get(`/cart/getCart`);
-      dispatch(addValue(res.data.cart));
-      dispatch(getItems(res.data.cart));
-      console.log(res.data);
-    } catch (error) {
-      // enqueueSnackbar('')
-    } finally {
-      setLoading(false);
-    }
-  }
 
   //update quantity
-  async function handleChange(cartId, quantity) {
-    try {
-      if (quantity === 0) {
-        await deleteCart(cartId);
-        return;
-      }
-
-      const res = await api.post(`/cart/setQuantity/${cartId}`, { quantity });
-
-      dispatch(updateCart({ _id: cartId, quantity }));
-    } catch (error) {
-      console.log(error);
+  function handleChange(cartId, quantity) {
+    if (quantity > 0) {
+      dispatch(updateCartQuantity({ cartId, quantity }));
+    } else {
+      dispatch(removeCartItem(cartId));
     }
   }
   console.log(cartItems);
@@ -622,19 +594,15 @@ export default function CustomerCart() {
   }
 
   //delete cart
-  async function deleteCart() {
-    try {
-      const res = await api.delete(`/cart/deleteItem/${removeId}`);
-      dispatch(removeCartItem(removeId));
+  function deleteCart() {
+    dispatch(removeCartItem(removeId)).then((action) => {
+      if (action.meta.requestStatus === 'fulfilled') {
       enqueueSnackbar("Item removed", {
         variant: "success",
       });
-      setOpenDeleteDialog(false);
-    } catch (error) {
-      enqueueSnackbar("Failed to delete item", {
-        variant: "error",
-      });
-    }
+      }
+    });
+    setOpenDeleteDialog(false);
   }
   //get Customer Address
   async function getAddress() {
@@ -649,7 +617,21 @@ export default function CustomerCart() {
 
       console.log(defaultAddress, addressList);
       setUpdateAddress(defaultAddress);
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to get address:", error);
+    }
+  }
+
+  //delete cart
+  function deleteCart() {
+    dispatch(removeCartItem(removeId)).then((action) => {
+      if (action.meta.requestStatus === "fulfilled") {
+        enqueueSnackbar("Item removed", {
+          variant: "success",
+        });
+      }
+    });
+    setOpenDeleteDialog(false);
   }
 
   async function changeAddress(params) {
@@ -669,11 +651,10 @@ export default function CustomerCart() {
   console.log(cartItems);
 
   useEffect(() => {
-    getCart();
+    if (cartStatus === "idle") dispatch(getItems());
     getCoupons();
     getAddress();
-  }, []);
-  console.log(coupon);
+  }, [cartStatus, dispatch]);
 
   useEffect(() => {
     if (addresses.length && !updateAddress) {
@@ -682,22 +663,22 @@ export default function CustomerCart() {
       setUpdateAddress(defaultAddress);
     }
   }, [addresses]);
-  if (loading) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Grid container>
-          <Grid size={{ xs: 12, sm: 8, md: 8 }}>
-            <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />
-            <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />
-            <Skeleton variant="rectangular" height={120} />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 4, md: 4 }}>
-            <Skeleton variant="rectangular" height={200} />
-          </Grid>
-        </Grid>
-      </Box>
-    );
-  }
+  // if (cartStatus === "loading" ) {
+  //   return (
+  //     <Box sx={{ p: 3 }}>
+  //       <Grid container>
+  //         <Grid size={{ xs: 12, sm: 8, md: 8 }}>
+  //           <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />
+  //           <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />
+  //           <Skeleton variant="rectangular" height={120} />
+  //         </Grid>
+  //         <Grid size={{ xs: 12, sm: 4, md: 4 }}>
+  //           <Skeleton variant="rectangular" height={200} sx={{ ml: 2 }}/>
+  //         </Grid>
+  //       </Grid>
+  //     </Box>
+  //   );
+  // }
 
   if (cartItems?.length <= 0) {
     return (

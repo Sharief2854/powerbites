@@ -108,9 +108,24 @@ async function updateBanner(req,res){
         let id = req.params.id;
         const updateData = { ...req.body };
 
+        
+        // Handle existing images sent from the frontend
+        let existingImages = [];
+        if (updateData.existingImages) {
+            try {
+                existingImages = JSON.parse(updateData.existingImages);
+            } catch (e) {
+                return res.status(400).json({ message: "Invalid format for existingImages." });
+            }
+        }
+        
+        // Handle new image uploads
+        let newImagePaths = [];
         if (req.files && req.files.length > 0) {
             updateData.image = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path}`);
+            newImagePaths = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path.replace(/\\/g, "/")}`);
         }
+        updateData.image = [...existingImages, ...newImagePaths];
 
         if (!updateData.image) {
             return res.status(400).json({

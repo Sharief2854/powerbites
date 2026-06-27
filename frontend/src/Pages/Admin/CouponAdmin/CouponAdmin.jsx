@@ -56,7 +56,6 @@ const handleConfirmDelete = async () => {
 const statusUpdate = async (id, status) => {
   try {
     await api.put(`/coupon/couponStatus/${id}`, { status });
-
     setCoupons(p=>p.map((i)=>i._id===id?{...i,status}:i));
   }
   catch(err){

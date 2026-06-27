@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
-const { createReview, getAllReviews } = require("../../Controllers/review/review");
+const { createReview, getAllReviews ,getFiveStarReviews} = require("../../Controllers/review/review");
 
 router.post("/addreview", createReview);
 router.get("/getreviews",  getAllReviews);
+router.get("/getFivestar",getFiveStarReviews)
 
 module.exports = router;

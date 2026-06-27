@@ -24,6 +24,7 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 export default function ProductCard({ product }) {
   const [open, setOpen] = React.useState(false);
   const [deleteState, setDeleteState] = React.useState("");
+  const [isBannerCreated, setIsBannerCreated] = React.useState(false);
 
   const handleClickOpen = (params) => {
     setOpen(true);
@@ -45,6 +46,10 @@ export default function ProductCard({ product }) {
       let response = await api.post("banner/setbanner", {
         productId: product?._id,bannerType:"product"
       });
+      if (response.status === 200 || response.status === 201) {
+        enqueueSnackbar("Banner created successfully!", { variant: "success" });
+        setIsBannerCreated(true);
+      }
     } catch (error) {
       enqueueSnackbar(error.message, { variant: "error" });
     }
@@ -111,9 +116,11 @@ export default function ProductCard({ product }) {
   </Typography>
 
   <Button
-    onClick={(e)=>{
-      e.stopPropagation();
-      handleCreateBanner}}
+    onClick={(e) => {
+        e.stopPropagation();
+        handleCreateBanner();
+      }}
+    disabled={isBannerCreated}
     sx={{
       position: "relative",
       overflow: "hidden",
@@ -153,13 +160,14 @@ export default function ProductCard({ product }) {
         width: "35%",
         height: "60%",
         borderRadius: "10px",
+        filter: "blur(10px)",
         background:
           "linear-gradient(to bottom right, rgba(255,255,255,0.45), transparent)",
         pointerEvents: "none",
       },
     }}
   >
-    Create Banner
+    {isBannerCreated ? "Banner Created" : "Create Banner"}
   </Button>
 </Stack>
             <Typography variant="body2" sx={{ color: "text.secondary" }}>

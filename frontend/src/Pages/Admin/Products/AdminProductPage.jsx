@@ -49,7 +49,7 @@ export default function AdminProductPage() {
 
   const getItemData = async () => {
     try {
-      let res = await api.get(`/product/getprd/${id}`);
+      let res = await api.get(`/filter-products/getprd/${id}`);
       setProduct(res.data.data);
     } catch (error) {
       console.log(error.message);

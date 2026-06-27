@@ -12,9 +12,15 @@ const CustomerOrderSlice = createSlice({
       },
       getCustomerOrder: (state, action) => {
         state.orderlist = action.payload;
-      }
+      },
+      deleteCustomerOrder: (state, action) => {
+        state.orderlist = state.orderlist.filter(
+          (order) => order._id !== action.payload
+        );
+      },
+    
     }
   });
   
-  export const { addOrder, getCustomerOrder } = CustomerOrderSlice.actions;
+  export const { addOrder, getCustomerOrder, deleteCustomerOrder } = CustomerOrderSlice.actions;
   export default CustomerOrderSlice.reducer;

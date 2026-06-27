@@ -86,7 +86,7 @@ async function analyticSpecific(req, res) {
 
         const { year, month } = req.query;
 
-        // Validation 1: Year is required
+        // Year Validation
         if (!year) {
             return res.status(400).json({
                 success: false,
@@ -94,7 +94,6 @@ async function analyticSpecific(req, res) {
             });
         }
 
-        // Validation 2: Year must be a valid number
         if (isNaN(year)) {
             return res.status(400).json({
                 success: false,
@@ -102,15 +101,14 @@ async function analyticSpecific(req, res) {
             });
         }
 
-        // Validation 3: Year should be 4 digits
         if (year.length !== 4) {
             return res.status(400).json({
                 success: false,
-                message: "Year must be a 4-digit value"
+                message: "Year must be 4 digits"
             });
         }
 
-        // Validation 4: Month validation (if provided)
+        // Month Validation
         if (month) {
 
             if (isNaN(month)) {
@@ -126,20 +124,22 @@ async function analyticSpecific(req, res) {
                     message: "Month must be between 1 and 12"
                 });
             }
+
         }
 
         let startDate;
         let endDate;
 
-        // Month + Year Search
-        if (year && month) {
+        // Month + Year
+        if (month) {
 
             startDate = new Date(Number(year), Number(month) - 1, 1);
 
             endDate = new Date(Number(year), Number(month), 1);
 
         }
-        // Year Search
+
+        // Entire Year
         else {
 
             startDate = new Date(Number(year), 0, 1);
@@ -148,40 +148,135 @@ async function analyticSpecific(req, res) {
 
         }
 
+        // Fetch Orders
         const orders = await ordersModel.find({
             createdAt: {
                 $gte: startDate,
                 $lt: endDate
             }
-        });
+        }).populate("customer", "name email");
 
-        // No orders found
         if (orders.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "No orders found for the selected period"
+                message: "No orders found for selected period"
             });
         }
 
-        return res.status(200).json({
-            success: true,
-            message: "Analytics fetched successfully",
-            totalOrders: orders.length,
-            period: {
-                year,
-                month: month || null
-            },
-            data: orders
+        // ==========================
+        // Analytics
+        // ==========================
+
+        const totalOrders = orders.length;
+
+        const totalRevenue = orders.reduce((sum, order) => {
+            return sum + (order.final_price || 0);
+        }, 0);
+
+        let totalProductsSold = 0;
+
+        orders.forEach(order => {
+            order.products.forEach(product => {
+                totalProductsSold += product.quantity || 0;
+            });
         });
 
-    } catch (error) {
+        const customerSet = new Set();
 
-        console.error("Analytics Error:", error);
+        orders.forEach(order => {
+            if (order.customer) {
+                customerSet.add(order.customer._id.toString());
+            }
+        });
+
+        const totalCustomers = customerSet.size;
+
+        let totalPlaced = 0;
+        let totalPreparing = 0;
+        let totalShipping = 0;
+        let totalCancelled = 0;
+
+        orders.forEach(order => {
+
+            if (order.orderStatus === "order placed") {
+                totalPlaced++;
+            }
+
+            else if (order.orderStatus === "preparing order") {
+                totalPreparing++;
+            }
+
+            else if (order.orderStatus === "order shipped") {
+                totalShipping++;
+            }
+
+            else if (order.orderStatus === "order cancelled") {
+                totalCancelled++;
+            }
+
+        });
+
+        // ==========================
+        // Table Data
+        // ==========================
+
+        const orderData = orders.map(order => ({
+            _id: order._id,
+            customerName: order.customer ? order.customer.name : null,
+            customerEmail: order.customer ? order.customer.email : null,
+            createdAt: order.createdAt,
+            orderStatus: order.orderStatus,
+            final_price: order.final_price
+        }));
+
+        // ==========================
+        // Response
+        // ==========================
+
+        return res.status(200).json({
+
+            success: true,
+
+            message: "Specific month analytics and transaction records retrieved successfully.",
+
+            analytics: {
+
+                totalRevenue,
+
+                totalCustomers,
+
+                totalOrders,
+
+                totalProductsSold,
+
+                totalPlaced,
+
+                totalPreparing,
+
+                totalShipping,
+
+                totalCancelled
+
+            },
+
+            data: orderData
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
 
         return res.status(500).json({
+
             success: false,
+
             message: "Internal Server Error",
+
             error: error.message
+
         });
 
     }
@@ -193,10 +288,25 @@ async function topSellingProducts(req, res) {
 
         const { year, month } = req.query;
 
+        // Year Validation
         if (!year) {
             return res.status(400).json({
                 success: false,
                 message: "Year is required"
+            });
+        }
+
+        if (isNaN(year)) {
+            return res.status(400).json({
+                success: false,
+                message: "Year must be a valid number"
+            });
+        }
+
+        if (year.length !== 4) {
+            return res.status(400).json({
+                success: false,
+                message: "Year must be a 4 digit number"
             });
         }
 
@@ -205,79 +315,132 @@ async function topSellingProducts(req, res) {
 
         if (month) {
 
-            if (month < 1 || month > 12) {
+            if (isNaN(month)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Month must be a valid number"
+                });
+            }
+
+            if (Number(month) < 1 || Number(month) > 12) {
                 return res.status(400).json({
                     success: false,
                     message: "Month must be between 1 and 12"
                 });
             }
 
-            startDate = new Date(year, month - 1, 1);
-            endDate = new Date(year, month, 1);
+            startDate = new Date(Number(year), Number(month) - 1, 1);
+
+            endDate = new Date(Number(year), Number(month), 1);
 
         } else {
 
-            startDate = new Date(year, 0, 1);
+            startDate = new Date(Number(year), 0, 1);
+
             endDate = new Date(Number(year) + 1, 0, 1);
 
         }
 
-        const orders = await ordersModel.find({
-            createdAt: {
-                $gte: startDate,
-                $lt: endDate
-            }
-        });
+        const products = await ordersModel.aggregate([
 
-        const productSales = {};
-
-        orders.forEach(order => {
-
-            order.products.forEach(item => {
-
-                const productId = item.product.toString();
-
-                if (!productSales[productId]) {
-                    productSales[productId] = 0;
+            {
+                $match: {
+                    createdAt: {
+                        $gte: startDate,
+                        $lt: endDate
+                    }
                 }
+            },
 
-                productSales[productId] += item.quantity;
+            {
+                $unwind: "$products"
+            },
 
-            });
+            {
+                $group: {
+                    _id: "$products.product",
+                    totalQuantitySold: {
+                        $sum: "$products.quantity"
+                    }
+                }
+            },
 
-        });
+            {
+                $sort: {
+                    totalQuantitySold: -1
+                }
+            },
 
-        const sortedProducts = Object.entries(productSales)
-            .sort((a, b) => b[1] - a[1]);
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "productDetails"
+                }
+            },
 
-        if (sortedProducts.length === 0) {
+            {
+                $unwind: "$productDetails"
+            },
+
+            {
+                $project: {
+                    _id: 0,
+                    productId: "$productDetails._id",
+                    productName: "$productDetails.name",
+                    totalQuantitySold: 1
+                }
+            }
+
+        ]);
+
+        if (products.length === 0) {
+
             return res.status(404).json({
                 success: false,
                 message: "No product sales found"
             });
+
         }
 
         return res.status(200).json({
+
             success: true,
-            message: "Top selling products fetched successfully",
-            data: sortedProducts
+
+            message: "Top selling products compiled successfully.",
+
+            data: products
+
         });
 
-    } catch (error) {
+    }
+
+    catch (error) {
+
+        console.error(error);
 
         return res.status(500).json({
+
             success: false,
+
             message: "Internal Server Error",
+
             error: error.message
+
         });
 
     }
 }
 
 //getting least sold produt in a week month and year
+// Getting least selling products
 async function leastSellingProducts(req, res) {
     try {
+
         const { year, month } = req.query;
+
+        // Year validation
         if (!year) {
             return res.status(400).json({
                 success: false,
@@ -285,63 +448,123 @@ async function leastSellingProducts(req, res) {
             });
         }
 
+        if (isNaN(year)) {
+            return res.status(400).json({
+                success: false,
+                message: "Year must be a valid number"
+            });
+        }
+
         let startDate;
         let endDate;
 
+        // Month validation
         if (month) {
-            if (month < 1 || month > 12) {
+
+            if (isNaN(month)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Month must be a valid number"
+                });
+            }
+
+            if (Number(month) < 1 || Number(month) > 12) {
                 return res.status(400).json({
                     success: false,
                     message: "Month must be between 1 and 12"
                 });
             }
-            startDate = new Date(year, month - 1, 1);
-            endDate = new Date(year, month, 1);
+
+            startDate = new Date(Number(year), Number(month) - 1, 1);
+            endDate = new Date(Number(year), Number(month), 1);
+
         } else {
-            startDate = new Date(year, 0, 1);
+
+            startDate = new Date(Number(year), 0, 1);
             endDate = new Date(Number(year) + 1, 0, 1);
+
         }
 
-        const orders = await ordersModel.find({
-            createdAt: {
-                $gte: startDate,
-                $lt: endDate
-            }
-        });
+        const leastSellingProducts = await ordersModel.aggregate([
 
-        const productSales = {};
-        orders.forEach(order => {
-            order.products.forEach(item => {
-                const productId = item.product.toString();
-                if (!productSales[productId]) {
-                    productSales[productId] = 0;
+            {
+                $match: {
+                    createdAt: {
+                        $gte: startDate,
+                        $lt: endDate
+                    },
+                    orderStatus: {
+                        $ne: "order cancelled"
+                    }
                 }
-                productSales[productId] += item.quantity;
-            });
-        });
+            },
 
-        const sortedProducts = Object.entries(productSales)
-            .sort((a, b) => a[1] - b[1]); // Sort in ascending order for least selling
+            {
+                $unwind: "$products"
+            },
 
-        if (sortedProducts.length === 0) {
+            {
+                $group: {
+                    _id: "$products.product",
+                    totalQuantitySold: {
+                        $sum: "$products.quantity"
+                    }
+                }
+            },
+
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "productDetails"
+                }
+            },
+
+            {
+                $unwind: "$productDetails"
+            },
+
+            {
+                $project: {
+                    _id: 0,
+                    productId: "$_id",
+                    productName: "$productDetails.name",
+                    totalQuantitySold: 1
+                }
+            },
+
+            {
+                $sort: {
+                    totalQuantitySold: 1
+                }
+            }
+
+        ]);
+
+        if (leastSellingProducts.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "No product sales found"
+                message: "No product sales found for the selected period"
             });
         }
 
         return res.status(200).json({
             success: true,
-            message: "Least selling products fetched successfully",
-            data: sortedProducts
+            message: "Least selling products compiled successfully.",
+            data: leastSellingProducts
         });
 
     } catch (error) {
+
+        console.error("Least Selling Products Error:", error);
+
         return res.status(500).json({
             success: false,
             message: "Internal Server Error",
             error: error.message
         });
+
     }
 }
 
@@ -650,6 +873,108 @@ async function cancelledOrdersAnalytics(req, res) {
     }
 }
 
+//getting top customer
+async function topCustomer(req, res) {
+    try {
+        const { year, month } = req.query;
+        if (!year) {
+            return res.status(400).json({
+                success: false,
+                message: "Year is required"
+            });
+        }
+
+        let startDate;
+        let endDate;
+
+        if (month) {
+            if (month < 1 || month > 12) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Month must be between 1 and 12"
+                });
+            }
+            startDate = new Date(year, month - 1, 1);
+            endDate = new Date(year, month, 1);
+        } else {
+            startDate = new Date(year, 0, 1);
+            endDate = new Date(Number(year) + 1, 0, 1);
+        }
+
+        const topCustomer = await ordersModel.aggregate([
+            {
+                $match: {
+                    createdAt: {
+                        $gte: startDate,
+                        $lt: endDate
+                    },
+                     orderStatus: { $ne: "order cancelled" }
+                }
+            },
+            {
+                $group: {
+                    _id: "$customer",
+                    totalOrders: { $sum: 1 },
+                    totalAmountSpent: { $sum: "$final_price" }
+                }
+            },
+            { $sort: { totalAmountSpent: -1 } },
+            { $limit: 1 },
+            {
+                $lookup: {
+                    from: "users", // The collection name for users
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "customerDetails"
+                }
+            },
+            { $unwind: "$customerDetails" },
+            {
+                $project: {
+                    _id: 0,
+                    customerId: "$_id",
+                    customerName: "$customerDetails.name",
+                    customerEmail: "$customerDetails.email",
+                    totalOrders: 1,
+                    totalAmountSpent: 1
+                }
+            }
+        ]);
+
+        if (topCustomer.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No top customer found for the specified period."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Top customer fetched successfully.",
+            data: topCustomer[0]
+        });
+
+    } catch (error) {
+        console.error("Error fetching top customer:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+}
 
 
-module.exports = { analyticsPeriod, analyticSpecific, topSellingProducts, leastSellingProducts, bestSellingProduct, totalCustomers, totalOrders, totalProductsSold, orderStatusSummary, cancelledOrdersAnalytics }
+module.exports = {
+     analyticsPeriod, 
+     analyticSpecific, 
+     topSellingProducts, 
+     leastSellingProducts, 
+     bestSellingProduct, 
+     totalCustomers, 
+     totalOrders, 
+     totalProductsSold, 
+     orderStatusSummary, 
+     cancelledOrdersAnalytics,
+     topCustomer
+    }

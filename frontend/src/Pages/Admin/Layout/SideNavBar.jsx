@@ -13,8 +13,7 @@ import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import api from '../../../api/axiosConfig';
-import { getInfo } from '../../../Redux/Slices/AdminSlice/CompanyInfoSlice';
+import { fetchCompanyInfo } from '../../../Redux/Slices/AdminSlice/CompanyInfoSlice';
 const drawerWidth = 260;
 const collapsedWidth = 80;
 
@@ -35,18 +34,10 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
 
   const company = useSelector((state) => state.companyInfo.info);
   const dispatch = useDispatch();
-  const getCompany = async () => {
-    try {
-      let res = await api.get("/company/get");
-      dispatch(getInfo(res.data.data));
-    } catch (error) {
-      console.log(error.message);
-    }
-  };
 
   useEffect(() => {
-    getCompany();
-  }, []);
+    dispatch(fetchCompanyInfo());
+  }, [dispatch]);
 
   const getDrawerContent = (isExpanded) => (
     <Box sx={{ height: '100%', bgcolor: '#1E1154', color: 'white', display: 'flex', flexDirection: 'column' }}>
@@ -54,7 +45,7 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
         {isExpanded ? (
           <><Box
               component="img"
-              src={company.companyImage}
+              src={company?.companyImage}
               alt="DRC Logo"
               sx={{
                 width: 36,
@@ -83,7 +74,7 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
             }}
             onClick={() => navigate('/admin')}
           >
-             <span style={{ color: '#A78BFA' }}>  {company.companyName}</span>
+             <span style={{ color: '#A78BFA' }}>  {company?.companyName}</span>
           </Typography></>
         ) : (
           <Tooltip title="PowerBites" placement="right">

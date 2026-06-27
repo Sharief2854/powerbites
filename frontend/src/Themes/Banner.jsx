@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Box, Typography, Paper, Container, Button } from "@mui/material";
+import React, { useEffect, useState, useRef } from "react";
+import { Box, Typography, Paper, Container, Button, Skeleton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axiosConfig";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchBanners } from "../Redux/Slices/BannerSlice";
 
 const banne = [
   {
@@ -72,31 +73,53 @@ const banne = [
 ];
 
 function HomemadeFoodBanner() {
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { items: activeBanners, status } = useSelector((state) => state.banners);
+  const banners = activeBanners.filter((item) => item.status === 'Active')
+  
   const [currentBanner, setCurrentBanner] = useState(0);
+  const navigate = useNavigate();
   const [currentImage, setCurrentImage] = useState(0);
   const [pausedUntil, setPausedUntil] = useState(null);
-  const [banners, setBanners] = useState(banne);
-
+    
   const activeBanner = banners[currentBanner];
   const isPaused = pausedUntil && Date.now() < pausedUntil;
 
   useEffect(() => {
-    if (isPaused) return;
+    if (status === 'idle') {
+      dispatch(fetchBanners());
+    }
+  }, [status, dispatch]);
 
-    const timer = setInterval(() => {
-      const lastImageIndex = banners[currentBanner].images.length - 1;
+  const bannerRef = useRef(currentBanner);
+  const imageRef = useRef(currentImage);
 
-      if (currentImage < lastImageIndex) {
-        setCurrentImage((prev) => prev + 1);
-      } else {
-        setCurrentBanner((prevBanner) => (prevBanner + 1) % banners.length);
-        setCurrentImage(0);
-      }
-    }, 2500);
+useEffect(() => {
+  bannerRef.current = currentBanner;
+}, [currentBanner]);
 
-    return () => clearInterval(timer);
-  }, [currentBanner, currentImage, isPaused]);
+useEffect(() => {
+  imageRef.current = currentImage;
+}, [currentImage]);
+
+    useEffect(() => {
+  if (isPaused || banners.length === 0) return;
+
+  const timer = setInterval(() => {
+    const banner = banners[bannerRef.current];
+
+    if (!banner?.image?.length) return;
+
+    if (imageRef.current < banner.image.length - 1) {
+      setCurrentImage(prev => prev + 1);
+    } else {
+      setCurrentImage(0);
+      setCurrentBanner(prev => (prev + 1) % banners.length);
+    }
+  }, 2500);
+
+  return () => clearInterval(timer);
+}, [isPaused, banners]);
 
   useEffect(() => {
     if (!pausedUntil) return;
@@ -128,19 +151,18 @@ function HomemadeFoodBanner() {
     setCurrentImage(index);
     pauseSlider();
   };
-  const getBanners = async () => {
-    try {
-      let res = await api.get("/banner/getBanners")
-      setBanners(res.data.banners)
-    } catch (error) {
-      
-    }
+
+  
+  if (status === 'loading' || status === 'idle' || !activeBanner) {
+    return (
+      <Box>
+        <Container maxWidth="lg">
+          <Skeleton variant="rectangular" width="100%" sx={{ mt: 2, borderRadius: 1, minHeight: { xs: "auto", md: 360 } }} />
+        </Container>
+      </Box>
+    );
   }
 
-  useEffect(() => {
-    getBanners()
-  }, [])
-  
   return (
     <Box>
       <Container maxWidth="lg">
@@ -181,7 +203,7 @@ function HomemadeFoodBanner() {
                   mb: 1,
                 }}
               >
-                {activeBanner.title}
+                {activeBanner?.title}
               </Typography>
 
               <Typography
@@ -192,7 +214,7 @@ function HomemadeFoodBanner() {
                   mb: 3,
                 }}
               >
-                {activeBanner.subtitle}
+                {activeBanner?.description}
               </Typography>
 
               <Box
@@ -213,7 +235,7 @@ function HomemadeFoodBanner() {
                     lineHeight: 1.1,
                   }}
                 >
-                  {activeBanner.discount}
+                  {`Flat ${activeBanner?.coupon?.discount || 'N'}% Off`}
                 </Typography>
 
                 <Typography
@@ -223,7 +245,7 @@ function HomemadeFoodBanner() {
                     mt: 0.5,
                   }}
                 >
-                  {activeBanner.limit}
+                  {`Up to ₹${activeBanner?.coupon?.max_discount || 'N'}`}
                 </Typography>
               </Box>
 
@@ -308,7 +330,7 @@ function HomemadeFoodBanner() {
                 >
                   <Box
                     component="img"
-                    src={activeBanner.images[currentImage]}
+                    src={activeBanner?.image[currentImage]}
                     alt={`banner ${currentBanner + 1} image ${currentImage + 1}`}
                     sx={{
                       width: "100%",
@@ -328,7 +350,7 @@ function HomemadeFoodBanner() {
                     mb: 1,
                   }}
                 >
-                  {activeBanner.images.map((_, index) => (
+                  {activeBanner?.image?.map((_, index) => (
                     <Box
                       key={index}
                       onClick={() => handleImageClick(index)}
