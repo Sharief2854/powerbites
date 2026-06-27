@@ -512,6 +512,7 @@ import api from "../../../api/axiosConfig";
 import { useDispatch, useSelector } from "react-redux";
 import { getCustomerOrder, deleteCustomerOrder } from "../../../Redux/Slices/CustomerSlice/CustomerOrderSlice";
 import { useNavigate } from "react-router-dom";
+import { socket } from "../../../socket";
 
 const ExpandMoreIcon = () => <span style={{ fontSize: "11px", marginLeft: "4px" }}>▼</span>;
 const ExpandLessIcon = () => <span style={{ fontSize: "11px", marginLeft: "4px" }}>▲</span>;
@@ -583,6 +584,28 @@ function OrderList() {
   useEffect(() => {
     fetchOrders();
   }, [dispatch]);
+
+  // WebSocket listener for real-time order updates
+  useEffect(() => {
+    socket.connect();
+
+    function onOrderUpdate(updatedOrder) {
+      // Ensure the update is for an order owned by the current customer
+      const isMyOrder = orders.some(o => o._id === updatedOrder._id);
+      if (isMyOrder) {
+        console.log('Real-time customer order update received:', updatedOrder);
+        triggerSnackbar(`Your order #${updatedOrder._id.slice(-6)} has been updated!`, 'info');
+        
+        const updatedList = orders.map(order => 
+          order._id === updatedOrder._id ? { ...order, ...updatedOrder } : order
+        );
+        dispatch(getCustomerOrder(updatedList));
+      }
+    }
+
+    socket.on('orderUpdate', onOrderUpdate);
+    return () => { socket.off('orderUpdate', onOrderUpdate); socket.disconnect(); };
+  }, [dispatch, orders]);
 
   const toggleOrderExpand = (orderId) => {
     setExpandedOrders((prev) =>
