@@ -58,7 +58,7 @@ app.use(conditionalJsonParser);
 const path = require("path");
 app.use("/upload", express.static(path.join(__dirname, "upload")))
 
-);
+
 
 const server = http.createServer(app);
 const io = new Server(server, {
