@@ -366,29 +366,29 @@ import api from '../../../api/axiosConfig';
 import { getOrder } from '../../../Redux/Slices/AdminSlice/OrderListSlice';
 
 export default function OrderRecordsTable() {
-  const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const rawOrderList = useSelector((state) => state.orderlist?.orderlist || []);
 
-  // Filter, Sort, and Pagination states
+  // 1. ALL HOOKS PLACED AT THE TOP LEVEL OF THE COMPONENT BODY
+  const [loading, setLoading] = useState(true);
   const [globalSearch, setGlobalSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [orderBy, setOrderBy] = useState('createdAt');
   const [orderDirection, setOrderDirection] = useState('desc');
   
-  // Pagination Tracking Configurations
+  // Pagination State Variables (Explicitly set to 10 items)
   const [page, setPage] = useState(1);
-  const [itemsPerPage] = useState(10); // Standard layout allocation limit
+  const [itemsPerPage] = useState(10); 
   const [totalOrdersCount, setTotalOrdersCount] = useState(0);
 
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
-  const triggerSnackbar = (message, severity = "success") => {
+  const triggerSnackbar = useCallback((message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
-  };
+  }, []);
 
-  // Parse complex data models safely into clean table view rows
+  // Helper mapping routine to parse raw complex database documents cleanly
   const parseData = (rawOrders) => {
     if (!Array.isArray(rawOrders)) return [];
     return rawOrders.map(order => {
@@ -406,7 +406,7 @@ export default function OrderRecordsTable() {
         fullShippingAddress: formattedAddress || "N/A",
         city: addr?.city || "N/A",
         addressLabel: addr?.label?.toUpperCase() || "HOME",
-        rawCreatedAt: order.createdAt || "", // Preserved for flawless chronological sorting
+        rawCreatedAt: order.createdAt || "", 
         createdAt: order.createdAt 
           ? new Date(order.createdAt).toLocaleDateString('en-US', {
               year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -418,11 +418,11 @@ export default function OrderRecordsTable() {
 
   const parsedOrders = useMemo(() => parseData(rawOrderList), [rawOrderList]);
 
-  // Handle proper client-side filter sorting and computation pipelines
+  // Client Side Filter & Flawless Data Chronological Sorting Computation
   const filteredAndSortedOrders = useMemo(() => {
     let filtered = [...parsedOrders];
 
-    // Global Search Filter
+    // Global Search Logic Filter Block
     if (globalSearch) {
       const term = globalSearch.toLowerCase();
       filtered = filtered.filter(row =>
@@ -434,14 +434,14 @@ export default function OrderRecordsTable() {
       );
     }
 
-    // Status Dropdown Filter
+    // Status Filter Selection mapping
     if (statusFilter !== 'All') {
       filtered = filtered.filter(row => 
         row.orderStatus.toLowerCase() === statusFilter.toLowerCase()
       );
     }
 
-    // Dynamic Column Sorting
+    // Table Column Sorting Realizations
     return filtered.sort((a, b) => {
       let valA = a[orderBy], valB = b[orderBy];
       
@@ -460,16 +460,16 @@ export default function OrderRecordsTable() {
     });
   }, [parsedOrders, globalSearch, statusFilter, orderBy, orderDirection]);
 
-  // Fetch updated dataset segments from Backend whenever indices cycle
+  // Fetch from backend payload effect listener mapping
   useEffect(() => {
     async function fetchFromBackend() {
       try {
         setLoading(true);
         const response = await api.get(`/orders/admin/getAllOrders?page=${page}&limit=${itemsPerPage}`); 
-        const backendOrders = response.data.orders || response.data || [];
+        const backendOrders = response.data.orders || [];
         
-        // Dynamic fallback capture for record size tracking definitions
-        const totalCount = response.data?.totalOrders || response.data?.total || backendOrders.length;
+        // Target response.data.pagination.totalOrders cleanly
+        const totalCount = response.data?.pagination?.totalOrders || response.data?.totalOrders || backendOrders.length;
         
         setTotalOrdersCount(totalCount);
         dispatch(getOrder(backendOrders));
@@ -481,20 +481,9 @@ export default function OrderRecordsTable() {
       }
     }
     fetchFromBackend();
-  }, [dispatch, page, itemsPerPage]);
+  }, [dispatch, page, itemsPerPage, triggerSnackbar]);
 
-  // Reset pagination indexes cleanly down to 1 when search filters change
-  const handleSearchChange = (e) => {
-    setGlobalSearch(e.target.value);
-    setPage(1);
-  };
-
-  const handleStatusFilterChange = (e) => {
-    setStatusFilter(e.target.value);
-    setPage(1);
-  };
-
-  // Real-time WebSocket event handler mappings
+  // Real-time WebSocket dynamic interface synchronization adjustments
   useEffect(() => {
     socket.connect();
 
@@ -510,16 +499,16 @@ export default function OrderRecordsTable() {
 
     socket.on('orderUpdate', onOrderUpdate);
     return () => { socket.off('orderUpdate', onOrderUpdate); socket.disconnect(); };
-  }, [dispatch, rawOrderList]);
+  }, [dispatch, rawOrderList, triggerSnackbar]);
 
-  const getStatusChipColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'order delivered': return 'success';
-      case 'order shipped': return 'info';
-      case 'preparing order': return 'warning';
-      case 'order cancelled': return 'error';
-      default: return 'primary';
-    }
+  const handleSearchChange = (e) => {
+    setGlobalSearch(e.target.value);
+    setPage(1); // Safely reset back to page index 1
+  };
+
+  const handleStatusFilterChange = (e) => {
+    setStatusFilter(e.target.value);
+    setPage(1); // Safely reset back to page index 1
   };
 
   const handleSortRequest = useCallback((property) => {
@@ -532,21 +521,38 @@ export default function OrderRecordsTable() {
     setPage(value);
   };
 
+  const getStatusChipColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'order delivered': return 'success';
+      case 'order shipped': return 'info';
+      case 'preparing order': return 'warning';
+      case 'order cancelled': return 'error';
+      default: return 'primary';
+    }
+  };
+
   const pageCount = Math.ceil(totalOrdersCount / itemsPerPage) || 1;
 
-  if (loading) return <Box sx={{ p: 6, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}><CircularProgress size={40} thickness={4} sx={{ color: '#3B82F6' }} /></Box>;
+  // 2. CONDITIONAL RETURN (IF LOADING) IS PLACED SAFELY *AFTER* ALL HOOK INITIALIZATIONS
+  if (loading) {
+    return (
+      <Box sx={{ p: 6, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress size={40} thickness={4} sx={{ color: '#3B82F6' }} />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: { xs: 1.5, sm: 3, md: 4 }, bgcolor: '#F8FAFC', minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
       
-      {/* Control Actions & Header Information Block */}
+      {/* Table Global Controls Header Box */}
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A', letterSpacing: '-0.025em', fontSize: { xs: '1.25rem', md: '1.5rem' } }}>
             Master Enterprise Logistics Dashboard
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 500 }}>
-            Showing page {page} of tracking ledger logs containing <strong style={{ color: '#3B82F6' }}>{filteredAndSortedOrders.length}</strong> loaded metrics.
+            Showing page {page} of tracking ledger logs containing <strong style={{ color: '#3B82F6' }}>{filteredAndSortedOrders.length}</strong> indices.
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -580,7 +586,7 @@ export default function OrderRecordsTable() {
         </Box>
       </Box>
       
-      {/* Data presentation table surface layer */}
+      {/* Table Layout Render Block Area */}
       <TableContainer 
         component={Paper} 
         elevation={0}
@@ -699,7 +705,7 @@ export default function OrderRecordsTable() {
         </Table>
       </TableContainer>
 
-      {/* Modern Centered Stepped Pagination Action Bar */}
+      {/* Modern Center Controlled Stepped Pagination Footer */}
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
         <Pagination 
           count={pageCount} 
@@ -723,6 +729,7 @@ export default function OrderRecordsTable() {
   );
 }
 
+// 3. SECURE SUB-COMPONENT IMPLEMENTATION COMPILING PERFECT CAPITALIZED NAMING STYLES
 function ThemeHeadTable({ order, orderBy, onRequestSort }) {
   const headCells = [
     { id: '_id', label: 'ID' },

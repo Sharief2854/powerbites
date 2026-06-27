@@ -545,7 +545,7 @@
 // export default OrderList;
 
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Table,
@@ -571,7 +571,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Pagination // Added for pagination controller
+  Pagination
 } from "@mui/material"; 
 import api from "../../../api/axiosConfig";
 import { useDispatch, useSelector } from "react-redux";
@@ -608,12 +608,13 @@ function OrderList() {
   const navigate = useNavigate();
   const orders = useSelector((state) => state.customerOrder.orderlist) || [];
   
+  // 1. ALL HOOK INITIALIZATIONS DECLARED INVARIABLY AT THE TOP LEVEL
   const [loading, setLoading] = useState(true);
   const [expandedOrders, setExpandedOrders] = useState([]);
   
-  // Pagination State Variables
+  // Pagination State parameters (Strictly locked to 10 limits)
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5); // Dynamic Limit Configuration
+  const [itemsPerPage] = useState(10); 
   const [totalOrdersCount, setTotalOrdersCount] = useState(0);
 
   // States for Cancellation Reason Dialog
@@ -621,47 +622,41 @@ function OrderList() {
   const [orderToCancel, setOrderToCancel] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
 
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
-  const triggerSnackbar = (message, severity = "success") => {
+  const triggerSnackbar = useCallback((message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
-  };
+  }, []);
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") return;
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  async function fetchOrders() {
-    try {
-      setLoading(true);
-      // Appended pagination query filters to API endpoint routing structure
-      const response = await api.get(`/orders/getOrders?page=${currentPage}&limit=${itemsPerPage}`);
-      
-      const fallbackOrdersArray = response.data?.orders || (Array.isArray(response.data) ? response.data : []);
-      // Extract backend record totals length (Defaults to current data footprint if omitted by server)
-      const totalCount = response.data?.totalOrders || response.data?.total || fallbackOrdersArray.length;
-      
-      setTotalOrdersCount(totalCount);
-      dispatch(getCustomerOrder(fallbackOrdersArray));
-    } catch (err) {
-      console.error("Error fetching order history:", err);
-      triggerSnackbar("Failed to sync historical orders list.", "error");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // Refetches datasets automatically whenever page variations or limit tracking values change
+  // Sync state tracking datasets with parameterized page definitions
   useEffect(() => {
+    async function fetchOrders() {
+      try {
+        setLoading(true);
+        const response = await api.get(`/orders/getOrders?page=${currentPage}&limit=${itemsPerPage}`);
+        
+        const fallbackOrdersArray = response.data?.orders || [];
+        // CRITICAL FIX: Extract metrics map accurately out of response backend metadata blocks
+        const totalCount = response.data?.pagination?.totalOrders || response.data?.totalOrders || fallbackOrdersArray.length;
+        
+        setTotalOrdersCount(totalCount);
+        dispatch(getCustomerOrder(fallbackOrdersArray));
+      } catch (err) {
+        console.error("Error fetching order history:", err);
+        triggerSnackbar("Failed to sync historical orders list.", "error");
+      } finally {
+        setLoading(false);
+      }
+    }
     fetchOrders();
-  }, [dispatch, currentPage, itemsPerPage]);
+  }, [dispatch, currentPage, itemsPerPage, triggerSnackbar]);
 
-  // WebSocket listener for real-time order updates
+  // WebSocket event dynamic subscription configurations
   useEffect(() => {
     socket.connect();
 
@@ -680,7 +675,7 @@ function OrderList() {
 
     socket.on('orderUpdate', onOrderUpdate);
     return () => { socket.off('orderUpdate', onOrderUpdate); socket.disconnect(); };
-  }, [dispatch, orders]);
+  }, [dispatch, orders, triggerSnackbar]);
 
   const toggleOrderExpand = (orderId) => {
     setExpandedOrders((prev) =>
@@ -701,7 +696,7 @@ function OrderList() {
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Smooth scrolls window back to top 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleConfirmCancelOrder = async () => {
@@ -743,9 +738,9 @@ function OrderList() {
     }
   };
 
-  // Calculates structural pagination limit allocations
   const pageCount = Math.ceil(totalOrdersCount / itemsPerPage) || 1;
 
+  // 2. CONDITIONAL RETURNS FOR LOADING UI PLACED SAFELY AFTER ALL HOOK INITIALIZATIONS
   if (loading) {
     return (
       <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "70vh", gap: 2 }}>
@@ -1064,7 +1059,7 @@ function OrderList() {
             );
           })}
 
-          {/* MUI PAGINATION CONTROLLER ELEMENT block */}
+          {/* MUI PAGINATION CONTROLLER ELEMENT BLOCK */}
           <Box sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 4 }}>
             <Pagination 
               count={pageCount} 
