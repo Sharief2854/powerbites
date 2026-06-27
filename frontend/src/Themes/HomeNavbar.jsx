@@ -23,6 +23,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { Chip } from "@mui/material";
 
 const pages = [
   {
@@ -47,7 +48,7 @@ const pages = [
   },
 ];
 
-function ResponsiveAppBar() {
+function ResponsiveAppBar({company}) {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -104,14 +105,20 @@ function ResponsiveAppBar() {
             px: { xs: 1, sm: 2 },
           }}
         >
-          <RestaurantMenuIcon
-            sx={{
-              display: { xs: "none", md: "flex" },
-              mr: 1,
-              color: "primary.contrastText",
-              fontSize: 30,
-            }}
-          />
+          <Box
+    component="img"
+    src={company?.companyImage}
+    alt="PW"
+    sx={{
+      width: 36,
+      height: 36,
+      mr:'3px',
+      objectFit: "cover",
+      borderRadius: "50%",
+      background: "#fff",
+      boxShadow: "0px 6px 18px rgba(62, 26, 137, 0.15)",
+    }}
+  />
 
           <Typography
             onClick={handleLogoRefresh}
@@ -129,7 +136,7 @@ function ResponsiveAppBar() {
               fontSize: { md: "1.1rem", lg: "1.2rem" },
             }}
           >
-            POWER BITES
+           {company?.companyName}
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>

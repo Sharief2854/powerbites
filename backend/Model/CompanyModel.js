@@ -55,6 +55,11 @@ const companySchema = new mongoose.Schema(
     }
   ]
 
+    customFields: {
+      type:Object,
+      default: {},
+    },
+
    
   },
   {

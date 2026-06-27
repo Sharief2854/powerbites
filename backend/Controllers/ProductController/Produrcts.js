@@ -27,21 +27,22 @@ async function allProduct(req, res) {
     }
 }
 
-
-
-
 async function addProduct(req, res) {
     try {
+        const { name, description, price, stock, discount } = req.body;
+
+        // Check uploaded images
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({
-                message: "Product image is required."
+                message: "Product image is required"
             });
         }
-
-
+        // Convert file paths to URLs
         const imagePaths = req.files.map(file =>
             `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
         );
+
+       // console.log("Category from request:", req.body.category);
 
         const category = await ProductCategoryModel.findOne({
             _id: req.body.category.trim()
@@ -53,33 +54,24 @@ s
                 message: "Category not found"
             });
         }
+        const discountAmount = (Number(price) * Number(discount)) / 100;
 
-
-        // let category = await ProductCategoryModel.findOne({
-        //     name: req.body.category.trim()
-        // });
-
-        // if (!category) {
-        //     category = await ProductCategoryModel.create({
-        //         name: req.body.category.trim()
-        //     });
-        // }
-
-        // const company = await CompanyModel.findOne();
-        const ProductData = {
-            name: req.body.name,
-            description: req.body.description,
-            price: req.body.price,
-            stock: req.body.stock,
-            discount: req.body.discount,
+        const finalPrice = Number(price) - discountAmount;
+        // Create product
+        const product = await ProductModel.create({
+            name,
+            description,
+            price: Number(price),
+            stock: Number(stock),
+            discount: Number(discount),
+            finalPrice,
             category: category._id,
             image: imagePaths
-        };
-        const products = await ProductModel.create(ProductData);
-
-        if (req.body.sendUpdates == "on") {
-            await sendProductNotification(products)
-        }
+        });
+        const products = await ProductModel.create(product);
+        
+if(req.body.sendUpdates=="on"){
+    sendProductNotification(products)}
         const Product = await ProductModel.findById(products._id)
             .populate("category", "name");
 
@@ -89,7 +81,10 @@ s
         });
 
     } catch (err) {
+        console.log(err);
+
         return res.status(500).json({
+            success: false,
             message: err.message
         });
     }
@@ -135,21 +130,36 @@ s
 async function updateProduct(req, res) {
     try {
         const id = req.params.id;
-        console.log("id", id)
-        const ProductData = { ...req.body };
-        ProductData.existingPhotos = JSON.parse(
+            const ProductData = { ...req.body };
+    ProductData.existingPhotos = JSON.parse(
             req.body.existingPhotos || "[]"
         );
 
         let imagePaths = [];
 
         if (req.files?.length > 0) {
+        imagePaths = req.files.map(
+            (file) =>
+            `${req.protocol}://${req.get("host")}/${file.path.replace(
+                /\\/g,
+                "/"
+            )}`
+        );
+        }
+
+        ProductData.image = [
+        ...ProductData.existingPhotos,
+        ...imagePaths,
+        ];
+        // const product = await ProductModel.findByIdAndUpdate(id, ProductData, { new: true, }
+        // );
+
+        // let imagePaths = [];
+
+        if (req.files?.length > 0) {
             imagePaths = req.files.map(
-                (file) =>
-                    `${req.protocol}://${req.get("host")}/${file.path.replace(
-                        /\\/g,
-                        "/"
-                    )}`
+                file =>
+                    `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
             );
         }
 
@@ -157,31 +167,41 @@ async function updateProduct(req, res) {
             ...ProductData.existingPhotos,
             ...imagePaths,
         ];
-        const product = await ProductModel.findByIdAndUpdate(id, ProductData, { new: true, }
-        );
 
-        if (!product) {
-            return res.status(404).json({
-                message: "Product not found"
-            });
+        if (ProductData.price && ProductData.discount) {
+            const discountAmount =
+                (Number(ProductData.price) * Number(ProductData.discount)) / 100;
+
+            ProductData.finalPrice =
+                Number(ProductData.price) - discountAmount;
         }
 
+        const product = await ProductModel.findByIdAndUpdate(
+            id,
+            ProductData,
+            { new: true }
+        );
+
         return res.status(200).json({
-            data: product,
-            message: "Product updated successfully"
+            success: true,
+            message: "Product updated successfully",
+            data: product
         });
 
     }
 
     catch (err) {
         console.log(err.message);
-
+        
         return res.status(500).json({
-            message: "Error updating product",
-            error: err.message
-        });
+            success: false,
+            message: err.message
+        }); 
     }
 }
+
+
+
 
 async function deleteProduct(req, res) {
 

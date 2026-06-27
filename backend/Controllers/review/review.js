@@ -62,7 +62,25 @@ async function createReview(req,res){
         }
         
 
+async function getFiveStarReviews(req, res) {
+  try {
+    const reviews = await ReviewModel.find({rating: Number(5)})
+      .populate("productId")
+      .populate("orderId");
 
+    res.status(200).json({
+      success: true,
+      count: reviews.length,
+      data: reviews,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
 module.exports = {
-  getAllReviews,createReview
+  getAllReviews,createReview, getFiveStarReviews
 };

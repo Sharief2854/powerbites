@@ -1,3 +1,4 @@
+
 // import React, { useEffect, useState } from "react";
 // import {
 //   Box,
@@ -7,14 +8,16 @@
 //   FormControl,
 //   Select,
 //   MenuItem,
-//   Grid,
 //   Paper,
 //   Alert,
 //   CircularProgress,
-//   InputLabel
+//   InputLabel,
+//   Stack
 // } from "@mui/material";
+// import Grid2 from "@mui/material/Grid"; // Uses updated MUI Grid2 layout system
 // import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 // import SaveIcon from "@mui/icons-material/Save";
+// import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 // import { useDispatch, useSelector } from "react-redux";
 // import { useNavigate, useParams } from "react-router-dom";
 // import api from "../../../api/axiosConfig";
@@ -128,7 +131,7 @@
 //       });
 //     } catch (err) {
 //       console.error("Address save error:", err.response?.data || err.message);
-//       setMessage({ text: "Failed to save address", type: "error" });
+//       setMessage({ text: "Failed to save address. Please try again.", type: "error" });
 //     } finally {
 //       setSavingAddress(false);
 //     }
@@ -137,39 +140,46 @@
 //   const availableStates = countriesData[addressForm.country] || [];
 
 //   return (
-//     <Box sx={{ p: { xs: 2, sm: 3 }, bgcolor: "#f8f9fa", minHeight: "100vh" }}>
+//     <Box sx={{ p: { xs: 2, sm: 4 }, bgcolor: "#fdfefe", minHeight: "100vh", display: "flex", alignItems: "center" }}>
 //       <CustomerCardAuth>
 //         <Paper
 //           elevation={0}
 //           sx={{
-//             maxWidth: 760,
+//             maxWidth: '100%',
 //             mx: "auto",
-//             p: { xs: 3, sm: 4 },
+//             p: { xs: 2.5, sm: 5 },
 //             borderRadius: 4,
-//             border: "1px solid #e2e8f0",
+//             border: "1px solid #eaecf0",
+//             boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.03)"
 //           }}
 //         >
-//           <Typography variant="h5" fontWeight={700} gutterBottom>
-//             {editaddressId ? "Edit Address" : "Add Address"}
-//           </Typography>
-//           <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-//             Manage your delivery and shipping layouts
-//           </Typography>
+//           {/* Header Area */}
+//           <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
+//             <Box sx={{ p: 1, bgcolor: "primary.light", borderRadius: 2, display: "flex", color: "primary.main" }}>
+//               <LocationOnOutlinedIcon fontSize="medium" />
+//             </Box>
+//             <Box>
+//               <Typography variant="h5" fontWeight={700} sx={{ color: "#101828" }}>
+//                 {editaddressId ? "Edit Address" : "Add New Address"}
+//               </Typography>
+//               <Typography variant="body2" color="text.secondary">
+//                 Configure your accurate location configuration details below.
+//               </Typography>
+//             </Box>
+//           </Stack>
 
 //           {message && (
-//             <Alert severity={message.type} sx={{ mb: 3 }}>
+//             <Alert severity={message.type} variant="standard" sx={{ mt: 3, mb: 1, borderRadius: 2 }}>
 //               {message.text}
 //             </Alert>
 //           )}
 
-//           <form onSubmit={handleSaveAddress}>
-//             <Typography variant="subtitle1" fontWeight={600} color="primary" gutterBottom>
-//               {editaddressId ? "Update Address Details" : "New Address Details"}
-//             </Typography>
-
-//             <Grid container spacing={3}>
-//               <Grid item xs={12}>
-//                 <FormControl fullWidth>
+//           <Box component="form" onSubmit={handleSaveAddress} sx={{ mt: 4 }}>
+//             <Grid2 container spacing={2.5}>
+              
+//               {/* Type Select Field */}
+//               <Grid2 size={{ xs: 12, sm: addressForm.label === "OTHER" ? 6 : 12 }}>
+//                 <FormControl fullWidth variant="outlined">
 //                   <InputLabel id="address-type-label">Address Type</InputLabel>
 //                   <Select
 //                     labelId="address-type-label"
@@ -177,38 +187,46 @@
 //                     value={addressForm.label}
 //                     onChange={handleAddressChange}
 //                     label="Address Type"
+//                     required
 //                   >
-//                     <MenuItem value="">Select Address Type</MenuItem>
-//                     <MenuItem value="HOME">Home</MenuItem>
-//                     <MenuItem value="OFFICE">Office</MenuItem>
-//                     <MenuItem value="OTHER">Other</MenuItem>
+//                     <MenuItem value="" disabled>Select Type</MenuItem>
+//                     <MenuItem value="HOME">🏠 Home</MenuItem>
+//                     <MenuItem value="OFFICE">🏢 Office</MenuItem>
+//                     <MenuItem value="OTHER">📍 Other</MenuItem>
 //                   </Select>
-//                   {addressForm.label === "OTHER" && (
-//                     <TextField
-//                       name="customLabel"
-//                       label="Specify Address Type"
-//                       value={otherLabel}
-//                       onChange={(e) => setOtherLabel(e.target.value)}
-//                       variant="outlined"
-//                       fullWidth
-//                       margin="normal"
-//                     />
-//                   )}
 //                 </FormControl>
-//               </Grid>
+//               </Grid2>
 
-//               <Grid item xs={12}>
+//               {/* Dynamic Type Field Option */}
+//               {addressForm.label === "OTHER" && (
+//                 <Grid2 size={{ xs: 12, sm: 6 }}>
+//                   <TextField
+//                     name="customLabel"
+//                     label="Specify Address Type"
+//                     value={otherLabel}
+//                     onChange={(e) => setOtherLabel(e.target.value)}
+//                     variant="outlined"
+//                     fullWidth
+//                     required
+//                   />
+//                 </Grid2>
+//               )}
+
+//               {/* Street Address */}
+//               <Grid2 size={{ xs: 12 }}>
 //                 <TextField
 //                   fullWidth
-//                   label="Street / Locality"
+//                   label="Street Address / Locality / Apartment"
 //                   name="street"
 //                   value={addressForm.street}
 //                   onChange={handleAddressChange}
+//                   required
 //                 />
-//               </Grid>
+//               </Grid2>
 
-//               <Grid item xs={12} sm={6}>
-//                 <FormControl fullWidth>
+//               {/* Country Picker */}
+//               <Grid2 size={{ xs: 12, sm: 6 }}>
+//                 <FormControl fullWidth variant="outlined">
 //                   <InputLabel id="country-label">Country</InputLabel>
 //                   <Select
 //                     labelId="country-label"
@@ -216,8 +234,9 @@
 //                     value={addressForm.country}
 //                     onChange={handleAddressChange}
 //                     label="Country"
+//                     required
 //                   >
-//                     <MenuItem value="">Select Country</MenuItem>
+//                     <MenuItem value="" disabled>Select Country</MenuItem>
 //                     {Object.keys(countriesData).map((country) => (
 //                       <MenuItem key={country} value={country}>
 //                         {country}
@@ -225,19 +244,21 @@
 //                     ))}
 //                   </Select>
 //                 </FormControl>
-//               </Grid>
+//               </Grid2>
 
-//               <Grid item xs={12} sm={6}>
-//                 <FormControl fullWidth disabled={!addressForm.country}>
-//                   <InputLabel id="state-label">State</InputLabel>
+//               {/* State Picker */}
+//               <Grid2 size={{ xs: 12, sm: 6 }}>
+//                 <FormControl fullWidth disabled={!addressForm.country || availableStates.length === 0}>
+//                   <InputLabel id="state-label">State / Province</InputLabel>
 //                   <Select
 //                     labelId="state-label"
 //                     name="state"
 //                     value={addressForm.state}
 //                     onChange={handleAddressChange}
-//                     label="State"
+//                     label="State / Province"
+//                     required
 //                   >
-//                     <MenuItem value="">Select State</MenuItem>
+//                     <MenuItem value="" disabled>Select State</MenuItem>
 //                     {availableStates.map((state) => (
 //                       <MenuItem key={state} value={state}>
 //                         {state}
@@ -245,56 +266,62 @@
 //                     ))}
 //                   </Select>
 //                 </FormControl>
-//               </Grid>
+//               </Grid2>
 
-//               <Grid item xs={12} sm={6}>
+//               {/* City */}
+//               <Grid2 size={{ xs: 12, sm: 6 }}>
 //                 <TextField
 //                   fullWidth
 //                   label="City"
 //                   name="city"
 //                   value={addressForm.city}
 //                   onChange={handleAddressChange}
+//                   required
 //                 />
-//               </Grid>
-//               <Grid item xs={12} sm={6}>
+//               </Grid2>
+
+//               {/* Postal Pincode Code */}
+//               <Grid2 size={{ xs: 12, sm: 6 }}>
 //                 <TextField
 //                   fullWidth
-//                   label="Pincode"
+//                   label="Pincode / ZIP Code"
 //                   name="pincode"
 //                   value={addressForm.pincode}
 //                   onChange={handleAddressChange}
+//                   required
 //                 />
-//               </Grid>
-//             </Grid>
+//               </Grid2>
+//             </Grid2>
 
-//             <Box
-//               sx={{
-//                 mt: 4,
-//                 display: "flex",
-//                 flexDirection: { xs: "column-reverse", sm: "row" },
-//                 gap: 2,
-//                 justifyContent: "flex-end",
-//               }}
+//             {/* Form Actions Footbar */}
+//             <Stack
+//               direction={{ xs: "column-reverse", sm: "row" }}
+//               spacing={2}
+//               justifyContent="flex-end"
+//               sx={{ mt: 5 }}
 //             >
 //               <Button
-//                 variant="outlined"
+//                 variant="text"
 //                 startIcon={<ArrowBackIcon />}
 //                 onClick={() => navigate("/customer/profile")}
+//                 sx={{ color: "text.secondary", px: 3, py: 1.2 }}
 //                 fullWidth={{ xs: true, sm: false }}
 //               >
-//                 Cancel
+//                 Back to Profile
 //               </Button>
 //               <Button
 //                 type="submit"
 //                 variant="contained"
-//                 startIcon={savingAddress ? <CircularProgress size={20} /> : <SaveIcon />}
+//                 disableElevation
+//                 startIcon={savingAddress ? <CircularProgress size={18} color="inherit" /> : <SaveIcon />}
 //                 disabled={savingAddress}
+//                 sx={{ px: 4, py: 1.2, fontWeight: 600, borderRadius: 2 }}
 //                 fullWidth={{ xs: true, sm: false }}
 //               >
-//                 {savingAddress ? "Saving..." : editaddressId ? "Update Address" : "Add Address"}
+//                 {savingAddress ? "Saving Details..." : editaddressId ? "Update Address" : "Save Location"}
 //               </Button>
-//             </Box>
-//           </form>
+//             </Stack>
+//           </Box>
 //         </Paper>
 //       </CustomerCardAuth>
 //     </Box>
@@ -302,6 +329,7 @@
 // }
 
 // export default CustomerEditAddress;
+
 
 import React, { useEffect, useState } from "react";
 import {
@@ -318,7 +346,7 @@ import {
   InputLabel,
   Stack
 } from "@mui/material";
-import Grid2 from "@mui/material/Grid"; // Uses updated MUI Grid2 layout system
+import Grid from "@mui/material/Grid"; // Standard Grid
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SaveIcon from "@mui/icons-material/Save";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
@@ -352,7 +380,7 @@ function CustomerEditAddress() {
   const navigate = useNavigate();
   const { id: editaddressId } = useParams();
 
-  const editAddress = useSelector((state) => state.editprofile.editaddress);
+  const editAddressList = useSelector((state) => state.editprofile.editaddress) || [];
   const [savingAddress, setSavingAddress] = useState(false);
   const [message, setMessage] = useState(null);
   const [otherLabel, setOtherLabel] = useState("");
@@ -368,17 +396,27 @@ function CustomerEditAddress() {
     isDefault: false,
   });
 
+  // 3.5 Second Auto-Dismiss Alert message hook loop
   useEffect(() => {
-    if (editaddressId && Array.isArray(editAddress)) {
-      const currentAddr = editAddress.find((addr) => addr._id === editaddressId);
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage(null);
+      }, 3500); 
+      return () => clearTimeout(timer); 
+    }
+  }, [message]);
+
+  useEffect(() => {
+    if (editaddressId && Array.isArray(editAddressList)) {
+      const currentAddr = editAddressList.find((addr) => addr._id === editaddressId);
       if (currentAddr) {
-        const isPredefined = ["", "HOME", "OFFICE"].includes(currentAddr.label);
+        const isPredefined = ["", "HOME", "OFFICE"].includes(currentAddr.label?.toUpperCase());
         setAddressForm({
           label: isPredefined ? (currentAddr.label || "") : "OTHER",
           street: currentAddr.street || "",
           city: currentAddr.city || "",
           state: currentAddr.state || "",
-          country: currentAddr.country || "",
+          country: currentAddr.country || "India",
           pincode: currentAddr.pincode || "",
           _id: currentAddr._id || "",
           isDefault: currentAddr.isDefault || false,
@@ -397,7 +435,7 @@ function CustomerEditAddress() {
         isDefault: false,
       });
     }
-  }, [editaddressId, editAddress]);
+  }, [editaddressId, editAddressList]);
 
   const handleAddressChange = (e) => {
     const { name, value } = e.target;
@@ -406,19 +444,45 @@ function CustomerEditAddress() {
       if (name === "country") updated.state = ""; 
       return updated;
     });
+    if (message) setMessage(null);
   };
 
   const handleSaveAddress = async (e) => {
     e.preventDefault();
     setSavingAddress(true);
     setMessage(null);
+
+    const finalLabel = (addressForm.label === "OTHER" ? otherLabel : addressForm.label).trim().toUpperCase();
+
+    if (!finalLabel) {
+      setMessage({ text: "Please provide a valid address label type.", type: "error" });
+      setSavingAddress(false);
+      return;
+    }
+
+    const isDuplicateLabel = editAddressList.some(
+      (addr) => addr.label?.toUpperCase() === finalLabel && addr._id !== editaddressId
+    );
+
+    if (isDuplicateLabel) {
+      setMessage({ 
+        text: `The address label "${finalLabel}" already exists! Please write or use another label description.`, 
+        type: "error" 
+      });
+      setSavingAddress(false);
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
       const decoded = jwtDecode(token);
       const userId = decoded.id;
 
-      const finalLabel = addressForm.label === "OTHER" ? otherLabel : addressForm.label;
-      const payload = { ...addressForm, label: finalLabel, userId };
+      const payload = { 
+        ...addressForm, 
+        label: addressForm.label === "OTHER" ? otherLabel.trim() : addressForm.label, 
+        userId 
+      };
       if (!payload._id) delete payload._id;
 
       let response;
@@ -435,7 +499,15 @@ function CustomerEditAddress() {
       });
     } catch (err) {
       console.error("Address save error:", err.response?.data || err.message);
-      setMessage({ text: "Failed to save address. Please try again.", type: "error" });
+      const backendErrorMessage = err.response?.data?.message || "";
+      if (backendErrorMessage.toLowerCase().includes("already exists") || err.response?.status === 409) {
+        setMessage({ 
+          text: `An entry for "${addressForm.label === "OTHER" ? otherLabel : addressForm.label}" already exists. Please choose another title name.`, 
+          type: "error" 
+        });
+      } else {
+        setMessage({ text: "Failed to save address details safely. Please try again.", type: "error" });
+      }
     } finally {
       setSavingAddress(false);
     }
@@ -473,16 +545,16 @@ function CustomerEditAddress() {
           </Stack>
 
           {message && (
-            <Alert severity={message.type} variant="standard" sx={{ mt: 3, mb: 1, borderRadius: 2 }}>
+            <Alert severity={message.type} variant="standard" sx={{ mt: 3, mb: 1, borderRadius: 2, fontWeight: 500 }}>
               {message.text}
             </Alert>
           )}
 
           <Box component="form" onSubmit={handleSaveAddress} sx={{ mt: 4 }}>
-            <Grid2 container spacing={2.5}>
+            <Grid container spacing={2.5}>
               
-              {/* Type Select Field */}
-              <Grid2 size={{ xs: 12, sm: addressForm.label === "OTHER" ? 6 : 12 }}>
+              {/* Type Select Field using standard Grid + size layout */}
+              <Grid size={{ xs: 12, sm: addressForm.label === "OTHER" ? 6 : 12 }}>
                 <FormControl fullWidth variant="outlined">
                   <InputLabel id="address-type-label">Address Type</InputLabel>
                   <Select
@@ -499,25 +571,28 @@ function CustomerEditAddress() {
                     <MenuItem value="OTHER">📍 Other</MenuItem>
                   </Select>
                 </FormControl>
-              </Grid2>
+              </Grid>
 
               {/* Dynamic Type Field Option */}
               {addressForm.label === "OTHER" && (
-                <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     name="customLabel"
                     label="Specify Address Type"
                     value={otherLabel}
-                    onChange={(e) => setOtherLabel(e.target.value)}
+                    onChange={(e) => {
+                      setOtherLabel(e.target.value);
+                      if (message) setMessage(null);
+                    }}
                     variant="outlined"
                     fullWidth
                     required
                   />
-                </Grid2>
+                </Grid>
               )}
 
               {/* Street Address */}
-              <Grid2 size={{ xs: 12 }}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Street Address / Locality / Apartment"
@@ -526,10 +601,10 @@ function CustomerEditAddress() {
                   onChange={handleAddressChange}
                   required
                 />
-              </Grid2>
+              </Grid>
 
               {/* Country Picker */}
-              <Grid2 size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormControl fullWidth variant="outlined">
                   <InputLabel id="country-label">Country</InputLabel>
                   <Select
@@ -548,10 +623,10 @@ function CustomerEditAddress() {
                     ))}
                   </Select>
                 </FormControl>
-              </Grid2>
+              </Grid>
 
-              {/* State Picker */}
-              <Grid2 size={{ xs: 12, sm: 6 }}>
+              {/* State/Province Picker */}
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormControl fullWidth disabled={!addressForm.country || availableStates.length === 0}>
                   <InputLabel id="state-label">State / Province</InputLabel>
                   <Select
@@ -570,10 +645,10 @@ function CustomerEditAddress() {
                     ))}
                   </Select>
                 </FormControl>
-              </Grid2>
+              </Grid>
 
               {/* City */}
-              <Grid2 size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="City"
@@ -582,10 +657,10 @@ function CustomerEditAddress() {
                   onChange={handleAddressChange}
                   required
                 />
-              </Grid2>
+              </Grid>
 
-              {/* Postal Pincode Code */}
-              <Grid2 size={{ xs: 12, sm: 6 }}>
+              {/* Pincode / ZIP */}
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Pincode / ZIP Code"
@@ -594,8 +669,8 @@ function CustomerEditAddress() {
                   onChange={handleAddressChange}
                   required
                 />
-              </Grid2>
-            </Grid2>
+              </Grid>
+            </Grid>
 
             {/* Form Actions Footbar */}
             <Stack
@@ -608,7 +683,7 @@ function CustomerEditAddress() {
                 variant="text"
                 startIcon={<ArrowBackIcon />}
                 onClick={() => navigate("/customer/profile")}
-                sx={{ color: "text.secondary", px: 3, py: 1.2 }}
+                sx={{ color: "text.secondary", px: 3, py: 1.2, textTransform: "none", fontWeight: 600 }}
                 fullWidth={{ xs: true, sm: false }}
               >
                 Back to Profile
@@ -619,7 +694,7 @@ function CustomerEditAddress() {
                 disableElevation
                 startIcon={savingAddress ? <CircularProgress size={18} color="inherit" /> : <SaveIcon />}
                 disabled={savingAddress}
-                sx={{ px: 4, py: 1.2, fontWeight: 600, borderRadius: 2 }}
+                sx={{ px: 4, py: 1.2, fontWeight: 700, borderRadius: 2, textTransform: "none" }}
                 fullWidth={{ xs: true, sm: false }}
               >
                 {savingAddress ? "Saving Details..." : editaddressId ? "Update Address" : "Save Location"}
