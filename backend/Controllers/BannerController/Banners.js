@@ -27,7 +27,7 @@ async function allBanners(req, res) {
 
 }
 
-async function setBanner(req, res) {
+async function  setBanner(req, res) {
     try {
         const body = req.body;
 
@@ -45,7 +45,7 @@ async function setBanner(req, res) {
         }
         
 
-        if (!body.title || !body.name || !body.description || !body.user) {
+        if (!body.title || !body.description) {
             return res.status(400).json({ 
                 message: "Missing required fields: 'name', 'title', 'description', and 'user' are required." 
             });
@@ -107,10 +107,22 @@ async function updateBanner(req,res){
     try{
         let id = req.params.id;
         const updateData = { ...req.body };
-
-        if (req.files && req.files.length > 0) {
-            updateData.image = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path}`);
+        
+        let existingImages = [];
+        if (updateData.existingImages) {
+            try {
+                existingImages = JSON.parse(updateData.existingImages);
+            } catch (e) {
+                return res.status(400).json({ message: "Invalid format for existingImages." });
+            }
         }
+        
+        
+        let newImagePaths = [];
+        if (req.files && req.files.length > 0) {
+            newImagePaths = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path.replace(/\\/g, "/")}`);
+        }
+        updateData.image = [...existingImages, ...newImagePaths];
 
         if (!updateData.image) {
             return res.status(400).json({

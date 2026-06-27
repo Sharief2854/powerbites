@@ -107,11 +107,12 @@ function ResponsiveAppBar({company}) {
         >
           <Box
     component="img"
-    src={company.companyImage}
-    alt="DRC Logo"
+    src={company?.companyImage}
+    alt="PW"
     sx={{
       width: 36,
       height: 36,
+      mr:'3px',
       objectFit: "cover",
       borderRadius: "50%",
       background: "#fff",
@@ -135,7 +136,7 @@ function ResponsiveAppBar({company}) {
               fontSize: { md: "1.1rem", lg: "1.2rem" },
             }}
           >
-           {company.companyName}
+           {company?.companyName}
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>

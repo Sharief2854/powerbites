@@ -15,7 +15,7 @@ import { PrimaryButton } from "../../../Components/Common/Buttons";
 import api from "../../../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getInfo } from "../../../Redux/Slices/AdminSlice/CompanyInfoSlice";
+import { fetchCompanyInfo } from "../../../Redux/Slices/AdminSlice/CompanyInfoSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import IconButton from "@mui/material/IconButton";
 
@@ -24,18 +24,9 @@ export default function CompanyInfo() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  async function getCompanyInfo() {
-    try {
-      let res = await api.get("/company/get");
-      dispatch(getInfo(res.data.data));
-    } catch (error) {
-      console.log(error.message);
-    }
-  }
-
   useEffect(() => {
-    getCompanyInfo();
-  }, []);
+    dispatch(fetchCompanyInfo());
+  }, [dispatch]);
 
   return (
     <Box>

@@ -22,7 +22,7 @@ export default function HomemadeFoodGrid() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const products = useSelector((state) => state.product.products) || [];
-  console.log("products", products)
+
   const cart =useSelector((state)=>state.cart.cartValue)
   const [search, setSearch] = useState("");
 
@@ -102,8 +102,8 @@ export default function HomemadeFoodGrid() {
   <Grid size={{ xs: 12, sm: 6, md: 4,  }} key={product._id}>
   <Card
     sx={{
-      width: "400px",
-      height:"500px",
+      width: "100%",
+      height: "100%",
       display: "flex",
       flexDirection: "column",
       borderRadius: "18px",

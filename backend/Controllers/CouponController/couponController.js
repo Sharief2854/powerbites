@@ -37,7 +37,7 @@ async function setCoupon(req, res) {
 
     }
     catch (err) {
-        res.status(500).json({
+                res.status(500).json({
             message: err.message
         })
 
@@ -152,6 +152,7 @@ async function couponStatus(req,res){
 
     }
     catch(err){
+        
         res.status(500).json({
             message: err.message
         })

@@ -323,7 +323,7 @@ export default function UpdateProducts() {
   }
   async function getById() {
     try {
-      let response = await api.get(`product/getprd/${id}`);
+      let response = await api.get(`filter-products/getprd/${id}`);
 
       const product = response.data.data;
 

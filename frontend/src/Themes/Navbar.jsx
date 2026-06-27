@@ -75,14 +75,20 @@ function ResponsiveAppBar({company}) {
             px: { xs: 1, sm: 2 },
           }}
         >
-          <RestaurantMenuIcon
-            sx={{
-              display: { xs: "none", md: "flex" },
-              mr: 1,
-              color: "primary.contrastText",
-              fontSize: 30,
-            }}
-          />
+          <Box
+    component="img"
+    src={company?.companyImage}
+    alt="PW"
+    sx={{
+      width: 36,
+      height: 36,
+      mr:'3px',
+      objectFit: "cover",
+      borderRadius: "50%",
+      background: "#fff",
+      boxShadow: "0px 6px 18px rgba(62, 26, 137, 0.15)",
+    }}
+  />
 
           <Typography
             onClick={handleLogoRefresh}
@@ -100,7 +106,7 @@ function ResponsiveAppBar({company}) {
               fontSize: { md: "1.1rem", lg: "1.2rem" },
             }}
           >
-            {company.companyName}
+            {company?.companyName}
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -206,7 +212,7 @@ function ResponsiveAppBar({company}) {
               fontSize: { xs: "0.95rem", sm: "1.1rem" },
             }}
           >
-            {company.companyName}
+            {company?.companyName}
           </Typography>
 
           <Box
