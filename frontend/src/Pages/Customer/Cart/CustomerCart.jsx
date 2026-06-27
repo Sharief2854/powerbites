@@ -650,6 +650,11 @@ console.log(cartItems);
 
   console.log(cartItems);
 
+  const getCarts = async () => {
+    try {
+      let res = await api.get()
+    }
+    catch(err){}}
   useEffect(() => {
     if (cartStatus === "idle") dispatch(getItems());
     getCoupons();
@@ -663,6 +668,13 @@ console.log(cartItems);
       setUpdateAddress(defaultAddress);
     }
   }, [addresses]);
+
+
+  useEffect(() => {
+    getCarts()
+  
+  }, [])
+  
   // if (cartStatus === "loading" ) {
   //   return (
   //     <Box sx={{ p: 3 }}>

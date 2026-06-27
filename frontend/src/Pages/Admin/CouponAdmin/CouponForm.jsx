@@ -229,7 +229,6 @@ export default function CouponForm({ getCoupons }) {
               }
               sx={inputStyles}
             />
-            <TextField fullWidth />
             <TextField
               fullWidth
               label="Banner Code"

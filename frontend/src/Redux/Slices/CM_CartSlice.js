@@ -72,35 +72,69 @@ const cartSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(getItems.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(getItems.fulfilled, (state, action) => {
-        state.items = action.payload;
-        state.cartValue = action.payload.reduce((sum, item) => sum + item.quantity, 0);
-      })
-      .addCase(addToCart.fulfilled, (state, action) => {
-        state.items.push(action.payload);
-        state.cartValue += action.payload.quantity;
-      })
-      .addCase(updateCartQuantity.fulfilled, (state, action) => {
-        const index = state.items.findIndex(item => item._id === action.payload._id);
-        if (index !== -1) {
-          const oldQuantity = state.items[index].quantity;
-          state.items[index].quantity = action.payload.quantity;
-          state.cartValue = state.cartValue - oldQuantity + action.payload.quantity;
-        }
-      })
-      .addCase(removeCartItem.fulfilled, (state, action) => {
-        const index = state.items.findIndex(item => item._id === action.payload);
-        if (index !== -1) {
-          state.cartValue -= state.items[index].quantity;
-          state.items.splice(index, 1);
-        }
-      });
-  },
+  builder
+    .addCase(getItems.pending, (state) => {
+      state.status = "loading";
+    })
+
+    .addCase(getItems.fulfilled, (state, action) => {
+      state.status = "succeeded";
+      state.items = action.payload;
+      state.cartValue = action.payload.reduce(
+        (sum, item) => sum + item.quantity,
+        0
+      );
+    })
+
+    .addCase(getItems.rejected, (state, action) => {
+      state.status = "failed";
+      state.error = action.payload;
+    })
+
+    .addCase(addToCart.fulfilled, (state, action) => {
+      const cartItem = action.payload;
+
+      const existingItem = state.items.find(
+        (item) => item._id === cartItem._id
+      );
+
+      if (existingItem) {
+        state.cartValue =
+          state.cartValue - existingItem.quantity + cartItem.quantity;
+
+        existingItem.quantity = cartItem.quantity;
+      } else {
+        state.items.push(cartItem);
+        state.cartValue += cartItem.quantity;
+      }
+    })
+
+    .addCase(updateCartQuantity.fulfilled, (state, action) => {
+      const item = state.items.find(
+        (item) => item._id === action.payload._id
+      );
+
+      if (item) {
+        state.cartValue =
+          state.cartValue - item.quantity + action.payload.quantity;
+
+        item.quantity = action.payload.quantity;
+      }
+    })
+
+    .addCase(removeCartItem.fulfilled, (state, action) => {
+      const index = state.items.findIndex(
+        (item) => item._id === action.payload
+      );
+
+      if (index !== -1) {
+        state.cartValue -= state.items[index].quantity;
+        state.items.splice(index, 1);
+      }
+    });
+    },
 });
+
 
 export const { clearCart, addValue } = cartSlice.actions;
 export default cartSlice.reducer;
