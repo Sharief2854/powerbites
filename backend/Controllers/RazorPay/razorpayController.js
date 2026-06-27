@@ -7,6 +7,7 @@ const ProductModel = require("../../Model/ProductModel");
 const couponModel = require("../../Model/couponModel");
 const dealsModel = require("../../Model/dealsModel");
 const addressModel = require("../../Model/addressModel");
+const TransactionModel = require("../../Model/transactionModel");
 
 const createOrder = async (req, res) => {
     try {
@@ -204,6 +205,17 @@ const verifyPayment = async (req, res) => {
 
         const createdOrder = await ordersModel.create(orderData);
         await cartModel.deleteMany({ customer: req.userId });
+
+        // Create a transaction history record
+        await TransactionModel.create({
+            customer: req.userId,
+            order: createdOrder._id,
+            paymentId: razorpay_payment_id,
+            razorpayOrderId: razorpay_order_id,
+            signature: razorpay_signature,
+            amount: finalPrice,
+            status: 'success'
+        });
 
         return res.json({
             success: true,
