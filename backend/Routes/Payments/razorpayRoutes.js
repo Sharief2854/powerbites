@@ -14,3 +14,5 @@ router.post("/refund", isAdmin, refundPayment);
 
 // Route for Razorpay to send webhook events
 router.post("/webhook", handleWebhook);
+
+module.exports = router
