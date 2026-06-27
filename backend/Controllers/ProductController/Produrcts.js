@@ -29,7 +29,7 @@ async function allProduct(req, res) {
 
 async function addProduct(req, res) {
     try {
-        // const { name, description, price, stock, discount, category, sendUpdates } = req.body;
+        const { name, description, price, stock, discount } = req.body;
 
         // Check uploaded images
         if (!req.files || req.files.length === 0) {
@@ -65,10 +65,10 @@ async function addProduct(req, res) {
             stock: Number(stock),
             discount: Number(discount),
             finalPrice,
-            category: categoryData._id,
+            category: category._id,
             image: imagePaths
         });
-        const products = await ProductModel.create(ProductData);
+        const products = await ProductModel.create(product);
         
 if(req.body.sendUpdates=="on"){
     sendProductNotification(products)}
@@ -98,7 +98,7 @@ async function updateProduct(req, res) {
             req.body.existingPhotos || "[]"
         );
 
-        // let imagePaths = [];
+        let imagePaths = [];
 
         if (req.files?.length > 0) {
         imagePaths = req.files.map(
@@ -117,7 +117,7 @@ async function updateProduct(req, res) {
         // const product = await ProductModel.findByIdAndUpdate(id, ProductData, { new: true, }
         // );
 
-        let imagePaths = [];
+        // let imagePaths = [];
 
         if (req.files?.length > 0) {
             imagePaths = req.files.map(

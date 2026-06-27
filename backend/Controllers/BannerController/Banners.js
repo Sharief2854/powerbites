@@ -27,7 +27,7 @@ async function allBanners(req, res) {
 
 }
 
-async function setBanner(req, res) {
+async function  setBanner(req, res) {
     try {
         const body = req.body;
 
@@ -45,7 +45,7 @@ async function setBanner(req, res) {
         }
         
 
-        if (!body.title || !body.name || !body.description || !body.user) {
+        if (!body.title || !body.description) {
             return res.status(400).json({ 
                 message: "Missing required fields: 'name', 'title', 'description', and 'user' are required." 
             });
@@ -107,9 +107,7 @@ async function updateBanner(req,res){
     try{
         let id = req.params.id;
         const updateData = { ...req.body };
-
         
-        // Handle existing images sent from the frontend
         let existingImages = [];
         if (updateData.existingImages) {
             try {
@@ -119,10 +117,9 @@ async function updateBanner(req,res){
             }
         }
         
-        // Handle new image uploads
+        
         let newImagePaths = [];
         if (req.files && req.files.length > 0) {
-            updateData.image = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path}`);
             newImagePaths = req.files.map(file => `${req.protocol}://${req.get('host')}/${file.path.replace(/\\/g, "/")}`);
         }
         updateData.image = [...existingImages, ...newImagePaths];
