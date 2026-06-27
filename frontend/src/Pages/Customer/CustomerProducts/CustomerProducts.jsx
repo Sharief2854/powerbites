@@ -19,10 +19,9 @@ import {
   Switch,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   addToCart,
-  addValue,
   getItems,
 } from "../../../Redux/Slices/CM_CartSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -101,45 +100,27 @@ export default function CustomerProducts() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  async function addItem(params) {
-    setLoading(true);
-  //   let caRt=cartItems?.find((i)=>{
-  //     return i.product?._id==params}
-  // )
-  // console.log();
-  
-  //   if(caRt.stock<=0){
-  //     enqueueSnackbar('Item already in cart',{
-  //       variant:'error'
-  //     })
-  //     return;
-  //   }
-  
-    
+  const addItem = useCallback(async (productId) => {
     try {
-      let res = await api.post(`/cart/setCart`, {
+      dispatch(addToCart({
         customer: decodeId,
-        product: params,
+        product: productId,
         quantity: 1,
-      });
-      dispatch(addToCart(res.data.cartItem));
+      }));
       setCartSnackbar(true);
     } catch (error) {
-    } finally {
-      setLoading(false);
-    }
-  }
+      enqueueSnackbar("Failed to add item to cart.", { variant: "error" });
+  }},
+  [decodeId, dispatch]);
 
   async function getProducts(params) {
-    setLoading(true);
     try {
       let res = await api.get(`/products/all`);
       setProducts(res.data.data);
       console.log(res.data.data);
-    } catch (error) {
-      // enqueueSnackbar('')
-    } finally {
-      setLoading(false);
+    }
+    catch (error) {
+      console.log(error);
     }
   }
   const getCategory = async () => {
@@ -151,24 +132,8 @@ export default function CustomerProducts() {
       setCategory(response.data.categories || []);
     } catch (error) {
       console.log(error);
-    } finally {
-      setLoading(false);
     }
   };
-
-  async function getCartItems(params) {
-    setLoading(true);
-    try {
-      let res = await api.get(`/cart/getCart`);
-      dispatch(addValue(res.data.quantity));
-      dispatch(getItems(res.data.cart));
-      console.log(res.data.data);
-    } catch (error) {
-      // enqueueSnackbar('')
-    } finally {
-      setLoading(false);
-    }
-  }
             const cartMap = new Set(
               cartItems?.map((i) => String(i?.product?._id || i?.product)),
             );
@@ -250,28 +215,10 @@ export default function CustomerProducts() {
 
   useEffect(() => {
     getProducts();
-    getCartItems();
+    dispatch(getItems());
     getCategory();
   }, []);
   console.log(category);
-
-  if (loading) {
-    <Backdrop
-      sx={{
-        height: "100%",
-        width: "100%",
-        color: "#fff",
-        zIndex: 1,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-      open={loading}
-    >
-      <CircularProgress color="primary" />
-    </Backdrop>;
-    return;
-  }
   return (
     <Box>
       <Grid

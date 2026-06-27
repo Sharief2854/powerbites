@@ -17,12 +17,11 @@ import YouTubeIcon from "@mui/icons-material/YouTube";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getInfo } from "../Redux/Slices/AdminSlice/CompanyInfoSlice";
+// import { getInfo } from "../Redux/Slices/AdminSlice/CompanyInfoSlice";
 import api from "../api/axiosConfig";
 
 export default function AboutAndFooter({company}) {
-  console.log("hertc",company);
-  
+
   return (
     <>
       <Box

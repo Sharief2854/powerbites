@@ -6,7 +6,12 @@ import {
   SecondaryButton,
 } from "../../../Components/Common/Buttons";
 import { useDispatch, useSelector } from "react-redux";
-import { addToCart, addValue, getItems } from "../../../Redux/Slices/CM_CartSlice";
+import {
+  addToCart,
+  getItems,
+  updateCartQuantity,
+  removeCartItem,
+} from "../../../Redux/Slices/CM_CartSlice";
 import {
   Box,
   Card,
@@ -66,7 +71,7 @@ export default function ProductPage() {
   };
   async function getProduct() {
     try {
-      const res = await api.get(`/product/getprd/${id}`);
+      const res = await api.get(`/filter-products/getprd/${id}`);
       setProduct(res.data.data);
       console.log(res.data.data);
     } catch (error) {
@@ -79,113 +84,50 @@ export default function ProductPage() {
   const discountedPrice =
     product?.price - (product?.price * product?.discount) / 100;
 
-  async function addItem() {
-    setLoading(true);
-
+  const addItem = async () => {
     try {
       const existingItem = itemsCart.find(
-      (item) => item?.product === id
-    );
+        (item) => String(item?.product?._id) === String(id),
+      );
 
-    if (existingItem) {
-      await setCartQuantity(existingItem.quantity + 1);
-      return;
-    }
-
-      const res = await api.post("/cart/setCart", {
-        product: id,
-        customer: decodeId,
-        quantity: 1,
-      });
-
-      console.log(res.data);
-      
-      dispatch(addToCart(res.data.cartItem));
+      if (existingItem) {
+        dispatch(
+          updateCartQuantity({
+            cartId: existingItem._id,
+            quantity: existingItem.quantity + 1,
+          }),
+        );
+      } else {
+        dispatch(addToCart({ product: id, customer: decodeId, quantity: 1 }));
+      }
       setQuantity(1);
       setCartSnackbar(true);
     } catch (error) {
       console.log(error);
-    } finally {
-      setLoading(false);
     }
-  }
+  };
   const handleAddToCart = async () => {
     await addItem();
   };
   console.log(quantity);
-  
 
   const handleIncrease = () => {
-    setCartQuantity(quantity + 1);
+    const cartItem = itemsCart.find((item) => String(item?.product?._id) === String(id));
+    if (cartItem) {
+      dispatch(updateCartQuantity({ cartId: cartItem._id, quantity: cartItem.quantity + 1 }));
+    }
   };
 
   const handleDecrease = async () => {
-  if (quantity === 1) {
-    const cartProduct = itemsCart.find(
-      (i) => i?.product === id
-    );
-
-    if (cartProduct) {
-      await deleteCart(cartProduct._id);
+    const cartItem = itemsCart.find((item) => String(item?.product?._id) === String(id));
+    if (cartItem) {
+      if (cartItem.quantity > 1) {
+        dispatch(updateCartQuantity({ cartId: cartItem._id, quantity: cartItem.quantity - 1 }));
+      } else {
+        dispatch(removeCartItem(cartItem._id));
+      }
     }
-
-    setQuantity(0);
-  } else {
-    setCartQuantity(quantity - 1);
-  }
-};
-
-  async function getCart() {
-    setLoading(true);
-    try {
-      let res = await api.get(`/cart/getCart`);
-      dispatch(addValue(res.data.quantity));
-      dispatch(getItems(res.data.cart));
-      console.log(res.data.cart);
-    } catch (error) {
-      // enqueueSnackbar('')
-    } finally {
-      setLoading(false);
-    }
-  }
-  async function setCartQuantity(newQty) {
-    try {
-      setLoading(true);
-      let cartProduct = itemsCart.find((i)=>{
-        return i?.product==id?true:false
-      })
-      console.log(cartProduct);
-      
-      const res = await api.post(`/cart/setQuantity/${cartProduct._id}`, {
-        productId: product?._id,
-        quantity: newQty,
-        customer: decodeId,
-      });
-
-      // dispatch(addToCart(res.data.data));
-      setQuantity(newQty);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function deleteCart(params) {
-    setLoading(true);
-    
-      let cartProduct = itemsCart.find((i)=>{
-        return i?.product?._id==id?true:false
-      })
-    try {
-      let res = await api.delete(`/cart/deleteItem/${cartProduct._id}`);
-      await getCart();
-      setQuantity(0);
-    } catch (error) {
-    } finally {
-      setLoading(false);
-    }
-  }
+  };
 
 async function checkOutPage() {
   const cartItem = itemsCart?.find(
@@ -194,26 +136,26 @@ async function checkOutPage() {
 
   if (!cartItem) {
     await addItem();
+  navigate("/customer/cart");
+  return;
   }
 
   navigate("/customer/cart");
 }
   useEffect(() => {
     getProduct();
-    const cartItem = itemsCart.find(
-    item => String(item?.product?._id) === String(id)
-  );
-  if (cartItem) {
-    console.log(cartItem);    
-    setQuantity(cartItem.quantity);
+    dispatch(getItems());
+  }, [id, dispatch]);
 
-  } else {
-    setQuantity(0);
-  }
-  }, [id]);
+  useEffect(() => {
+    const cartItem = itemsCart.find(
+      (item) => String(item?.product?._id) === String(id),
+    );
+    setQuantity(cartItem ? cartItem.quantity : 0);
+  }, [itemsCart, id]);
+
   useEffect(() => {
     setImageLoading(true);
-    getCart();
   }, []);
 
   const images =
@@ -433,7 +375,7 @@ async function checkOutPage() {
             <Divider />
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              {quantity === 0 ? (
+              {quantity <= 0 ? (
                 <PrimaryButton
                   fullWidth
                   variant="contained"

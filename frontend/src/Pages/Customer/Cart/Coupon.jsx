@@ -17,7 +17,7 @@ import api from "../../../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
 
 export default function Coupon({ setOpen, applyCoupon }) {
-  const [couponList, setCouponList] = useState([]);
+  const [couponData, setCouponList] = useState([]);
 
   const [couponCode, setCouponCode] = useState("");
   const navigate = useNavigate();
@@ -36,6 +36,10 @@ export default function Coupon({ setOpen, applyCoupon }) {
     couponInputRef.current?.focus();
   }, 300);
 };
+
+const couponList = couponData?.filter((c) => {
+  return c.status=="Active"? true :false
+});
 
   async function getAllCoupon() {
     try {

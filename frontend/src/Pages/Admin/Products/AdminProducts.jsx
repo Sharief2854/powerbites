@@ -410,7 +410,7 @@ console.log(category);
       }
       closeAddProductModal();
     } catch (error) {
-      console.log(error);
+      console.log(error.message);
       enqueueSnackbar("Failed to add Product, Please try again", {
         variant: "error",
       });

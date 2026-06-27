@@ -13,7 +13,7 @@ export default function PaymentButton({ amount, addressId, coupon_id = "" }) {
   const dispatch = useDispatch();
   const handlePayment = async () => {
     try {
-      const { data: order } = await api.post("/payment/create-order", {
+      const { data: order } = await api.post("/api/payment/create-order", {
         amount,
       });
 
@@ -27,7 +27,7 @@ export default function PaymentButton({ amount, addressId, coupon_id = "" }) {
 
         handler: async function (response) {
           try {
-            const { data } = await api.post("/payment/verify-payment", {
+            const { data } = await api.post("/api/payment/verify-payment", {
               ...response,
               amount,
               addressId,

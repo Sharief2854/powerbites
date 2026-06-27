@@ -8,6 +8,7 @@ import OfferSlice from "../Slices/OffserSlice"
 import OrderListSlice from "../Slices/AdminSlice/OrderListSlice"
 import CustomerOrderSlicee from "../Slices/CustomerSlice/CustomerOrderSlice"
 import CompanyInfoSlice from "../Slices/AdminSlice/CompanyInfoSlice"
+import bannerSlice from "../Slices/BannerSlice"
 
 const store = configureStore({
     reducer: {
@@ -19,7 +20,8 @@ const store = configureStore({
         Offer: OfferSlice,
         orderlist:OrderListSlice,
         customerOrder:CustomerOrderSlicee,
-        companyInfo:CompanyInfoSlice
+        companyInfo:CompanyInfoSlice,
+        banners:bannerSlice,
     }
 })
 
