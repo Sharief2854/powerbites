@@ -15,6 +15,8 @@ import { enqueueSnackbar, SnackbarProvider } from "notistack";
 import { useEffect, useRef, useState } from "react";
 import api from "../../../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { getItems } from "../../../Redux/Slices/CM_CartSlice";
 
 export default function Coupon({ setOpen, applyCoupon }) {
   const [couponData, setCouponList] = useState([]);

@@ -97,6 +97,8 @@ export default function ProductPage() {
             quantity: existingItem.quantity + 1,
           }),
         );
+        dispatch(getItems());
+        setQuantity(existingItem.quantity + 1);
       } else {
         dispatch(addToCart({ product: id, customer: decodeId, quantity: 1 }));
       }
