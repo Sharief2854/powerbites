@@ -2,7 +2,7 @@ const express = require("express");
 const ProductModel = require("../../Model/ProductModel");
 const sendProductNotification = require("../../Utils/sendProductNotification");
 const ProductCategoryModel = require("../../Model/productCategoryModel");
-
+// const CompanyModel = require("../../Model/CompanyModel")
 async function allProduct(req, res) {
     try {
         const data = await ProductModel.find().populate({ path: "category" }).sort({ createdAt: -1 });
@@ -47,7 +47,7 @@ async function addProduct(req, res) {
         const category = await ProductCategoryModel.findOne({
             _id: req.body.category.trim()
         });
-
+s
 
         if (!category) {
             return res.status(400).json({
@@ -89,6 +89,43 @@ if(req.body.sendUpdates=="on"){
         });
     }
 }
+
+// async function updateProduct(req, res) {
+//     try {
+//         const id = req.params.id;
+//         const ProductData = { ...req.body };
+
+//         if (req.files && req.files.length > 0) {
+//             const imagePaths = req.files.map(file =>
+//                 `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
+//             );
+//             ProductData.image = imagePaths;
+//         }
+//         const product = await ProductModel.findByIdAndUpdate(id, ProductData, { new: true, }
+//         );
+
+//         if (!product) {
+//             return res.status(404).json({
+//                 message: "Product not found"
+//             });
+//         }
+
+//         return res.status(200).json({
+//             data: product,
+//             message: "Product updated successfully"
+//         });
+
+//     }
+
+//     catch (err) {
+//         return res.status(500).json({
+//             message: "Error updating product",
+//             error: err.message
+//         });
+//     }
+// }
+
+
 
 async function updateProduct(req, res) {
     try {
@@ -230,4 +267,27 @@ async function getProductsByCategory(req, res) {
     }
 }
 
-module.exports = { addProduct, updateProduct, deleteProduct, allProduct, getTotalProducts, getProductsByCategory };
+async function getProductById(req, res) {
+    try {
+        const product = await ProductModel.findById(req.params.id)
+            .populate("category");
+
+        if (!product) {
+            return res.status(404).json({
+                message: "Product not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Product fetched successfully",
+            data: product
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
+module.exports = { addProduct, updateProduct, deleteProduct, allProduct, getTotalProducts, getProductsByCategory, getProductById };
