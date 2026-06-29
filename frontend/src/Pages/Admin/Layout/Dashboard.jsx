@@ -116,7 +116,7 @@ export default function DashboardLayout() {
           </Typography>
 
           {/* Quick Navigation Icons - Desktop Only */}
-          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5, mr: 2 }}>
+          {/* <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5, mr: 2 }}>
             {[
               { icon: <DashboardIcon />, tooltip: 'Dashboard' },
               { icon: <ShoppingBagIcon />, tooltip: 'Products' },
@@ -138,7 +138,7 @@ export default function DashboardLayout() {
                 </IconButton>
               </Tooltip>
             ))}
-          </Box>
+          </Box> */}
 
           {/* User Profile Section */}
           <Box>

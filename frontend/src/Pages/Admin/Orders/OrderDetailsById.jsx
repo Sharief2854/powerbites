@@ -713,8 +713,7 @@
 //     </Box>
 //   );
 // }
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Box, Typography, CardContent, Divider, Stepper, Step, StepLabel, 
   Avatar, Chip, Stack, Paper, Button, Snackbar, CircularProgress,
@@ -740,9 +739,9 @@ const STEP_LABELS_MAP = {
   "order shipped": "Order Shipped",
   "order delivered": "Order Delivered",
   "completed": "Order Completed",
-  "order cancelled": "Order Cancelled", // Status for when cancellation is initiated
-  "refund pending": "Refund Pending", // Status while waiting for webhook
-  "refunded": "Refund Processed" // Final status after webhook confirmation
+  "order cancelled": "Order Cancelled", 
+  "refund pending": "Refund Pending", 
+  "refunded": "Refund Processed" 
 };
 
 export default function OrderRecordsDashboardById() {
@@ -756,9 +755,16 @@ export default function OrderRecordsDashboardById() {
   const [isRefunding, setIsRefunding] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
+  // 1. CRITICAL FIX: Define triggerSnackbar upfront so hooks below can safely reference it
+  // Wrapped in useCallback to prevent unnecessary re-runs of the WebSocket useEffect
+  const triggerSnackbar = useCallback((message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  }, []);
+
   const rawOrderList = useSelector((state) => state.orderlist?.orderlist || []);
   const activeBackendOrder = rawOrderList.find(o => o._id === routeOrderId);
-console.log('activeBackendOrder',activeBackendOrder)
+  console.log('activeBackendOrder', activeBackendOrder);
+
   const activeOrder = activeBackendOrder ? {
     _id: activeBackendOrder._id,
     name: activeBackendOrder.customer?.name || "Unknown Customer",
@@ -785,16 +791,13 @@ console.log('activeBackendOrder',activeBackendOrder)
   const isRefundPending = activeOrder?.orderStatus === "refund pending";
   const canCancel = ["order placed", "preparing order"].includes(activeOrder?.orderStatus || "");
 
-  // DYNAMIC ADAPTIVE PROGRESS STEPPER BUILDER
   const getWorkflowSteps = () => {
     if (!activeOrder) return BASE_STEPS;
     
     if (isCancelled) {
-      // Filter out base timeline tracks that were actually accomplished before cancellation interception
       const stepsBeforeCancellation = BASE_STEPS.filter(s => 
         activeOrder.historyStatuses.includes(s) || s === "order placed"
       );
-      // Append immediate tracking parameters right underneath it
       return [...stepsBeforeCancellation, "order cancelled", "refund pending", "refunded"];
     }
     
@@ -807,10 +810,10 @@ console.log('activeBackendOrder',activeBackendOrder)
     if (rawOrderList.length === 0) {
       const fetchFromBackend = async () => {
         try {
-          console.log("order")
+          console.log("order");
           setLoading(true);
           const response = await api.get("/orders/admin/getAllOrders");
-          console.log("order list",response.data);
+          console.log("order list", response.data);
           dispatch(getOrder(response.data.orders || response.data || []));
         } catch (err) {
           console.error(err);
@@ -822,12 +825,11 @@ console.log('activeBackendOrder',activeBackendOrder)
     }
   }, [dispatch, rawOrderList.length]);
 
-  // WebSocket listener for real-time updates on this specific order
+  // WebSocket listener for real-time updates
   useEffect(() => {
     socket.connect();
 
     function onOrderUpdate(updatedOrder) {
-      // Only react to updates for the currently viewed order
       if (updatedOrder._id === routeOrderId) {
         console.log(`Real-time update for order ${routeOrderId}:`, updatedOrder);
         triggerSnackbar(`Order status updated to: ${updatedOrder.orderStatus}`, 'info');
@@ -841,11 +843,24 @@ console.log('activeBackendOrder',activeBackendOrder)
 
     socket.on('orderUpdate', onOrderUpdate);
 
-    return () => { socket.off('orderUpdate', onOrderUpdate); socket.disconnect(); };
+    return () => { 
+      socket.off('orderUpdate', onOrderUpdate); 
+      socket.disconnect(); 
+    };
   }, [dispatch, rawOrderList, routeOrderId, triggerSnackbar]);
 
-  const triggerSnackbar = (message, severity = "success") => {
-    setSnackbar({ open: true, message, severity });
+  // 2. MISSING FUNCTION FIX: Added handleManualRefund stub to prevent compile reference errors
+  const handleManualRefund = async () => {
+    try {
+      setIsRefunding(true);
+      // Replace with your real manual refund endpoint call
+       await api.post(`/orderStatus/manualRefund/${routeOrderId}`);
+      triggerSnackbar("Manual refund processed successfully", "success");
+    } catch (err) {
+      triggerSnackbar("Failed to complete manual refund", "error");
+    } finally {
+      setIsRefunding(false);
+    }
   };
 
   const handleConfirmCancelOrder = async () => {
@@ -861,12 +876,10 @@ console.log('activeBackendOrder',activeBackendOrder)
               orderStatus: "refund pending", 
               cancelledBy: "admin", 
               cancelReason: cancelReasonInput.trim(),
-              // Preserve tracking data array blocks for local mutation mapping updates
               historyStatuses: Array.isArray(order.historyStatuses) ? [...order.historyStatuses] : ["order placed"]
             } 
           : order
       );
-      console.log("updatedList",updatedList)
       dispatch(getOrder(updatedList));
       
       setCancelDialogOpen(false);
