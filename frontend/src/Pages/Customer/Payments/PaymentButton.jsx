@@ -6,11 +6,11 @@ import { addValue, clearCart, getItems } from "../../../Redux/Slices/CM_CartSlic
 import { useDispatch } from "react-redux";
 
 export default function PaymentButton({ amount, addressId, coupon_id = "" }) {
-  if (!addressId) {
-    return;
-  }
   const navigate = useNavigate()
   const dispatch = useDispatch();
+  if (!addressId) {
+    return null;
+  }
   const handlePayment = async () => {
     try {
       const { data: order } = await api.post("/api/payment/create-order", {

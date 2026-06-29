@@ -107,6 +107,7 @@ export default function CustomerProducts() {
         product: productId,
         quantity: 1,
       }));
+      dispatch(getItems());
       setCartSnackbar(true);
     } catch (error) {
       enqueueSnackbar("Failed to add item to cart.", { variant: "error" });

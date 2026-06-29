@@ -7,7 +7,7 @@ const ProductModel = require("../../Model/ProductModel");
 async function allBanners(req, res) {
     try {
 
-        let banners = await bannerModel.find().populate("product offer coupon");
+        let banners = await bannerModel.find().populate("product coupon");
         if (!banners) {
             return res.status(400).json({
                 message: "No banners found"

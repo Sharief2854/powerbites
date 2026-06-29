@@ -41,16 +41,20 @@ import CustomerReview from "./CustomerReview";
 export default function ProductPage() {
   const [product, setProduct] = useState({});
   const [loading, setLoading] = useState(false);
-  const [quantity, setQuantity] = useState(0);
-  const [selectedImage, setSelectedImage] = useState(0);
   const [imageLoading, setImageLoading] = useState(true);
   const [cartSnackbar, setCartSnackbar] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-  const itemsCart= useSelector(state=>state.cart.items)
-  console.log(itemsCart);
-  
+  const cartItem = useSelector((state) =>
+    state.cart.items.find((item) => String(item?.product?._id ?? item?.product) === String(id)),
+  );
+
+  const quantity = cartItem?.quantity ?? 0;
+  const isInCart = !!cartItem;
   const handleOpenImageModal = (index = 0) => {
     setActiveImageIndex(index);
     setImageModalOpen(true);
@@ -58,9 +62,6 @@ export default function ProductPage() {
 
   let token = localStorage.getItem("token");
   let decodeId = jwtDecode(token).id;
-
-  const { id } = useParams();
-  const navigate = useNavigate();
 
   const handleNext = () => {
     setActiveImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
@@ -86,74 +87,62 @@ export default function ProductPage() {
 
   const addItem = async () => {
     try {
-      const existingItem = itemsCart.find(
-        (item) => String(item?.product?._id) === String(id),
-      );
-
-      if (existingItem) {
+      if (isInCart) {
         dispatch(
           updateCartQuantity({
-            cartId: existingItem._id,
-            quantity: existingItem.quantity + 1,
+            cartId: cartItem._id,
+            quantity: cartItem.quantity + 1,
           }),
         );
       } else {
         dispatch(addToCart({ product: id, customer: decodeId, quantity: 1 }));
       }
-      setQuantity(1);
       setCartSnackbar(true);
     } catch (error) {
       console.log(error);
     }
   };
-  const handleAddToCart = async () => {
-    await addItem();
-  };
-  console.log(quantity);
-
   const handleIncrease = () => {
-    const cartItem = itemsCart.find((item) => String(item?.product?._id) === String(id));
-    if (cartItem) {
-      dispatch(updateCartQuantity({ cartId: cartItem._id, quantity: cartItem.quantity + 1 }));
-    }
-  };
+  if (!cartItem) return;
+  dispatch(
+    updateCartQuantity({
+      cartId: cartItem._id,
+      quantity: cartItem.quantity + 1,
+    })
+  );
+};
 
   const handleDecrease = async () => {
-    const cartItem = itemsCart.find((item) => String(item?.product?._id) === String(id));
-    if (cartItem) {
+    if (isInCart) {
       if (cartItem.quantity > 1) {
-        dispatch(updateCartQuantity({ cartId: cartItem._id, quantity: cartItem.quantity - 1 }));
+        dispatch(
+          updateCartQuantity({
+            cartId: cartItem._id,
+            quantity: cartItem.quantity - 1,
+          }),
+        );
       } else {
         dispatch(removeCartItem(cartItem._id));
       }
     }
   };
 
-async function checkOutPage() {
-  const cartItem = itemsCart?.find(
-    (item) => item?.product?._id === id
-  );
+  async function checkOutPage() {
+    if (!isInCart) {
+      await addItem();
+      navigate("/customer/cart");
+      return;
+    }
 
-  if (!cartItem) {
-    await addItem();
-  navigate("/customer/cart");
-  return;
+    navigate("/customer/cart");
   }
-
-  navigate("/customer/cart");
-}
+  console.log(cartItem);
+  
   useEffect(() => {
     getProduct();
     dispatch(getItems());
-  }, [id, dispatch]);
-
-  useEffect(() => {
-    const cartItem = itemsCart.find(
-      (item) => String(item?.product?._id) === String(id),
-    );
-    setQuantity(cartItem ? cartItem.quantity : 0);
-  }, [itemsCart, id]);
-
+  }, [id,dispatch]);
+  
   useEffect(() => {
     setImageLoading(true);
   }, []);
@@ -272,7 +261,8 @@ async function checkOutPage() {
                     cursor: "pointer",
                     border: 2,
                     flexShrink: 0,
-                    borderColor:selectedImage === index ? "primary.main" : "divider",
+                    borderColor:
+                      selectedImage === index ? "primary.main" : "divider",
                     position: "relative",
                   }}
                 >
@@ -280,7 +270,8 @@ async function checkOutPage() {
                     component="img"
                     src={img}
                     sx={{
-                      borderColor:selectedImage === index ? "primary.main" : "divider",
+                      borderColor:
+                        selectedImage === index ? "primary.main" : "divider",
                       transition: "all 0.2s ease",
                       width: "100%",
                       height: "100%",
@@ -347,7 +338,7 @@ async function checkOutPage() {
               </Typography>
             </Stack>
 
-            <Stack direction="row" spacing={2} sx={{alignItems:"end"}}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: "end" }}>
               <Typography variant="h3" fontWeight={700} color="primary.main">
                 ₹{discountedPrice}
               </Typography>
@@ -375,7 +366,7 @@ async function checkOutPage() {
             <Divider />
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              {quantity <= 0 ? (
+              {!isInCart ? (
                 <PrimaryButton
                   fullWidth
                   variant="contained"
@@ -392,7 +383,7 @@ async function checkOutPage() {
                       boxShadow: "none",
                     },
                   }}
-                  onClick={handleAddToCart}
+                  onClick={addItem}
                 >
                   Add to Cart
                 </PrimaryButton>
@@ -493,7 +484,7 @@ async function checkOutPage() {
             }}
           >
             ›
-          </IconButton>          
+          </IconButton>
 
           <Box
             sx={{
@@ -523,7 +514,7 @@ async function checkOutPage() {
           <Grid size={{ xs: 12, sm: 6 }}>
             <Typography fontWeight={600}>Category</Typography>
             <Typography color="text.secondary">
-              {product?.category || "N/A"}
+              {product?.category?.name || "N/A"}
             </Typography>
           </Grid>
           {/* 
@@ -567,7 +558,7 @@ async function checkOutPage() {
           <Typography color="text.secondary">No features available</Typography>
         )}
       </Paper>
-      <CustomerReview id={{id:product?._id}}/>
+      <CustomerReview id={{ id: product?._id }} />
     </Box>
   );
 }

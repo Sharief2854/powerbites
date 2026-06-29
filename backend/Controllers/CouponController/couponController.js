@@ -114,20 +114,34 @@ async function couponStatus(req,res){
 
         let couponStatus = await couponModel.findById(id);
 
-        if(!couponStatus){
-            return res.status(400).json({
+        if (!couponStatus) {
+            return res.status(404).json({
                 message:"Coupon not found"
             })
-
         }
 
-         if(couponStatus.ends_at <= new Date()){
+        // New check: Prevent activating a coupon before its start date.
+        if (status === 'Active' && new Date() < couponStatus.starts_At) {
             return res.status(400).json({
-                message:"Coupon has expired, update expire date"
-            })
+                message: `Cannot activate this coupon yet. It is scheduled to start on ${couponStatus.starts_At.toLocaleDateString()}.`
+            });
         }
-      
-       
+
+        // Prevent activating a coupon that has already expired.
+        if (status === 'Active' && couponStatus.ends_At <= new Date()) {
+            return res.status(400).json({
+                message: "Cannot activate an expired coupon. Please update the end date first."
+            });
+        }
+
+        // Automatically set to 'inActive' if it's expired, regardless of requested status.
+        if (couponStatus.ends_At <= new Date() && couponStatus.status !== 'inActive') {
+            couponStatus.status = 'inActive';
+            await couponStatus.save();
+            return res.status(400).json({
+                message: "This coupon has expired and has been automatically set to inactive."
+            });
+        }
 
         if(couponStatus.status === status){
             return res.status(400).json({
@@ -164,10 +178,17 @@ async function couponStatus(req,res){
 
 async function getCoupons(req,res){
     try{
+        // Automatically deactivate any coupons that have expired.
+        await couponModel.updateMany(
+            { ends_At: { $lt: new Date() }, status: 'Active' },
+            { $set: { status: 'inActive' } }
+        );
+
         let coupons = await couponModel.find().sort({updatedAt:-1});
-        if(!coupons){
-            return res.status(400).json({
-                message:"No coupons found"
+        // Use .length to check for an empty array
+        if(!coupons || coupons.length === 0){
+            return res.status(404).json({
+                message:"No coupons found", coupons: []
             })
         }
         res.status(200).json({

@@ -123,12 +123,11 @@ export default function HomemadeFoodGrid() {
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: "#f8f8fb",
-        p: 2,
       }}
     >
       <CardMedia
         component="img"
-        src={product.image}
+        src={product.image[0]}
         alt={product.name}
         sx={{
           width: "100%",
@@ -184,9 +183,22 @@ export default function HomemadeFoodGrid() {
           color: "#3E1A89",
         }}
       >
-        ₹{product.price}
+        ₹{product?.price}
       </Typography>
-
+      
+      <Box
+        sx={{
+          bgcolor: product?.isAvailable ? "#E8F5E9" : "#FEE2E2",
+          color: product?.isAvailable ? "#2E7D32" : "#C62828",
+          py: 1,
+          borderRadius: 2,
+          textAlign: "center",
+          fontWeight: 700,
+          fontSize: ".9rem",
+        }}
+      >
+        {product?.isAvailable ? "● Available Now" : "● Out of Stock"}
+      </Box>
       <Button
         fullWidth
         variant="contained"
@@ -210,7 +222,7 @@ export default function HomemadeFoodGrid() {
 </Grid>
     ))
   ) : (
-    <Grid item xs={12}>
+    <Grid size={{ xs: 12 }} sx={{justifyContent:'center'}}>
       <Box
         sx={{
           textAlign: "center",

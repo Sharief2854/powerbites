@@ -11,17 +11,65 @@ const TransactionModel = require("../../Model/transactionModel");
 
 const createOrder = async (req, res) => {
     try {
-        const amount = Number(req.body.amount || req.body.final_price || 0);
+        const frontendAmount = Number(req.body.amount || req.body.final_price || 0);
+        const userId = req.userId;
 
-        if (!amount || amount <= 0) {
+        if (!frontendAmount || frontendAmount <= 0) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid amount",
+                message: "Invalid amount provided from frontend.",
+            });
+        }
+
+        // --- Server-side Cart Total Calculation ---
+        const cartItems = await cartModel.find({ customer: userId }).populate("product coupon unifiedCoupon");
+
+        if (!cartItems || cartItems.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Your cart is empty. Cannot create an order.",
+            });
+        }
+
+        let subtotal = 0;
+        for (const item of cartItems) {
+            if (!item.product) {
+                return res.status(400).json({ success: false, message: `Invalid product found in cart.` });
+            }
+            const basePrice = Number(item.product.price) || 0;
+            const productDiscount = Number(item.product.discount) || 0;
+            const priceAfterProductDiscount = productDiscount > 0 ? basePrice - (basePrice * productDiscount / 100) : basePrice;
+            subtotal += priceAfterProductDiscount * item.quantity;
+        }
+
+        let serverCalculatedTotal = subtotal;
+        const coupon = cartItems[0].isUnified ? cartItems[0].unifiedCoupon : cartItems[0].coupon;
+
+        if (coupon) {
+            if (coupon.status !== 'Active' || new Date() > new Date(coupon.ends_At)) {
+                return res.status(400).json({ success: false, message: "The applied coupon is invalid or has expired." });
+            }
+            if (subtotal < coupon.min_order_value) {
+                return res.status(400).json({ success: false, message: `Order total does not meet the coupon's minimum requirement of ₹${coupon.min_order_value}.` });
+            }
+
+            let couponDiscount = (subtotal * coupon.discount) / 100;
+            if (coupon.max_discount && couponDiscount > coupon.max_discount) {
+                couponDiscount = coupon.max_discount;
+            }
+            serverCalculatedTotal = subtotal - couponDiscount;
+        }
+
+        // Compare frontend amount with server-calculated amount (allowing for minor floating point differences)
+        if (Math.abs(serverCalculatedTotal - frontendAmount) > 0.01) {
+            return res.status(400).json({
+                success: false,
+                message: `Price mismatch. Frontend amount: ₹${frontendAmount.toFixed(2)}, Server calculated amount: ₹${serverCalculatedTotal.toFixed(2)}. Please refresh your cart.`,
             });
         }
 
         const options = {
-            amount: amount * 100,
+            amount: Math.round(serverCalculatedTotal * 100), // Use server-calculated amount in paise
             currency: "INR",
             receipt: "receipt_" + Date.now(),
         };
@@ -301,6 +349,13 @@ const refundPayment = async (req, res) => {
 
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found." });
+        }
+
+        if (refundAmount > order.final_price) {
+            return res.status(400).json({
+                success: false,
+                message: `Refund amount cannot be greater than the order total of ${order.final_price}.`,
+            });
         }
 
         if (!order.paymentID) {

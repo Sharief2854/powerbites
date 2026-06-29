@@ -1,12 +1,12 @@
-
-import {
-  Alert,
-} from "@mui/material";
+import { Alert } from "@mui/material";
 import Grid2 from "@mui/material/Grid"; // Uses updated MUI Grid2 layout system
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SaveIcon from "@mui/icons-material/Save";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
-import { posteditaddress, updateeditaddress } from "../../../Redux/Slices/CM_ProfileSlice";
+import {
+  posteditaddress,
+  updateeditaddress,
+} from "../../../Redux/Slices/CM_ProfileSlice";
 
 import {
   Box,
@@ -57,6 +57,7 @@ import {
   getItems,
   removeCartItem,
   updateCartQuantity,
+  // removeCouponFromCart,
 } from "../../../Redux/Slices/CM_CartSlice";
 import PaymentButton from "../Payments/PaymentButton";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
@@ -204,11 +205,16 @@ function AddressModal({
       const payload = { ...addressForm, label: finalLabel, userId };
       if (!payload._id) delete payload._id;
       if (["HOME"].includes(finalLabel)) {
-        const existingLabel = addresses.find((addr) => addr.label === finalLabel);
+        const existingLabel = addresses.find(
+          (addr) => addr.label === finalLabel,
+        );
         if (existingLabel) {
-          enqueueSnackbar(`An address with the label "${finalLabel}" already exists.`, {
-            variant: "warning",
-          });
+          enqueueSnackbar(
+            `An address with the Address type "${finalLabel}" already exists.`,
+            {
+              variant: "warning",
+            },
+          );
           setSavingAddress(false);
           return;
         }
@@ -220,7 +226,7 @@ function AddressModal({
         payload,
       );
       console.log(response.data);
-      
+
       setUpdateAddress(response.data.address);
       if (setAddress) {
         setAddress((prevAddresses) => [
@@ -262,200 +268,243 @@ function AddressModal({
 
   const availableStates = countriesData[addressForm.country] || [];
 
-  return (    
-  <Dialog
-    open={open}
-    onClose={onClose}
-    fullWidth
-    maxWidth="md"
-  >
-    <DialogContent>
-    <Box sx={{ p: { xs: 2, sm: 4 }, bgcolor: "#fdfefe", minHeight: "100vh", display: "flex", alignItems: "center" }}>
-      <CustomerCardAuth>
-        <Paper
-          elevation={0}
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+      <DialogContent>
+        <Box
           sx={{
-            maxWidth: '100%',
-            mx: "auto",
-            p: { xs: 2.5, sm: 5 },
-            borderRadius: 4,
-            border: "1px solid #eaecf0",
-            boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.03)"
+            p: { xs: 2, sm: 4 },
+            bgcolor: "#fdfefe",
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
           }}
         >
-          
-          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
-            <Box sx={{ p: 1, bgcolor: "primary.light", borderRadius: 2, display: "flex", color: "primary.main" }}>
-              <LocationOnOutlinedIcon fontSize="medium" />
-            </Box>
-            <Box>
-              <Typography variant="h5" fontWeight={700} sx={{ color: "#101828" }}>
-                {editaddressId ? "Edit Address" : "Add New Address"}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Configure your accurate location configuration details below.
-              </Typography>
-            </Box>
-          </Stack>
-
-          {message && (
-            <Alert severity={message.type} variant="standard" sx={{ mt: 3, mb: 1, borderRadius: 2 }}>
-              {message.text}
-            </Alert>
-          )}
-
-          <Box component="form" onSubmit={handleSaveAddress} sx={{ mt: 4 }}>
-            <Grid2 container spacing={2.5}>
-              
-              
-              <Grid2 size={{ xs: 12, sm: addressForm.label === "OTHER" ? 6 : 12 }}>
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel id="address-type-label">Address Type</InputLabel>
-                  <Select
-                    labelId="address-type-label"
-                    name="label"
-                    value={addressForm.label}
-                    onChange={handleAddressChange}
-                    label="Address Type"
-                    required
+          <CustomerCardAuth>
+            <Paper
+              elevation={0}
+              sx={{
+                maxWidth: "100%",
+                mx: "auto",
+                p: { xs: 2.5, sm: 5 },
+                borderRadius: 4,
+                border: "1px solid #eaecf0",
+                boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.03)",
+              }}
+            >
+              <Stack
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                sx={{ mb: 1 }}
+              >
+                <Box
+                  sx={{
+                    p: 1,
+                    bgcolor: "primary.light",
+                    borderRadius: 2,
+                    display: "flex",
+                    color: "primary.main",
+                  }}
+                >
+                  <LocationOnOutlinedIcon fontSize="medium" />
+                </Box>
+                <Box>
+                  <Typography
+                    variant="h5"
+                    fontWeight={700}
+                    sx={{ color: "#101828" }}
                   >
-                    <MenuItem value="" disabled>Select Type</MenuItem>
-                    <MenuItem value="HOME">🏠 Home</MenuItem>
-                    <MenuItem value="OFFICE">🏢 Office</MenuItem>
-                    <MenuItem value="OTHER">📍 Other</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid2>
+                    {editaddressId ? "Edit Address" : "Add New Address"}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Configure your accurate location configuration details
+                    below.
+                  </Typography>
+                </Box>
+              </Stack>
 
-
-              {addressForm.label === "OTHER" && (
-                <Grid2 size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    name="customLabel"
-                    label="Specify Address Type"
-                    value={otherLabel}
-                    onChange={(e) => setOtherLabel(e.target.value)}
-                    variant="outlined"
-                    fullWidth
-                    required
-                  />
-                </Grid2>
+              {message && (
+                <Alert
+                  severity={message.type}
+                  variant="standard"
+                  sx={{ mt: 3, mb: 1, borderRadius: 2 }}
+                >
+                  {message.text}
+                </Alert>
               )}
 
-
-              <Grid2 size={{ xs: 12 }}>
-                <TextField
-                  fullWidth
-                  label="Street Address / Locality / Apartment"
-                  name="street"
-                  value={addressForm.street}
-                  onChange={handleAddressChange}
-                  required
-                />
-              </Grid2>
-
-
-              <Grid2 size={{ xs: 12, sm: 6 }}>
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel id="country-label">Country</InputLabel>
-                  <Select
-                    labelId="country-label"
-                    name="country"
-                    value={addressForm.country}
-                    onChange={handleAddressChange}
-                    label="Country"
-                    required
+              <Box component="form" onSubmit={handleSaveAddress} sx={{ mt: 4 }}>
+                <Grid2 container spacing={2.5}>
+                  <Grid2
+                    size={{
+                      xs: 12,
+                      sm: addressForm.label === "OTHER" ? 6 : 12,
+                    }}
                   >
-                    <MenuItem value="" disabled>Select Country</MenuItem>
-                    {Object.keys(countriesData).map((country) => (
-                      <MenuItem key={country} value={country}>
-                        {country}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid2>
+                    <FormControl fullWidth variant="outlined">
+                      <InputLabel id="address-type-label">
+                        Address Type
+                      </InputLabel>
+                      <Select
+                        labelId="address-type-label"
+                        name="label"
+                        value={addressForm.label}
+                        onChange={handleAddressChange}
+                        label="Address Type"
+                        required
+                      >
+                        <MenuItem value="" disabled>
+                          Select Type
+                        </MenuItem>
+                        <MenuItem value="HOME">🏠 Home</MenuItem>
+                        <MenuItem value="OFFICE">🏢 Office</MenuItem>
+                        <MenuItem value="OTHER">📍 Other</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid2>
 
+                  {addressForm.label === "OTHER" && (
+                    <Grid2 size={{ xs: 12, sm: 6 }}>
+                      <TextField
+                        name="customLabel"
+                        label="Specify Address Type"
+                        value={otherLabel}
+                        onChange={(e) => setOtherLabel(e.target.value)}
+                        variant="outlined"
+                        fullWidth
+                        required
+                      />
+                    </Grid2>
+                  )}
 
-              <Grid2 size={{ xs: 12, sm: 6 }}>
-                <FormControl fullWidth disabled={!addressForm.country || availableStates.length === 0}>
-                  <InputLabel id="state-label">State / Province</InputLabel>
-                  <Select
-                    labelId="state-label"
-                    name="state"
-                    value={addressForm.state}
-                    onChange={handleAddressChange}
-                    label="State / Province"
-                    required
+                  <Grid2 size={{ xs: 12 }}>
+                    <TextField
+                      fullWidth
+                      label="Street Address / Locality / Apartment"
+                      name="street"
+                      value={addressForm.street}
+                      onChange={handleAddressChange}
+                      required
+                    />
+                  </Grid2>
+
+                  <Grid2 size={{ xs: 12, sm: 6 }}>
+                    <FormControl fullWidth variant="outlined">
+                      <InputLabel id="country-label">Country</InputLabel>
+                      <Select
+                        labelId="country-label"
+                        name="country"
+                        value={addressForm.country}
+                        onChange={handleAddressChange}
+                        label="Country"
+                        required
+                      >
+                        <MenuItem value="" disabled>
+                          Select Country
+                        </MenuItem>
+                        {Object.keys(countriesData).map((country) => (
+                          <MenuItem key={country} value={country}>
+                            {country}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid2>
+
+                  <Grid2 size={{ xs: 12, sm: 6 }}>
+                    <FormControl
+                      fullWidth
+                      disabled={
+                        !addressForm.country || availableStates.length === 0
+                      }
+                    >
+                      <InputLabel id="state-label">State / Province</InputLabel>
+                      <Select
+                        labelId="state-label"
+                        name="state"
+                        value={addressForm.state}
+                        onChange={handleAddressChange}
+                        label="State / Province"
+                        required
+                      >
+                        <MenuItem value="" disabled>
+                          Select State
+                        </MenuItem>
+                        {availableStates.map((state) => (
+                          <MenuItem key={state} value={state}>
+                            {state}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid2>
+
+                  <Grid2 size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                      fullWidth
+                      label="City"
+                      name="city"
+                      value={addressForm.city}
+                      onChange={handleAddressChange}
+                      required
+                    />
+                  </Grid2>
+
+                  <Grid2 size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                      fullWidth
+                      label="Pincode / ZIP Code"
+                      name="pincode"
+                      value={addressForm.pincode}
+                      onChange={handleAddressChange}
+                      required
+                    />
+                  </Grid2>
+                </Grid2>
+
+                <Stack
+                  direction={{ xs: "column-reverse", sm: "row" }}
+                  spacing={2}
+                  justifyContent="flex-end"
+                  sx={{ mt: 5 }}
+                >
+                  <Button
+                    variant="text"
+                    startIcon={<ArrowBackIcon />}
+                    onClick={onClose}
+                    sx={{ color: "text.secondary", px: 3, py: 1.2 }}
+                    fullWidth={{ xs: true, sm: false }}
                   >
-                    <MenuItem value="" disabled>Select State</MenuItem>
-                    {availableStates.map((state) => (
-                      <MenuItem key={state} value={state}>
-                        {state}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid2>
-
-
-              <Grid2 size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="City"
-                  name="city"
-                  value={addressForm.city}
-                  onChange={handleAddressChange}
-                  required
-                />
-              </Grid2>
-
-
-              <Grid2 size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Pincode / ZIP Code"
-                  name="pincode"
-                  value={addressForm.pincode}
-                  onChange={handleAddressChange}
-                  required
-                />
-              </Grid2>
-            </Grid2>
-
-
-            <Stack
-              direction={{ xs: "column-reverse", sm: "row" }}
-              spacing={2}
-              justifyContent="flex-end"
-              sx={{ mt: 5 }}
-            >
-              <Button
-                variant="text"
-                startIcon={<ArrowBackIcon />}
-                onClick={onClose}
-                sx={{ color: "text.secondary", px: 3, py: 1.2 }}
-                fullWidth={{ xs: true, sm: false }}
-              >
-                Back to Profile
-              </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                disableElevation
-                startIcon={savingAddress ? <CircularProgress size={18} color="inherit" /> : <SaveIcon />}
-                disabled={savingAddress}
-                sx={{ px: 4, py: 1.2, fontWeight: 600, borderRadius: 2 }}
-                fullWidth={{ xs: true, sm: false }}
-              >
-                {savingAddress ? "Saving Details..." : editaddressId ? "Update Address" : "Save Location"}
-              </Button>
-            </Stack>
-          </Box>
-        </Paper>
-      </CustomerCardAuth>
-    </Box>
-    </DialogContent>
+                    Back to Profile
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disableElevation
+                    startIcon={
+                      savingAddress ? (
+                        <CircularProgress size={18} color="inherit" />
+                      ) : (
+                        <SaveIcon />
+                      )
+                    }
+                    disabled={savingAddress}
+                    sx={{ px: 4, py: 1.2, fontWeight: 600, borderRadius: 2 }}
+                    fullWidth={{ xs: true, sm: false }}
+                  >
+                    {savingAddress
+                      ? "Saving Details..."
+                      : editaddressId
+                        ? "Update Address"
+                        : "Save Location"}
+                  </Button>
+                </Stack>
+              </Box>
+            </Paper>
+          </CustomerCardAuth>
+        </Box>
+      </DialogContent>
     </Dialog>
   );
 }
@@ -502,36 +551,38 @@ export default function CustomerCart() {
   // const discountedPrice =
   //   product?.price - (product?.price * product?.discount) / 100;
 
-  
-  const handleRemoveCoupon = () => {
-    setCoupon(null);
-
-    setCouponDiscount(0);
-
-    setCouponCode("");
+  const handleRemoveCoupon = async () => {
+    try {
+      // await api.post("/cart/remove-coupon");
+      dispatch(getItems());
+    } catch (error) {
+      console.error("Failed to remove coupon:", error);
+    }
+    // dispatch(removeCouponFromCart());
+    enqueueSnackbar("Coupon removed!", { variant: "info" });
   };
   const subtotal = cartItems.reduce((total, item) => {
     const priceInPaise = Math.round(Number(item?.product?.price) * 100);
     return total + priceInPaise * item?.quantity;
   }, 0);
-console.log(cartItems);
+  console.log(cartItems);
 
   const couponDiscount =
-    cartItems[0]?.coupon && Math.floor(subtotal/100) >= cartItems[0]?.coupon.min_order_value
+    cartItems[0]?.coupon &&
+    Math.floor(subtotal / 100) >= cartItems[0]?.coupon.min_order_value
       ? Math.min(
           (subtotal * cartItems[0]?.coupon.discount) / 100,
           cartItems[0]?.coupon.max_discount,
         )
       : 0;
 
-      
-      const shipping = subtotal >= 1000 ? 0 : 999;
-      
-      const formatPrice = (amountInPaise) => (amountInPaise / 100).toFixed(2);
-      
-      const grandTotal = (subtotal + shipping ) - (couponDiscount*100);
-      console.log(couponDiscount,formatPrice(subtotal), shipping,grandTotal);
-  
+  const shipping = subtotal >= 1000 ? 0 : 999;
+
+  const formatPrice = (amountInPaise) => (amountInPaise / 100).toFixed(2);
+
+  const grandTotal = subtotal + shipping - couponDiscount * 100;
+  console.log(couponDiscount, formatPrice(subtotal), shipping, grandTotal);
+
   async function getCoupons() {
     try {
       // let res = await api.get("coupon/getCoupons");
@@ -596,10 +647,10 @@ console.log(cartItems);
   //delete cart
   function deleteCart() {
     dispatch(removeCartItem(removeId)).then((action) => {
-      if (action.meta.requestStatus === 'fulfilled') {
-      enqueueSnackbar("Item removed", {
-        variant: "success",
-      });
+      if (action.meta.requestStatus === "fulfilled") {
+        enqueueSnackbar("Item removed", {
+          variant: "success",
+        });
       }
     });
     setOpenDeleteDialog(false);
@@ -663,22 +714,31 @@ console.log(cartItems);
       setUpdateAddress(defaultAddress);
     }
   }, [addresses]);
-  // if (cartStatus === "loading" ) {
-  //   return (
-  //     <Box sx={{ p: 3 }}>
-  //       <Grid container>
-  //         <Grid size={{ xs: 12, sm: 8, md: 8 }}>
-  //           <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />
-  //           <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />
-  //           <Skeleton variant="rectangular" height={120} />
-  //         </Grid>
-  //         <Grid size={{ xs: 12, sm: 4, md: 4 }}>
-  //           <Skeleton variant="rectangular" height={200} sx={{ ml: 2 }}/>
-  //         </Grid>
-  //       </Grid>
-  //     </Box>
-  //   );
-  // }
+
+  useEffect(() => {
+    dispatch(getItems())
+  
+  }, [])
+  
+
+console.log(cartStatus);
+
+  if (cartStatus === "loading" ) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Grid container>
+          <Grid size={{ xs: 12, sm: 8, md: 8 }}>
+            <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />
+            <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />
+            <Skeleton variant="rectangular" height={120} />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4, md: 4 }}>
+            <Skeleton variant="rectangular" height={200} sx={{ ml: 2 }}/>
+          </Grid>
+        </Grid>
+      </Box>
+    );
+  }
 
   if (cartItems?.length <= 0) {
     return (
@@ -762,49 +822,15 @@ console.log(cartItems);
       </Dialog>
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, sm: 8, md: 8 }}>
-          <Stack spacing={2}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" color="text.primary">
-                  Saved Address
-                </Typography>
+          <Stack>
 
-                <Stack
-                  direction="row"
-                  sx={{ justifyContent: "space-between", alignItems: "center" }}
-                >
-                  {updateAddress ? (
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      key={updateAddress._id}
-                    >
-                      {`${updateAddress.street}, ${updateAddress.city}, ${updateAddress.state}, ${updateAddress.country}, ${updateAddress.pincode}`}
-                    </Typography>
-                  ) : (
-                    "No Address Found"
-                  )}
-
-                  {updateAddress ? (
-                    <IconButton onClick={() => handleClickOpen()}>
-                      <EditIcon />
-                    </IconButton>
-                  ) : (
-                    <PrimaryButton onClick={() => setAddressModalOpen(true)}>
-                      Add Address
-                    </PrimaryButton>
-                  )}
-                </Stack>
-              </CardContent>
-            </Card>
-
-              <AddressModal
-                addresses={addresses}
-                setAddress={setAddress}
-                setUpdateAddress={setUpdateAddress}
-                open={addressModalOpen}
-                onClose={() => setAddressModalOpen(false)}
-              />
+            <AddressModal
+              addresses={addresses}
+              setAddress={setAddress}
+              setUpdateAddress={setUpdateAddress}
+              open={addressModalOpen}
+              onClose={() => setAddressModalOpen(false)}
+            />
             <Dialog
               open={open}
               onClose={handleClose}
@@ -827,7 +853,7 @@ console.log(cartItems);
                   borderBottom: "1px solid",
                   borderColor: "divider",
                 }}
-              > 
+              >
                 <Stack
                   direction="row"
                   sx={{
@@ -852,7 +878,8 @@ console.log(cartItems);
                     variant="contained"
                     disableElevation
                     size="small"
-                    color="primary" onClick={() => {
+                    color="primary"
+                    onClick={() => {
                       handleClose();
                       setAddressModalOpen(true);
                     }}
@@ -914,9 +941,13 @@ console.log(cartItems);
                 </Button>
               </DialogActions>
             </Dialog>
-{cartItems?.map((item) => (<Card
+            {cartItems?.map((item) => (
+              <Card
                 key={item._id}
                 sx={{
+                  display: { xs: "flex", sm: "block" },
+                  alignItems: "center",
+                  justifyContent: "space-between",
                   mb: 2,
                   borderRadius: 4,
                   p: 1.5,
@@ -1001,30 +1032,22 @@ console.log(cartItems);
                   </Box>
                 </Stack>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="flex-start"
-        flexWrap="wrap"
-      >
-        <Typography
-          variant="h6"
-          fontWeight={700}
-          color="#1f2937"
-        >
-          {item.product.name}
-        </Typography>
-
-        <Chip
-          size="small"
-          color={item.product.isAvailable ? "success" : "error"}
-          label={
-            item.product.isAvailable
-              ? "Available"
-              : "Out of Stock"
-          }
-        />
-      </Stack>
+                  <Stack>
+                    <Chip
+                      size="small"
+                      color={item.product.isAvailable ? "success" : "error"}
+                      label={
+                        item.product.isAvailable ? "Available" : "Out of Stock"
+                      }
+                      sx={{
+                        fontWeight: 600,
+                        width: 80,
+                      }}
+                    />
+                    <Typography variant="h6" fontWeight={700} color="#1f2937">
+                      {item.product.name}
+                    </Typography>
+                  </Stack>
                   <Typography
                     sx={{
                       fontSize: "0.85rem",
@@ -1036,31 +1059,37 @@ console.log(cartItems);
                   </Typography>
 
                   <Stack
-  direction="row"
-  spacing={1}
-  flexWrap="wrap"
-  useFlexGap
-  sx={{ mt: 1 }}
->
-  <Chip
-    size="small"
-    label="In Cart"
-    sx={{
-      bgcolor: "rgba(62,26,137,0.08)",
-      color: "#3E1A89",
-      fontWeight: 600,
-    }}
-  />
+                    direction="row"
+                    spacing={1}
+                    flexWrap="wrap"
+                    useFlexGap
+                    sx={{ mt: 1 }}
+                  >
+                    <Chip
+                      size="small"
+                      label="In Cart"
+                      sx={{
+                        bgcolor: "rgba(62,26,137,0.08)",
+                        color: "#3E1A89",
+                        fontWeight: 600,
+                      }}
+                    />
 
-  <Chip
-    size="small"
-    icon={<StarIcon sx={{ fontSize: 16 }} />}
-    label={`${item?.product?.rating || "N/A"}`}
-    color="warning"
-    variant="outlined"
-    sx={{ fontWeight: 600 }}
-  />
-</Stack>
+                    {item?.product?.rating > 0 && (
+                      <Chip
+                        size="small"
+                        icon={
+                          item?.product?.rating && (
+                            <StarIcon sx={{ fontSize: 16 }} />
+                          )
+                        }
+                        label={`${item?.product?.rating}`}
+                        color="warning"
+                        variant="outlined"
+                        sx={{ fontWeight: 600 }}
+                      />
+                    )}
+                  </Stack>
                 </Box>
 
                 {/* <Box sx={{ textAlign: "center" }}>
@@ -1152,7 +1181,7 @@ console.log(cartItems);
                   </Button>
                 </Box>
               </Card>
-              ))}
+            ))}
           </Stack>
         </Grid>
 
@@ -1362,6 +1391,42 @@ console.log(cartItems);
                   </Typography>
                 </Box>
               </Box>
+              <Stack spacing={2}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" color="text.primary">
+                  Saved Address
+                </Typography>
+
+                <Stack
+                  direction="row"
+                  sx={{ justifyContent: "space-between", alignItems: "center" }}
+                >
+                  {updateAddress ? (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      key={updateAddress._id}
+                    >
+                      {`${updateAddress.street}, ${updateAddress.city}, ${updateAddress.state}, ${updateAddress.country}, ${updateAddress.pincode}`}
+                    </Typography>
+                  ) : (
+                    "No Address Found"
+                  )}
+
+                  {updateAddress ? (
+                    <IconButton onClick={() => handleClickOpen()}>
+                      <EditIcon />
+                    </IconButton>
+                  ) : (
+                    <PrimaryButton onClick={() => setAddressModalOpen(true)}>
+                      Add Address
+                    </PrimaryButton>
+                  )}
+                </Stack>
+              </CardContent>
+            </Card>
+            </Stack>
 
               <Box sx={{ mt: 1 }}>
                 <PaymentButton
@@ -1377,7 +1442,8 @@ console.log(cartItems);
   );
 }
 
-{/* 
+{
+  /* 
                   <Button
                     size="small"
                     variant="contained"
@@ -1392,7 +1458,8 @@ console.log(cartItems);
                     onClick={() => saveForLater(item._id)}
                   >
                     Save
-                  </Button> */}
-                  /* {
+                  </Button> */
+}
+/* {
               
            */
