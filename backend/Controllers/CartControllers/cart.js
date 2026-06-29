@@ -287,4 +287,54 @@ async function applyCoupon(req, res) {
     }
 }
 
-module.exports = { setCart, deleteItem, setQuantity, getCart, applyCoupon };
+async function removeCoupon(req, res) {
+    try {
+        const userId = req.userId;
+
+        // Find all cart items for the user
+        const cartItems = await cartModel.find({ customer: userId }).populate("product");
+
+        if (!cartItems || cartItems.length === 0) {
+            return res.status(400).json({ message: "Cart is empty, no coupon to remove." });
+        }
+
+        const updatedCartItems = [];
+
+        // Loop through each item to reset coupon and recalculate cartTotal
+        for (const item of cartItems) {
+            item.coupon = null;
+            item.isUnified = false;
+            item.unifiedCoupon = null;
+
+            // Recalculate cartTotal without coupon discount
+            const product = item.product;
+            if (product) {
+                const basePrice = Number(product.price) || 0;
+                const discountPercent = Number(product.discount) || 0;
+                const priceAfterProductDiscount = discountPercent > 0
+                    ? basePrice - (basePrice * discountPercent) / 100
+                    : basePrice;
+
+                item.cartTotal = priceAfterProductDiscount * item.quantity;
+            } else {
+                item.cartTotal = 0; // Or handle as an error if product is missing
+            }
+
+            await item.save();
+            updatedCartItems.push(item);
+        }
+
+        res.status(200).json({
+            message: "Coupon removed successfully",
+            cart: updatedCartItems,
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: err.message,
+        });
+    }
+}
+
+module.exports = { setCart, deleteItem, setQuantity, getCart, applyCoupon, removeCoupon };

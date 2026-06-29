@@ -164,7 +164,76 @@ async function allProduct(req, res) {
 //     }
 // }
 
- async function addProduct(req, res) {
+//  async function addProduct(req, res) {
+//     try {
+//         const { name, description, price, stock, discount } = req.body;
+
+//         // Check uploaded images
+//         if (!req.files || req.files.length === 0) {
+//             return res.status(400).json({
+//                 message: "Product image is required"
+//             });
+//         }
+//         // Convert file paths to URLs
+//         const imagePaths = req.files.map(file =>
+//            `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
+//         );
+
+//        // console.log("Category from request:", req.body.category);
+
+//         const category = await ProductCategoryModel.findOne({
+//              _id: req.body.category.trim()
+//         });
+
+
+//         if (!category) {
+//             return res.status(400).json({
+//                 message: "Category not found"
+//             });
+//         }
+//         const discountAmount = (Number(price) * Number(discount)) / 100;
+
+//         const finalPrice = Number(price) - discountAmount;
+//         // Create product
+//         const product = await ProductModel.create({
+//             name,
+//             description,
+//             price: Number(price),
+//             stock: Number(stock),
+//             discount: Number(discount),
+//             finalPrice,
+//             category: category._id,
+//             image: imagePaths
+//         });
+//         // const products = await ProductModel.create(product);
+        
+// if(req.body.sendUpdates=="on"){
+//     sendProductNotification(products)}
+//         const Products = await ProductModel.findById(products._id)
+//             .populate("category", "name");
+
+//         return res.status(200).json({
+//             message: "Product added successfully",
+//             data: Product
+//         });
+
+//     } catch (err) {
+//         console.log(err);
+
+//         return res.status(500).json({
+//             success: false,
+//             message: err.message
+//         });
+//     }
+// }
+
+
+
+
+
+
+
+async function addProduct(req, res) {
     try {
         const { name, description, price, stock, discount } = req.body;
 
@@ -176,7 +245,7 @@ async function allProduct(req, res) {
         }
         // Convert file paths to URLs
         const imagePaths = req.files.map(file =>
-           `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
+             `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
         );
 
        // console.log("Category from request:", req.body.category);
@@ -205,10 +274,10 @@ async function allProduct(req, res) {
             category: category._id,
             image: imagePaths
         });
-        // const products = await ProductModel.create(product);
+        const products = await ProductModel.create(product);
         
 if(req.body.sendUpdates=="on"){
-    sendProductNotification(product)}
+    sendProductNotification(products)}
         const Product = await ProductModel.findById(products._id)
             .populate("category", "name");
 
@@ -226,6 +295,10 @@ if(req.body.sendUpdates=="on"){
         });
     }
 }
+
+
+
+
 
 async function updateProduct(req, res) {
     try {
