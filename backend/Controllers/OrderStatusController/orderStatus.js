@@ -441,16 +441,16 @@ async function customerCancellingOrder(req, res) {
         await ordersModel.updateOne(
             { _id: orderId },
             {
-                $set: {
-                orderStatus: "refund pending",
-                cancelledBy: "customer",
-                cancelReason: reason,
-                cancelledAt: new Date(),
-                refundId: refund ? refund.id : null,
-                refundAmount: refundAmount,
-                cancellationFee: cancellationFee,
-                $addToSet: { historyStatuses: "order cancelled" } // Add to history, avoids duplicates
-                }
+                $set: { // The $set operator updates the main fields
+                    orderStatus: "refund pending",
+                    cancelledBy: "customer",
+                    cancelReason: reason,
+                    cancelledAt: new Date(),
+                    refundId: refund ? refund.id : null,
+                    refundAmount: refundAmount,
+                    cancellationFee: cancellationFee,
+                },
+                $addToSet: { historyStatuses: "order cancelled" } // $addToSet is a separate top-level operator
             }
         );
 
