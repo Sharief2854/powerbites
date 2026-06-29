@@ -336,4 +336,4 @@ async function removeCoupon(req, res) {
         });
     }
 }
-module.exports = { setCart, deleteItem, setQuantity, getCart, applyCoupon };
+module.exports = { setCart, deleteItem, setQuantity, getCart, applyCoupon, removeCoupon };
