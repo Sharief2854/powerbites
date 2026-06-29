@@ -88,9 +88,98 @@
 
 
 
+// const nodemailer = require("nodemailer");
+// const UserModel = require("../Model/userModel");
+// const path = require("path");
+
+// const transporter = nodemailer.createTransport({
+//     service: "gmail",
+//     auth: {
+//         user: process.env.EMAIL,
+//         pass: process.env.PASSWORD,
+//     },
+// });
+
+
+
+// async function sendProductNotification(product) {
+//     try {
+
+//         let attachments = [];
+//         let imageTag = "";
+//         if (product.image && product.image.length > 0) {
+//             const imageName = product.image[0].split("/").pop();
+//             const imagePath = path.join(
+//                 process.cwd(),
+//                 "upload",
+//                 imageName
+//             );
+
+//             console.log("Image Path:", imagePath);
+//             attachments.push({
+//                 filename: imageName,
+//                 path: imagePath,
+//                 cid: "productImage"
+//             });
+
+//             imageTag = `
+//                 <img
+//                     src="cid:productImage"
+//                     alt="${product.name}"
+//                     width="250"
+//                     style="border-radius:10px;border:1px solid #ddd;"
+//                 />
+//             `;
+//         }
+
+//         const html = `
+//         <html>
+//         <body>
+
+//             <h2>🛍️ New Product Added</h2>
+
+//             ${imageTag}
+
+//             <h3>${product.name}</h3>
+
+//             <p><strong>Price:</strong> ₹${product.price}</p>
+
+//             <p><strong>Stock:</strong> ${product.stock}</p>
+
+//             <p>${product.description || ""}</p>
+
+//         </body>
+//         </html>
+//         `;
+
+//         const mailOptions = {
+//             from: process.env.EMAIL,
+//             // to: "hippargechandu@gmail.com",
+//             bcc: customerEmails,
+//             subject: `🛍️ New Product Added - ${product.name}`,
+//             html,
+//             attachments
+//         };
+
+//         const info = await transporter.sendMail(mailOptions);
+
+//         console.log("Email sent:", info.messageId);
+
+//     } catch (err) {
+//         console.error(err);
+//     }
+// }
+
+// module.exports = sendProductNotification;
+
+
+
+
+
 const nodemailer = require("nodemailer");
 const UserModel = require("../Model/userModel");
 const path = require("path");
+
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -319,151 +408,11 @@ margin-bottom:20px;
 
 ${imageTag}
 
-<h2 style="
-font-size:26px;
-color:#111827;
-margin-top:20px;
-">
-${product.name}
-</h2>
+            <h3>${product.name}</h3>
 
-<p style="
-color:#6b7280;
-font-size:15px;
-line-height:1.8;
-padding:0 30px;
-">
-${product.description}
-</p>
+            <p><strong>Price:</strong> ₹${product.price}</p>
 
-</td>
-</tr>
-
-<!-- Price Box -->
-<tr>
-<td align="center">
-
-<table width="85%"
-style="
-background:#f8fafc;
-border:1px solid #e2e8f0;
-border-radius:10px;
-"
-cellpadding="15">
-
-<tr>
-
-<td align="center">
-<h3 style="
-margin:0;
-color:#dc2626;
-font-size:30px;
-">
-₹${product.price}
-</h3>
-
-<p style="margin:8px 0;">
-Discount: <b>${product.discount || 0}%</b>
-</p>
-
-<p style="margin:8px 0;">
-Stock: <b>${product.stock}</b>
-</p>
-</td>
-
-</tr>
-
-</table>
-
-</td>
-</tr>
-
-<!-- Button -->
-<tr>
-<td align="center" style="padding:35px;">
-
-<a
-href="https://yourdomain.com/product/${product._id}"
-style="
-background:#16a34a;
-color:white;
-padding:14px 35px;
-text-decoration:none;
-border-radius:8px;
-font-size:16px;
-font-weight:bold;
-display:inline-block;
-">
-🛒 Shop Now
-</a>
-
-</td>
-</tr>
-
-<!-- Contact -->
-<tr>
-<td style="
-background:#f8fafc;
-padding:25px 40px;
-">
-
-<h3 style="color:#111827;">
-Contact Information
-</h3>
-
-<p>📧 ${company.email}</p>
-<p>📞 ${company.phone}</p>
-<p>👨 Founder: ${company.founder}</p>
-
-</td>
-</tr>
-
-<!-- Social -->
-<tr>
-<td align="center" style="padding:25px;">
-
-<a href="${company.socialMedia?.facebook || '#'}">
-Facebook
-</a>
-
-&nbsp;&nbsp;|&nbsp;&nbsp;
-
-<a href="${company.socialMedia?.instagram || '#'}">
-Instagram
-</a>
-
-&nbsp;&nbsp;|&nbsp;&nbsp;
-
-<a href="${company.socialMedia?.linkedin || '#'}">
-LinkedIn
-</a>
-
-&nbsp;&nbsp;|&nbsp;&nbsp;
-
-<a href="${company.socialMedia?.youtube || '#'}">
-YouTube
-</a>
-
-</td>
-</tr>
-
-<!-- Footer -->
-<tr>
-<td align="center"
-style="
-background:#0f172a;
-color:#94a3b8;
-padding:20px;
-font-size:13px;
-">
-
-© ${new Date().getFullYear()}
-${company.companyName}
-
-</td>
-</tr>
-
-</table>
+            <p><strong>Stock:</strong> ${product.stock}</p>
 
             <p>${product.description || ""}</p>
         </body>

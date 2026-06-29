@@ -255,6 +255,7 @@ async function addProduct(req, res) {
         });
 
 
+
         if (!category) {
             return res.status(400).json({
                 message: "Category not found"
@@ -437,27 +438,4 @@ async function getProductsByCategory(req, res) {
     }
 }
 
-async function getProductById(req, res) {
-    try {
-        const product = await ProductModel.findById(req.params.id)
-            .populate("category");
-
-        if (!product) {
-            return res.status(404).json({
-                message: "Product not found"
-            });
-        }
-
-        res.status(200).json({
-            message: "Product fetched successfully",
-            data: product
-        });
-
-    } catch (err) {
-        res.status(500).json({
-            message: err.message
-        });
-    }
-}
-
-module.exports = { addProduct, updateProduct, deleteProduct, allProduct, getTotalProducts, getProductsByCategory, getProductById };
+module.exports = { addProduct, updateProduct, deleteProduct, allProduct, getTotalProducts, getProductsByCategory };
