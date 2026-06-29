@@ -35,7 +35,7 @@ async function setCart(req, res) {
        body.cartTotal = product.price * body.quantity; // Initialize cartTotal to the product of price and quantity for new items
  
 
-        let cartItem = await cartModel.create(body);
+        let cartItem = (await cartModel.create(body));
 
         if (!cartItem) {
             return res.status(400).json({
@@ -336,5 +336,4 @@ async function removeCoupon(req, res) {
         });
     }
 }
-
-module.exports = { setCart, deleteItem, setQuantity, getCart, applyCoupon, removeCoupon };
+module.exports = { setCart, deleteItem, setQuantity, getCart, applyCoupon };

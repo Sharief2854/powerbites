@@ -57,13 +57,14 @@ import {
   getItems,
   removeCartItem,
   updateCartQuantity,
-  removeCouponFromCart,
+  // removeCouponFromCart,
 } from "../../../Redux/Slices/CM_CartSlice";
 import PaymentButton from "../Payments/PaymentButton";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import CustomerCardAuth from "../Profile/CustomerCardAuth";
+import { getCart } from "../../../../../backend/Controllers/CartControllers/cart";
 
 const cartCardAnimation = {
   "@keyframes cartCard": {
@@ -552,13 +553,13 @@ export default function CustomerCart() {
   //   product?.price - (product?.price * product?.discount) / 100;
 
   const handleRemoveCoupon = async () => {
-    // try {
-    //   await api.post("/cart/remove-coupon");
-    //   dispatch(getItems());
-    // } catch (error) {
-    //   console.error("Failed to remove coupon:", error);
-    // }
-    dispatch(removeCouponFromCart());
+    try {
+      // await api.post("/cart/remove-coupon");
+      dispatch(getItems());
+    } catch (error) {
+      console.error("Failed to remove coupon:", error);
+    }
+    // dispatch(removeCouponFromCart());
     enqueueSnackbar("Coupon removed!", { variant: "info" });
   };
   const subtotal = cartItems.reduce((total, item) => {
@@ -714,6 +715,12 @@ export default function CustomerCart() {
       setUpdateAddress(defaultAddress);
     }
   }, [addresses]);
+
+  useEffect(() => {
+    dispatch(getCart())
+  
+  }, [])
+  
 
 console.log(cartStatus);
 

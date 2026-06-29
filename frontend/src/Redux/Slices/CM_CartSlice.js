@@ -68,16 +68,6 @@ const cartSlice = createSlice({
       state.items = [];
       state.cartValue = 0;
     },
-    removeCouponFromCart: (state, action) => {
-      state.items = state.items
-      
-        // (item) =>{ if(item.coupon !=null){
-        //   return []
-        // }
-
-        }
-    //  
-    
   },
     extraReducers: (builder) => {
       builder
@@ -144,5 +134,5 @@ const cartSlice = createSlice({
   },
 });
 
-export const { clearCart, addValue , removeCouponFromCart} = cartSlice.actions;
+export const { clearCart, addValue } = cartSlice.actions;
 export default cartSlice.reducer;
