@@ -23,6 +23,7 @@ export default function Coupon({ setOpen, applyCoupon }) {
 
   const [couponCode, setCouponCode] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const couponInputRef = useRef(null);
 
@@ -54,9 +55,11 @@ const couponList = couponData?.filter((c) => {
 
   async function applyCouponCode() {
     try {
-      let res = await api.post("/cart/applyCoupon", { couponCode: couponCode });
+      let res = await api.post("/cart/apply-coupon", { couponCode: couponCode });
       navigate("/customer/cart");
     } catch (error) {
+      console.log(error.message);
+      
       enqueueSnackbar(`${error.message}`, {
         variant: "error",
       });

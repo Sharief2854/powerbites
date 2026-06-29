@@ -20,12 +20,13 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import HomeIcon from "@mui/icons-material/Home";
 import PersonIcon from "@mui/icons-material/Person";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import InfoIcon from '@mui/icons-material/Info';
 import { Link } from "react-router-dom";
 import { Chip } from "@mui/material";
 
 const pages = [
   { name: "Login", path: "/login", icon: <LoginIcon fontSize="small" /> },
-  { name: "About Us", path: "/about", icon: <LoginIcon fontSize="small" /> },
+  { name: "About Us", path: "/about", icon: <InfoIcon fontSize="small" /> },
   {
     name: "Registration",path: "/verify-email",icon: <PersonAddAlt1Icon fontSize="small" />,
   },
@@ -82,7 +83,7 @@ function ResponsiveAppBar({company}) {
     sx={{
       width: 36,
       height: 36,
-      mr:'3px',
+      mr:'2px',
       objectFit: "cover",
       borderRadius: "50%",
       background: "#fff",

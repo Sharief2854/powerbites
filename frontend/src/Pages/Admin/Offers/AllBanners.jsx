@@ -117,7 +117,7 @@ export default function OfferPreviewBanner({
                 lineHeight: 1.1,
               }}
             >
-              Use Code: {offer?.code || "SAVE20"}
+              Use Code: {offer?.coupon?.code || "SAVE20"}
             </Typography>
           </Box>
 

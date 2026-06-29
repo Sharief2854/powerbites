@@ -48,12 +48,6 @@ const companySchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-  customDetails: [
-    {
-      key: String,
-      value: String,
-    }
-  ]
 
     customFields: {
       type:Object,

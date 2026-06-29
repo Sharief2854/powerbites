@@ -91,8 +91,8 @@ export default function CustomerProducts() {
           sx={{
             width: "100%",
             height:"500px",
-            display: "flex",
-            flexDirection: "column",
+            // display: "flex",
+            // flexDirection: "column",
             borderRadius: "18px",
             overflow: "hidden",
             transition: "0.3s ease",
@@ -106,11 +106,11 @@ export default function CustomerProducts() {
             sx={{
               width: "100%",
               height: 240,
+              padding: 0,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               backgroundColor: "#f8f8fb",
-              p: 2,
             }}
           >
             <CardMedia
