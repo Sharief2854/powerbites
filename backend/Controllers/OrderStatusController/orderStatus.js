@@ -47,7 +47,10 @@ async function updateOrderStatus(req, res) {
         // 1. Update only status (no validation issues)
         await ordersModel.updateOne(
             { _id: orderId },
-            { $set: { orderStatus: status } }
+            { 
+                $set: { orderStatus: status },
+                $addToSet: { historyStatuses: status } // Add to history, avoids duplicates
+            }
         );
 
         // 2. Fetch fresh updated order
@@ -399,6 +402,13 @@ async function customerCancellingOrder(req, res) {
             refundAmount = order.final_price - cancellationFee;
         }
 
+        // Security check: ensure refund amount never exceeds the paid amount
+        if (refundAmount > order.final_price) {
+            return res.status(400).json({
+                message: "Invalid refund amount calculated. Cannot refund more than the paid amount."
+            });
+        }
+
         let refund = null;
         if (refundAmount > 0 && order.paymentID) { // Check for paymentID before attempting refund
             try {
@@ -431,16 +441,16 @@ async function customerCancellingOrder(req, res) {
         await ordersModel.updateOne(
             { _id: orderId },
             {
-                $set: {
-                orderStatus: "refund pending",
-                cancelledBy: "customer",
-                cancelReason: reason,
-                cancelledAt: new Date(),
-                refundId: refund ? refund.id : null,
-                refundAmount: refundAmount,
-                cancellationFee: cancellationFee,
-                    $push: { historyStatuses: "order cancelled" } // Add to history
-                }
+                $set: { // The $set operator updates the main fields
+                    orderStatus: "refund pending",
+                    cancelledBy: "customer",
+                    cancelReason: reason,
+                    cancelledAt: new Date(),
+                    refundId: refund ? refund.id : null,
+                    refundAmount: refundAmount,
+                    cancellationFee: cancellationFee,
+                },
+                $addToSet: { historyStatuses: "order cancelled" } // $addToSet is a separate top-level operator
             }
         );
 
@@ -616,6 +626,13 @@ async function cancelOrderByAdmin(req, res) {
         let refundAmount = order.final_price;
         let refund = null;
 
+        // Security check: ensure refund amount never exceeds the paid amount
+        if (refundAmount > order.final_price) {
+            return res.status(400).json({
+                message: "Invalid refund amount calculated. Cannot refund more than the paid amount."
+            });
+        }
+
         if (refundAmount > 0 && order.paymentID) {
             try {
                 refund = await razorpay.payments.refund(order.paymentID, {
@@ -653,7 +670,7 @@ async function cancelOrderByAdmin(req, res) {
                 refundId: refund ? refund.id : null,
                 refundAmount: refundAmount,
                 cancellationFee: 0, // No fee for admin cancellation
-                $push: { historyStatuses: "order cancelled" }
+                $addToSet: { historyStatuses: "order cancelled" }
             }
         );
 

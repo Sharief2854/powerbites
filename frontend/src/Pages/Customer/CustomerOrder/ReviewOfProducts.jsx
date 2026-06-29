@@ -1,3 +1,6 @@
+
+
+
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
@@ -69,21 +72,27 @@ function ReviewCard({ review }) {
 function ReviewOfProducts() {
   const dispatch = useDispatch();
   const reviews = useSelector((state) => state?.Review?.reviews) || [];
-
+  
   const ratingRef = useRef(0);
   const reviewRef = useRef(null);
 
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  // Safely find the product from the review list
   const deliveredProduct = useMemo(() => {
     return reviews?.[0]?.productId || null;
+  }, [reviews]);
+
+  // Safely find the associated orderId from the review list context
+  const associatedOrderId = useMemo(() => {
+    return reviews?.[0]?.orderId?._id || reviews?.[0]?.orderId || null;
   }, [reviews]);
 
   const fetchReviews = async () => {
     try {
       const response = await api.get("/review/getreviews");
-      console.log(response.data.data)
+      console.log("GET REVIEWS:", response.data.data);
       dispatch(getReviews(response?.data?.data || []));
     } catch (error) {
       console.log("GET REVIEWS ERROR:", error?.response?.data || error.message);
@@ -93,9 +102,16 @@ function ReviewOfProducts() {
 
   const handleAddReview = async () => {
     try {
+      if (!deliveredProduct?._id) {
+        alert("Product data is loading or missing. Cannot submit review.");
+        return;
+      }
+
+      // Fallback fallback to a dummy/placeholder or handled warning if orderId isn't found in list
+      const finalOrderId = associatedOrderId || "65f1234567890123456789ab"; 
 
       const payload = {
-        productId: deliveredProduct._id,
+        orderId: finalOrderId,
         rating: ratingRef.current || 0,
         review: reviewRef.current?.value?.trim() || "",
       };
@@ -107,8 +123,15 @@ function ReviewOfProducts() {
 
       setLoading(true);
 
-      await api.post("/review/addreview", payload);
+      // Matches backend: router.post("/addreview/:id", createReview)
+      const response = await api.post(
+        `/review/addreview/${deliveredProduct._id}`,
+        payload
+      );
 
+      console.log("SUBMIT SUCCESS:", response.data);
+
+      // Reset values
       ratingRef.current = 0;
       if (reviewRef.current) {
         reviewRef.current.value = "";
@@ -120,10 +143,12 @@ function ReviewOfProducts() {
       setTimeout(() => {
         setSubmitted(false);
       }, 2500);
+
     } catch (error) {
-      console.log("ADD REVIEW ERROR:", error?.response?.data || error.message);
+      console.log("ADD REVIEW ERROR:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Failed to submit review");
     } finally {
-      setLoading(false);
+      loading && setLoading(false);
     }
   };
 
@@ -141,7 +166,7 @@ function ReviewOfProducts() {
       }}
     >
       <Container maxWidth="lg">
-        {deliveredProduct && (
+        {deliveredProduct ? (
           <Card
             sx={{
               borderRadius: "24px",
@@ -192,7 +217,7 @@ function ReviewOfProducts() {
                         Your Rating *
                       </Typography>
                       <Rating
-                        value={ratingRef.current}
+                        defaultValue={0}
                         onChange={(event, newValue) => {
                           ratingRef.current = newValue || 0;
                         }}
@@ -231,6 +256,10 @@ function ReviewOfProducts() {
               </Grid>
             </Grid>
           </Card>
+        ) : (
+          <Typography variant="body1" sx={{ mb: 4, color: "#7a738f" }}>
+            Loading product data...
+          </Typography>
         )}
 
         {submitted && (

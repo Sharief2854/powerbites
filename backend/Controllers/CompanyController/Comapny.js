@@ -29,8 +29,6 @@ async function createCompany(req, res) {
             certification: req.body.certification,
             companyImage: imageUrl,
 
-        customDetails: req.body.customDetails || [],
-
             socialMedia: {
                 instagram: req.body.instagram,
                 facebook: req.body.facebook,
