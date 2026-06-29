@@ -99,7 +99,7 @@ app.use("/deals",isAdmin,dealsRouter)
 // Customer profile updating routes with authentication middleware
 app.use("/updateCustomerProfile", isCustomer,customerProfileRouter)
 app.use("/developer",DeveloperRouter)
-app.use("/review",reviewRouter)
+app.use("/review",isCustomer,reviewRouter)
 app.use("/orderStatus",orderStatusRouter)
 app.use("/dashboard",isAdmin,dashboardRouter)
 app.use("/filter-products",productfiltering) // Changed path to avoid conflict
@@ -115,6 +115,8 @@ app.use((err, req, res, next) => {
     next(err);
 });
 
-server.listen(4500,()=>{
-    console.log("server is running on port 4500")
+const PORT = process.env.PORT || 4500;
+
+server.listen(PORT,()=>{
+    console.log(`server is running on port ${PORT}`)
 })
