@@ -140,6 +140,9 @@ async function getCart(req, res) {
         if (!cart || cart.length === 0) {
             return res.status(400).json({
                 message: "No items found"
+            });
+        }
+
         if (!cart) { // .find() returns [], so check for null/undefined just in case
             return res.status(200).json({
                 message: "Cart is empty",
@@ -174,7 +177,7 @@ async function getCart(req, res) {
             }
 
             return itemJson;
-        });
+        })
 
         // Calculate coupon discount if a coupon is applied
         let totalCouponDiscount = 0;
