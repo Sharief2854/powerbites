@@ -303,6 +303,13 @@ const refundPayment = async (req, res) => {
             return res.status(404).json({ success: false, message: "Order not found." });
         }
 
+        if (refundAmount > order.final_price) {
+            return res.status(400).json({
+                success: false,
+                message: `Refund amount cannot be greater than the order total of ${order.final_price}.`,
+            });
+        }
+
         if (!order.paymentID) {
             return res.status(400).json({ success: false, message: "Payment ID not found for this order." });
         }

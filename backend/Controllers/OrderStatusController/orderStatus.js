@@ -399,6 +399,13 @@ async function customerCancellingOrder(req, res) {
             refundAmount = order.final_price - cancellationFee;
         }
 
+        // Security check: ensure refund amount never exceeds the paid amount
+        if (refundAmount > order.final_price) {
+            return res.status(400).json({
+                message: "Invalid refund amount calculated. Cannot refund more than the paid amount."
+            });
+        }
+
         let refund = null;
         if (refundAmount > 0 && order.paymentID) { // Check for paymentID before attempting refund
             try {
@@ -615,6 +622,13 @@ async function cancelOrderByAdmin(req, res) {
         // --- Full Refund Logic for Admin Cancellation ---
         let refundAmount = order.final_price;
         let refund = null;
+
+        // Security check: ensure refund amount never exceeds the paid amount
+        if (refundAmount > order.final_price) {
+            return res.status(400).json({
+                message: "Invalid refund amount calculated. Cannot refund more than the paid amount."
+            });
+        }
 
         if (refundAmount > 0 && order.paymentID) {
             try {

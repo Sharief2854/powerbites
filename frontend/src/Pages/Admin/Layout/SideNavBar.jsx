@@ -23,7 +23,7 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
     { text: 'Products', icon: <ShoppingBagIcon /> },
     { text: 'Orders', icon: <ReceiptLongIcon /> },
     { text: 'Customers', icon: <PeopleIcon /> },
-    { text: 'Analytics', icon: <BarChartIcon /> },
+    // { text: 'Analytics', icon: <BarChartIcon /> },
     { text: 'Info', icon: <BusinessIcon /> },
     { text: 'Coupons', icon: <ConfirmationNumberIcon /> },
     { text: 'Banners', icon: <AdUnitsIcon /> },
