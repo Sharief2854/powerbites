@@ -64,7 +64,6 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import CustomerCardAuth from "../Profile/CustomerCardAuth";
-import { getCart } from "../../../../../backend/Controllers/CartControllers/cart";
 
 const cartCardAnimation = {
   "@keyframes cartCard": {
@@ -717,7 +716,7 @@ export default function CustomerCart() {
   }, [addresses]);
 
   useEffect(() => {
-    dispatch(getCart())
+    dispatch(getItems())
   
   }, [])
   
