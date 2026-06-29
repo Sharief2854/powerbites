@@ -47,7 +47,10 @@ async function updateOrderStatus(req, res) {
         // 1. Update only status (no validation issues)
         await ordersModel.updateOne(
             { _id: orderId },
-            { $set: { orderStatus: status } }
+            { 
+                $set: { orderStatus: status },
+                $addToSet: { historyStatuses: status } // Add to history, avoids duplicates
+            }
         );
 
         // 2. Fetch fresh updated order
@@ -446,7 +449,7 @@ async function customerCancellingOrder(req, res) {
                 refundId: refund ? refund.id : null,
                 refundAmount: refundAmount,
                 cancellationFee: cancellationFee,
-                    $push: { historyStatuses: "order cancelled" } // Add to history
+                $addToSet: { historyStatuses: "order cancelled" } // Add to history, avoids duplicates
                 }
             }
         );
@@ -667,7 +670,7 @@ async function cancelOrderByAdmin(req, res) {
                 refundId: refund ? refund.id : null,
                 refundAmount: refundAmount,
                 cancellationFee: 0, // No fee for admin cancellation
-                $push: { historyStatuses: "order cancelled" }
+                $addToSet: { historyStatuses: "order cancelled" }
             }
         );
 

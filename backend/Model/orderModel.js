@@ -69,6 +69,12 @@ const ordersSchema= new mongoose.Schema({
 
    },
 
+   // To track the history of order statuses
+   historyStatuses: {
+    type: [String],
+    default: []
+   },
+
 
    cancelledBy: {
     type: String,
