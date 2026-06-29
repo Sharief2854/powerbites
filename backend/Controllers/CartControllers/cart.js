@@ -198,7 +198,6 @@ async function getCart(req, res) {
 
         res.status(200).json({
             message: "Items fetched successfully",
-            cart: processedCart
             cart: processedCart,
             totals: {
                 subtotal: parseFloat(subtotal.toFixed(2)),
