@@ -15,12 +15,15 @@ import { enqueueSnackbar, SnackbarProvider } from "notistack";
 import { useEffect, useRef, useState } from "react";
 import api from "../../../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { getItems } from "../../../Redux/Slices/CM_CartSlice";
 
 export default function Coupon({ setOpen, applyCoupon }) {
   const [couponData, setCouponList] = useState([]);
 
   const [couponCode, setCouponCode] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const couponInputRef = useRef(null);
 
@@ -52,9 +55,11 @@ const couponList = couponData?.filter((c) => {
 
   async function applyCouponCode() {
     try {
-      let res = await api.post("/cart/applyCoupon", { couponCode: couponCode });
+      let res = await api.post("/cart/apply-coupon", { couponCode: couponCode });
       navigate("/customer/cart");
     } catch (error) {
+      console.log(error.message);
+      
       enqueueSnackbar(`${error.message}`, {
         variant: "error",
       });

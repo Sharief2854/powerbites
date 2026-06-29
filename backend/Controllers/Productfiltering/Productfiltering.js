@@ -19,7 +19,7 @@ async function getProductById(req, res) {
             });
         }
 
-        const product = await ProductModel.findById(id);
+        const product = await ProductModel.findById(id).populate("category");
 
         if (!product) {
             return res.status(404).json({
