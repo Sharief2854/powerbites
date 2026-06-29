@@ -68,6 +68,9 @@ const cartSlice = createSlice({
       state.items = [];
       state.cartValue = 0;
     },
+      allApplyCoupon: (state, action) => {
+      state.items = action.payload;
+    },
   },
     extraReducers: (builder) => {
       builder
@@ -134,5 +137,5 @@ const cartSlice = createSlice({
   },
 });
 
-export const { clearCart, addValue } = cartSlice.actions;
+export const { clearCart, addValue,allApplyCoupon } = cartSlice.actions;
 export default cartSlice.reducer;

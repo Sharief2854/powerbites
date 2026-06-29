@@ -553,8 +553,10 @@ export default function CustomerCart() {
 
   const handleRemoveCoupon = async () => {
     try {
-      // await api.post("/cart/remove-coupon");
+      let res = await api.delete("/cart/remove-coupon");
+      console.log("here",res.data);
       dispatch(getItems());
+      
     } catch (error) {
       console.error("Failed to remove coupon:", error);
     }
@@ -562,7 +564,7 @@ export default function CustomerCart() {
     enqueueSnackbar("Coupon removed!", { variant: "info" });
   };
   const subtotal = cartItems.reduce((total, item) => {
-    const priceInPaise = Math.round(Number(item?.product?.price) * 100);
+    const priceInPaise = Math.round(Number(item?.cartTotal) * 100);
     return total + priceInPaise * item?.quantity;
   }, 0);
   console.log(cartItems);

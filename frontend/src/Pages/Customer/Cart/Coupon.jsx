@@ -16,7 +16,7 @@ import { useEffect, useRef, useState } from "react";
 import api from "../../../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { getItems } from "../../../Redux/Slices/CM_CartSlice";
+import { allApplyCoupon, getItems } from "../../../Redux/Slices/CM_CartSlice";
 
 export default function Coupon({ setOpen, applyCoupon }) {
   const [couponData, setCouponList] = useState([]);
@@ -57,6 +57,10 @@ const couponList = couponData?.filter((c) => {
     try {
       let res = await api.post("/cart/apply-coupon", { couponCode: couponCode });
       navigate("/customer/cart");
+      console.log(res.data);
+      
+      dispatch(allApplyCoupon(res.data.products));
+
     } catch (error) {
       console.log(error.message);
       
