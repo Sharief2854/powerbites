@@ -1,15 +1,7 @@
 const nodemailer = require("nodemailer");
 const UserModel = require("../Model/userModel");
 const path = require("path");
-
-// Configure the email transporter using Gmail
-const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: process.env.EMAIL,
-        pass: process.env.PASSWORD,
-    },
-});
+const transporter = require("../config/emailConfig");
 
 /**
  * Sends an email notification to all registered customers when a new product is added.
@@ -23,7 +15,8 @@ async function sendProductNotification(product, companyData = {}) {
             { role: "customer" },
             { email: 1, _id: 0 }
         );
-
+      
+    
         const customerEmails = customers.map(user => user.email);
 
         // Guard clause: If there are no customers, stop execution early

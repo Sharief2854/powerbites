@@ -115,6 +115,8 @@ app.use((err, req, res, next) => {
     next(err);
 });
 
-server.listen(4500,()=>{
-    console.log("server is running on port 4500")
+const PORT = process.env.PORT || 4500;
+
+server.listen(PORT,()=>{
+    console.log(`server is running on port ${PORT}`)
 })

@@ -313,17 +313,17 @@ export function AutoCarousel({
   if (!images.length) {
     return (
       <Box
-        sx={{width: { xs: "100%", sm: 240 }, 
+        sx={{width: { xs: "100%" }, 
         height: { xs: 240, sm: 300 },
         display: 'flex',
         alignItems: 'center',
           justifyContent: "center",
           textAlign: "center",
-          px: 3,
+          // px: 3,
           boxShadow: "0 14px 35px rgba(0,0,0,0.18)",
         }}
       >
-        <Typography color="text.secondary" fontWeight={700} sx={{color:'#fff',fontSize:30}}>
+        <Typography color="text.secondary"  fontWeight={700} sx={{color:'#fff',width:'100%',fontSize:30}}>
           Upload images to preview the banner
         </Typography>
       </Box>
@@ -901,7 +901,7 @@ export default function Banners() {
             </Paper>
           </Grid>
 
-          <Grid item xs={12} md={7} lg={8}>
+          <Grid size={12} >
             <Box
               sx={{ position: 'sticky', top: 80 }}
             >
@@ -942,7 +942,7 @@ export default function Banners() {
                     <Button
                       variant="contained"
                       startIcon={<EditIcon />}
-                      onClick={() => handleOpenEdit(banner)} // This was correct, but ensuring it's clear.
+                      onClick={() => handleOpenEdit(banner)}
                       sx={{ borderRadius: 2.5, textTransform: "none" }}
                     >
                       Edit
@@ -968,6 +968,9 @@ export default function Banners() {
                         borderRadius: 2.5,
                         textTransform: "none",
                         color: "#fff",
+                        bgcolor:banner?.status === "Active"
+                        ? "rgba(37, 179, 61, 0.91)"
+                        : "rgba(88, 93, 94, 0.91)",
                         border: "1px solid rgba(255,255,255,0.35)",
                       }}
                     >

@@ -1,4 +1,4 @@
-import { Box, ImageList, Stack,Button, Typography } from '@mui/material'
+import { Box, Stack, Typography, Chip } from '@mui/material'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import api from '../../api/axiosConfig'
@@ -15,7 +15,7 @@ export default function About() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const first = async () => {
+  const firstDeveloper = async () => {
     try {
       let res = await api.get("/developer")
       setDevelopers(res.data.data)
@@ -28,151 +28,191 @@ export default function About() {
 
 
   useEffect(() => {
-    first()
+    firstDeveloper()
     dispatch(fetchCompanyInfo())
   }, [dispatch])
   
   return (
     <Box>
-        <Box
+     <Box
   sx={{
-    bgcolor: "#ffffff",
+    bgcolor: "#fff",
     minHeight: "100vh",
-    py: 6,
-    px: { xs: 2, md: 8 },
+    position: "relative",
+    overflow: "hidden",
+
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      width: 500,
+zIndex:-11,
+      height: 500,
+      bgcolor: "#F3EDFF",
+      borderRadius: "50%",
+      top: -220,
+      right: -180,
+    },
+
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      width: 350,
+      height: 350,
+zIndex:-11,
+      bgcolor: "#F8F5FF",
+      borderRadius: "45% 55% 60% 40%",
+      bottom: -120,
+      left: -100,
+    },
   }}
 >
-  <Box textAlign="center" mb={8}>
-    <Typography
-      variant="h3"
-      sx={{
-        color: "#3E1A89",
-        fontWeight: 800,
-        mb: 2,
-      }}
-    >
-      Powerbites Enterprises
-    </Typography>
+<Typography
+    sx={{
+        fontSize:{
+            xs:42,
+            md:64
+        },
+        fontWeight:900,
+zIndex:134,
+        letterSpacing:-2
+    }}
+>
+Powerbites
+</Typography>
 
-    <Typography
-      variant="h6"
-      sx={{
-        maxWidth: 800,
-        mx: "auto",
-        color: "#3E1A89",
-        opacity: 0.8,
-      }}
-    >
-      Delivering quality, trust, and excellence through certified
-      homemade food products and customer-focused services.
-    </Typography>
-  </Box>
+<Typography
+sx={{
+    mt:2,
+    opacity:.85,
+    fontSize:20,
+    maxWidth:650
+}}
+>
+  Delivering quality, trust, and excellence through certified homemade food products and customer-focused services.
+</Typography>
+<Box
+sx={{
+    bgcolor:"#F8F5FF",
 
-  <Box mb={8}>
-    <Typography
-      variant="h4"
-      sx={{
-        color: "#3E1A89",
-        fontWeight: 700,
-        mb: 3,
-      }}
-    >
-      About Us
-    </Typography>
+    p:6,
 
-    <Typography
-      sx={{
-        color: "#3E1A89",
-        fontSize: "1.05rem",
-        lineHeight: 1.9,
-      }}
-    >
-      Powerbites Enterprises is committed to delivering quality food
-      products while maintaining the highest standards of safety,
-      hygiene, and customer satisfaction. Our mission is to provide
-      authentic products backed by industry certifications and
-      transparent business practices.
-    </Typography>
-  </Box>
+    borderRadius:"24px 90px 24px 90px",
 
-  <Box mb={8}>
-    <Typography
-      variant="h4"
-      sx={{
-        color: "#3E1A89",
-        fontWeight: 700,
-        mb: 3,
-      }}
-    >
-      Certifications & Compliance
-    </Typography>
+    border:"1px solid #EEE7FF",
 
-    <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
-      {company?.certification?.map((cert) => (
-        <Box
-          key={cert}
-          sx={{
-            px: 3,
-            py: 1.5,
-            borderRadius: 3,
-            bgcolor: "#3E1A89",
-            color: "#fff",
-            fontWeight: 600,
-          }}
-        >
-          {cert}
-        </Box>
-      ))}
-    </Stack>
+    boxShadow:"0 15px 50px rgba(62,26,137,.08)",
 
-    <Box
-      sx={{
-        mt: 3,
-        p: 3,
-        border: "2px solid #3E1A89",
-        borderRadius: 4,
-      }}
-    >
-      <Typography sx={{ color: "#3E1A89", fontWeight: 700 }}>
-        Business License
-      </Typography>
+    position:"relative",
 
-      <Typography sx={{ color: "#3E1A89", mt: 1 }}>
-        {company?.licence || "Not Available"}
-      </Typography>
-    </Box>
-  </Box>
+    overflow:"hidden",
 
-  <Box mb={8}>
-    <Typography
-      variant="h4"
-      sx={{
-        color: "#3E1A89",
-        fontWeight: 700,
-        mb: 3,
-      }}
-    >
-      Gallery
-    </Typography>
+    "&::before":{
+        content:'""',
+        position:"absolute",
+        width:250,
+        height:250,
+zIndex:-11,
+        bgcolor:"#EFE7FF",
+        borderRadius:"50%",
+        top:-120,
+        right:-120
+    }
+}}
+><Typography variant="h4" sx={{ color: "#3E1A89", fontWeight: 700, mb: 3, }} > About Us </Typography>
 
-    <Typography sx={{ color: "#3E1A89", mb: 3 }}>
-      Explore our products, facilities, and achievements through our
-      company gallery.
-    </Typography>
+  <Typography variant="body1" color="initial">
+    Powerbites Enterprises is committed to delivering quality food products while maintaining the highest standards of safety, hygiene, and customer satisfaction. Our mission is to provide authentic products backed by industry certifications and transparent business practices.
+  </Typography>
+<Box
+sx={{
+height:120,
+zIndex:-11,
+bgcolor:"#F8F5FF",
 
-    <Box
-      sx={{
-        height: 300,
-        borderRadius: 5,
-        border: "2px dashed #3E1A89",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <ImageList variant='masonry' src={company?.image || "/upload/.jpeg"} cols={3} gap={4}/>
-    </Box>
-  </Box>
+borderRadius:"120px 120px 0 0",
+
+mt:-4,
+
+mb:-4
+}}
+/>
+              {company?.certification?.map((cert) => (
+                <Chip
+                  key={cert}
+                  label={cert}
+                  sx={{
+                    bgcolor: "#3E1A89",
+                    color: "#fff",
+
+                    fontWeight: 700,
+                    my: 1,
+                    px: 1,
+
+                    height: 46,
+
+                    borderRadius: "18px 40px 18px 40px",
+
+                    boxShadow: "0 12px 25px rgba(62,26,137,.25)",
+
+                    transition: ".3s",
+
+                    "&:hover": { transform: "translateY(-5px) rotate(-2deg)" },
+                  }}
+                />
+              ))}
+
+<Box
+sx={{
+
+mt:5,
+
+p:5,
+
+bgcolor:"#fff",
+
+borderRadius:"60px 18px 60px 18px",
+
+border:"2px dashed #3E1A89",
+
+position:"relative",
+
+boxShadow:"0 20px 60px rgba(62,26,137,.08)",
+
+"&::before":{
+content:'""',
+position:"absolute",
+width:70,
+height:70,
+borderRadius:"50%",
+bgcolor:"#F3EDFF",
+top:-20,
+right:-20
+}
+
+}}
+>
+  <Typography sx={{ color: "#3E1A89", fontWeight: 700 }}> Business License </Typography> <Typography sx={{ color: "#3E1A89", mt: 1 }}> {company?.licence || "Not Available"} </Typography>
+<Box
+sx={{
+position:"absolute",
+
+width:120,
+
+height:120,
+zIndex:-11,
+
+borderRadius:"50%",
+
+bgcolor:"rgba(62,26,137,.05)",
+
+bottom:-40,
+
+right:-40
+}}
+/>
+
+</Box>
+</Box>
   
   <Box
     sx={{
@@ -326,6 +366,6 @@ export default function About() {
     </Stack>
   </Box>
 </Box>
-    </Box>
+</Box> 
   )
 }

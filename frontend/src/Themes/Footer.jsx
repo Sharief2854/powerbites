@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Container,
@@ -17,11 +17,26 @@ import YouTubeIcon from "@mui/icons-material/YouTube";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-// import { getInfo } from "../Redux/Slices/AdminSlice/CompanyInfoSlice";
 import api from "../api/axiosConfig";
+import { Category } from "@mui/icons-material";
 
 export default function AboutAndFooter({company}) {
 
+  const [categories, setCategories] = useState([])
+  const getCategories = async () => {
+      try {
+        const response = await api.get("/category/allCategories");
+  
+        setCategories(p=>response?.data?.categories?.filter((cat)=>cat.isAvailable===true) || []);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+  useEffect(() => {
+    getCategories();
+  }, []);
+
+  
   return (
     <>
       <Box
@@ -64,19 +79,6 @@ export default function AboutAndFooter({company}) {
                 {company?.companyName}
               </Typography>
 
-              <Typography
-                sx={{
-                  color: "text.secondary",
-                  lineHeight: 1.8,
-                  mb: 2,
-                  fontSize: "1rem",
-                }}
-              >
-                We prepare delicious homemade snacks and sweets using quality
-                ingredients, traditional recipes, and a lot of care. Every item
-                is made fresh to bring you authentic taste and comfort in every
-                bite.
-              </Typography>
 
               <Typography
                 sx={{
@@ -141,8 +143,8 @@ export default function AboutAndFooter({company}) {
                   fontSize: "0.95rem",
                 }}
               >
-                Freshly prepared homemade snacks and sweets crafted with care,
-                quality ingredients, and traditional flavor for every home.
+                
+                {company?.companyDescription}
               </Typography>
             </Grid>
 
@@ -180,34 +182,14 @@ export default function AboutAndFooter({company}) {
                 Categories
               </Typography>
               <Stack spacing={1}>
-                <Link
+                {categories?.map((category) =>(<Link
                   href="/customer/products"
                   underline="none"
                   color="secondary.main"
+                  key={category._id}
                 >
-                  Snacks
-                </Link>
-                <Link
-                  href="/customer/products"
-                  underline="none"
-                  color="secondary.main"
-                >
-                  Sweets
-                </Link>
-                <Link
-                  href="/customer/products"
-                  underline="none"
-                  color="secondary.main"
-                >
-                  Healthy Bars
-                </Link>
-                <Link
-                  href="/customer/products"
-                  underline="none"
-                  color="secondary.main"
-                >
-                  Gift Packs
-                </Link>
+                  {category.name}
+                </Link>))}
               </Stack>
             </Grid>
 
@@ -238,7 +220,7 @@ export default function AboutAndFooter({company}) {
                 <Typography
                   sx={{ color: "secondary.main", fontSize: "0.95rem" }}
                 >
-                  Address: Hyderabad, India
+                  Address:{company?.customFields?.address}
                 </Typography>
                 {company?.licence && (
                   <Typography
