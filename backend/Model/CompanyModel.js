@@ -53,7 +53,7 @@ const companySchema = new mongoose.Schema(
       key: String,
       value: String,
     }
-  ]
+  ],
 
     customFields: {
       type:Object,
