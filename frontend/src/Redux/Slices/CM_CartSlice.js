@@ -55,6 +55,7 @@ const cartSlice = createSlice({
   initialState: {
     items: [],
     cartValue: 0,
+    totals: null,
     status: "idle",
     error: null,
   },
@@ -66,7 +67,12 @@ const cartSlice = createSlice({
     },
     clearCart: (state) => {
       state.items = [];
+      state.totals = null;
       state.cartValue = 0;
+    },
+      allApplyCoupon: (state, action) => {
+      state.items = action.payload.products;
+      state.totals = action.payload.totals;
     },
   },
     extraReducers: (builder) => {
@@ -78,6 +84,7 @@ const cartSlice = createSlice({
         .addCase(getItems.fulfilled, (state, action) => {
           state.status = "succeeded";
           state.items = action.payload;
+          state.totals = null; // Reset totals when fetching fresh cart
           state.cartValue = action.payload.reduce(
             (sum, item) => sum + item.quantity,
             0,
@@ -134,5 +141,5 @@ const cartSlice = createSlice({
   },
 });
 
-export const { clearCart, addValue } = cartSlice.actions;
+export const { clearCart, addValue,allApplyCoupon } = cartSlice.actions;
 export default cartSlice.reducer;

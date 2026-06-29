@@ -57,6 +57,7 @@ import {
   getItems,
   removeCartItem,
   updateCartQuantity,
+  allApplyCoupon,
   // removeCouponFromCart,
 } from "../../../Redux/Slices/CM_CartSlice";
 import PaymentButton from "../Payments/PaymentButton";
@@ -512,6 +513,7 @@ function AddressModal({
 export default function CustomerCart() {
   const cartItems = useSelector((state) => state.cart.items);
   const cartStatus = useSelector((state) => state.cart.status);
+  const cartTotals = useSelector((state) => state.cart.totals);
   const quantity = useSelector((state) => state.cart.cartValue);
 
   let token = localStorage.getItem("token");
@@ -553,7 +555,8 @@ export default function CustomerCart() {
 
   const handleRemoveCoupon = async () => {
     try {
-      // await api.post("/cart/remove-coupon");
+      let res = await api.delete("/cart/remove-coupon");
+      console.log("here", res.data);
       dispatch(getItems());
     } catch (error) {
       console.error("Failed to remove coupon:", error);
@@ -561,27 +564,24 @@ export default function CustomerCart() {
     // dispatch(removeCouponFromCart());
     enqueueSnackbar("Coupon removed!", { variant: "info" });
   };
-  const subtotal = cartItems.reduce((total, item) => {
-    const priceInPaise = Math.round(Number(item?.product?.price) * 100);
-    return total + priceInPaise * item?.quantity;
-  }, 0);
-  console.log(cartItems);
+  const subtotal =
+    cartTotals?.subtotal * 100 ||
+    cartItems.reduce((total, item) => {
+      const priceInPaise = Math.round(Number(item?.cartTotal) * 100);
+      return total + priceInPaise * item?.quantity;
+    }, 0);
 
-  const couponDiscount =
-    cartItems[0]?.coupon &&
-    Math.floor(subtotal / 100) >= cartItems[0]?.coupon.min_order_value
-      ? Math.min(
-          (subtotal * cartItems[0]?.coupon.discount) / 100,
-          cartItems[0]?.coupon.max_discount,
-        )
-      : 0;
+  const couponDiscount = cartTotals?.totalDiscount || 0;
 
-  const shipping = subtotal >= 1000 ? 0 : 999;
+  const shipping = subtotal / 100 >= 1000 ? 0 : 999;
 
   const formatPrice = (amountInPaise) => (amountInPaise / 100).toFixed(2);
 
-  const grandTotal = subtotal + shipping - couponDiscount * 100;
-  console.log(couponDiscount, formatPrice(subtotal), shipping, grandTotal);
+  const grandTotal = cartTotals
+    ? cartTotals.finalTotal * 100
+    : subtotal + shipping;
+
+  console.log(cartTotals, couponDiscount, formatPrice(subtotal), shipping, grandTotal);
 
   async function getCoupons() {
     try {
@@ -717,7 +717,6 @@ export default function CustomerCart() {
 
   useEffect(() => {
     dispatch(getItems())
-  
   }, [])
   
 
@@ -1277,48 +1276,47 @@ console.log(cartStatus);
                   />
                 </Box>
 
-                {cartItems[0].coupon && (
+                {cartItems[0]?.coupon && (
                   <Box
                     sx={{
                       p: 1.5,
                       borderRadius: 2,
                       bgcolor: "#f1f8e9",
                       border: "1px solid #c5e1a5",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
                     }}
                   >
-                    <Box>
-                      <Typography
-                        variant="body2"
-                        fontWeight={700}
-                        color="success.main"
-                      >
-                        Coupon Applied: {cartItems[0].coupon.code}
-                      </Typography>
-
-                      <Typography variant="caption" color="text.secondary">
-                        {cartItems[0].coupon.discount}% OFF
-                      </Typography>
-
-                      <Typography
-                        variant="body2"
-                        color="success.main"
-                        fontWeight={600}
-                      >
-                        - ₹{couponDiscount}
-                      </Typography>
-                    </Box>
-
-                    <Button
-                      size="small"
-                      color="error"
-                      variant="outlined"
-                      onClick={handleRemoveCoupon}
-                    >
-                      Remove
-                    </Button>
+                    <Grid container spacing={1} alignItems="center">
+                      <Grid size={{ xs: 8, sm: 8 }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight={700}
+                          color="success.dark"
+                        >
+                          Coupon Applied: {cartItems[0].coupon.code}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {cartItems[0].coupon.discount}% OFF
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="success.dark"
+                          fontWeight={600}
+                        >
+                          - ₹{couponDiscount.toFixed(2)}
+                        </Typography>
+                      </Grid>
+                      <Grid size={{ xs: 4, sm: 4 }} sx={{ textAlign: "right" }}>
+                        <Button
+                          size="small"
+                          color="error"
+                          variant="outlined"
+                          onClick={handleRemoveCoupon}
+                          sx={{ textTransform: "none" }}
+                        >
+                          Remove
+                        </Button>
+                      </Grid>
+                    </Grid>
                   </Box>
                 )}
                 <Box

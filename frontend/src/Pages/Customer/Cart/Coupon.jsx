@@ -11,14 +11,15 @@ import {
   Divider,
   Grid,
 } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { enqueueSnackbar, SnackbarProvider } from "notistack";
 import { useEffect, useRef, useState } from "react";
 import api from "../../../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { getItems } from "../../../Redux/Slices/CM_CartSlice";
+import { allApplyCoupon, getItems } from "../../../Redux/Slices/CM_CartSlice";
 
-export default function Coupon({ setOpen, applyCoupon }) {
+export default function Coupon() {
   const [couponData, setCouponList] = useState([]);
 
   const [couponCode, setCouponCode] = useState("");
@@ -57,10 +58,13 @@ const couponList = couponData?.filter((c) => {
     try {
       let res = await api.post("/cart/apply-coupon", { couponCode: couponCode });
       navigate("/customer/cart");
-    } catch (error) {
-      console.log(error.message);
+      console.log(res.data);
       
-      enqueueSnackbar(`${error.message}`, {
+      dispatch(allApplyCoupon(res.data));
+
+    } catch (error) {
+      console.log(error?.message);
+      enqueueSnackbar(`${response?.message}`, {
         variant: "error",
       });
     }
@@ -70,7 +74,20 @@ const couponList = couponData?.filter((c) => {
   }, []);
 
   return (
-    <Box>
+    <Box sx={{ p: { xs: 2, md: 3 } }}>
+      <Button
+        variant="outlined"
+        startIcon={<ArrowBackIcon />}
+        onClick={() => navigate("/customer/cart")}
+        sx={{
+          mb: 3,
+          textTransform: "none",
+          fontWeight: 600,
+          borderRadius: 2,
+        }}
+      >
+        Back to Cart
+      </Button>
       <Box
         sx={{ display: "flex", justifyContent: "center", mb: 3, width: "100%" }}
       >
@@ -255,17 +272,15 @@ const couponList = couponData?.filter((c) => {
 </Typography>
         <Grid container spacing={2}>
           {couponList?.map((coupon) => (
-          <Grid size={{ xs: 12, md: 4 }}>
+          <Grid key={coupon._id} size={{ xs: 12, md: 4 }}>
         
             <Box
   key={coupon._id}
   onClick={() => handleCouponSelect(coupon)}
   sx={{
     position: "relative",
-    overflow: "hidden",
-    height:300,
     cursor: "pointer",
-    p: 2.5,
+    p: 3,
     borderRadius: "20px",
     background:
       "linear-gradient(135deg, #b7a3e2 0%, #3e3d3f 100%)",
@@ -301,9 +316,8 @@ const couponList = couponData?.filter((c) => {
   }}
 >
   <Grid container spacing={1}
-  sx={{justifyContent:'space-between'}}
-  >
-    <Grid size={{ xs: 12, md: 3 }}>
+  sx={{justifyContent:'space-between', alignItems: 'center'}}>
+    <Grid item xs={7} sm={8}>
       <Typography
         sx={{
           fontSize: 13,
@@ -347,15 +361,14 @@ const couponList = couponData?.filter((c) => {
       </Typography>
     </Grid>
 
-    <Grid size={{ xs: 12, md: 6 }}
+    <Grid item xs={5} sm={4}
       sx={{
         bgcolor: "#fff",
         color: "#3E1A89",
         px: 2,
         py: 1,
         borderRadius: "16px",
-        minWidth: 100,
-        maxHeight:100
+        textAlign: 'center'
       }}
     >
       <Typography
