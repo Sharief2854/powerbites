@@ -13,7 +13,6 @@ function LandingPage() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Dispatch the thunks to fetch data when the component mounts
     dispatch(fetchCompanyInfo());
     dispatch(fetchBanners());
   }, [dispatch]);

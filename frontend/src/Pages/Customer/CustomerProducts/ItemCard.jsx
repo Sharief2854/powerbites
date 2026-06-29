@@ -6,9 +6,16 @@ import {
   CardContent,
   Chip,
   Typography,
+  Divider,
+  Grid,
+  Stack,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { PrimaryButton } from "../../../Components/Common/Buttons";
+import LocalOfferRoundedIcon from "@mui/icons-material/LocalOfferRounded";
+import CategoryRoundedIcon from "@mui/icons-material/CategoryRounded";
+import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
 
 export default function ItemCard({
   currentImage,
@@ -166,31 +173,166 @@ export default function ItemCard({
         >
           {item.description}
         </Typography>
-
         <Box
           sx={{
-            mt: "auto",
-            textAlign: "center",
+            mt: 2,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
           }}
         >
-          <Typography
+          <Stack
+            direction="row"
+            spacing={1}
+            justifyContent="center"
+            flexWrap="wrap"
+            useFlexGap
+          >
+            <Chip
+              icon={<CategoryRoundedIcon />}
+              label={item.category?.name}
+              sx={{
+                bgcolor: "#3E1A89",
+                color: "#fff",
+                fontWeight: 700,
+                borderRadius: "10px",
+                "& .MuiChip-icon": { color: "#fff" },
+              }}
+            />
+
+            {item.discount > 0 && (
+              <Chip
+                icon={<LocalOfferRoundedIcon />}
+                label={`${item.discount}% OFF`}
+                sx={{
+                  bgcolor: "#FFF3E0",
+                  color: "#3E1A89",
+                  fontWeight: 700,
+                  border: "1px solid #3E1A89",
+                }}
+              />
+            )}
+          </Stack>
+
+          <Grid container spacing={1.5}>
+            <Grid size={6}>
+              <Box
+                sx={{
+                  bgcolor: "#F8F5FF",
+                  borderRadius: 3,
+                  p: 1.5,
+                  textAlign: "center",
+                  border: "1px solid rgba(62,26,137,.08)",
+                }}
+              >
+                <Inventory2RoundedIcon sx={{ color: "#3E1A89", mb: 0.5 }} />
+                <Typography
+                  variant="caption"
+                  display="block"
+                  color="text.secondary"
+                >
+                  Stock
+                </Typography>
+                <Typography fontWeight={800} color="#3E1A89">
+                  {item.stock}
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid size={6}>
+              <Box
+                sx={{
+                  bgcolor: "#F8F5FF",
+                  borderRadius: 3,
+                  p: 1.5,
+                  textAlign: "center",
+                  border: "1px solid rgba(62,26,137,.08)",
+                }}
+              >
+                <StarRoundedIcon sx={{ color: "#FFC107", mb: 0.5 }} />
+                <Typography
+                  variant="caption"
+                  display="block"
+                  color="text.secondary"
+                >
+                  Rating
+                </Typography>
+                <Typography fontWeight={800} color="#3E1A89">
+                  {item.rating || "New"}
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+
+          <Divider />
+
+          <Box
             sx={{
-              fontSize: "1.6rem",
-              fontWeight: 800,
-              color: "#3E1A89",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              bgcolor: "#3E1A89",
+              color: "#fff",
+              borderRadius: 3,
+              p: 2,
+              boxShadow: "0 8px 20px rgba(62,26,137,.25)",
             }}
           >
-            ₹{item.price}
-          </Typography>
-          {/* 
-      <Typography
-        sx={{
-          color: "#9CA3AF",
-          fontSize: ".85rem",
-        }}
-      >
-        {item.stock}
-      </Typography> */}
+            <Box>
+              <Typography
+                variant="caption"
+                sx={{
+                  opacity: 0.8,
+                }}
+              >
+                Final Price
+              </Typography>
+
+              <Box display="flex" alignItems="center" gap={1}>
+                {item.discount > 0 && (
+                  <Typography
+                    sx={{
+                      textDecoration: "line-through",
+                      opacity: 0.7,
+                      fontSize: ".9rem",
+                    }}
+                  >
+                    ₹{item.price}
+                  </Typography>
+                )}
+
+                <Typography
+                  sx={{
+                    fontSize: "2rem",
+                    fontWeight: 900,
+                    lineHeight: 1,
+                  }}
+                >
+                  ₹
+                  {item.discount
+                    ? (item.price - (item.price * item.discount) / 100).toFixed(
+                        0,
+                      )
+                    : item.price}
+                </Typography>
+              </Box>
+            </Box>
+
+            {item.discount > 0 && (
+              <Box
+                sx={{
+                  bgcolor: "#fff",
+                  color: "#3E1A89",
+                  px: 2,
+                  py: 0.8,
+                  borderRadius: "999px",
+                  fontWeight: 800,
+                }}
+              >
+                SAVE {item.discount}%
+              </Box>
+            )}
+          </Box>
         </Box>
       </CardContent>
 
