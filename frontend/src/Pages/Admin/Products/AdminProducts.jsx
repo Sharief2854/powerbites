@@ -410,7 +410,7 @@ console.log(category);
       }
       closeAddProductModal();
     } catch (error) {
-      console.log(error);
+      console.log(error.message);
       enqueueSnackbar("Failed to add Product, Please try again", {
         variant: "error",
       });
@@ -510,7 +510,7 @@ console.log(category);
     <Box
       sx={{
         margin: "auto",
-        padding: "20px",
+        p:'1px',
         position: "relative",
         width: "100%",
         backgroundColor: "white",

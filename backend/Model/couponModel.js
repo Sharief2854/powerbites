@@ -13,7 +13,6 @@ const couponSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "users",
-        required: true
     },
     min_order_value: {
         type: Number,

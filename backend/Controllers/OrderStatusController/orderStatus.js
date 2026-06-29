@@ -1,4 +1,7 @@
 const ordersModel = require("../../Model/orderModel");
+const { getIo } = require("../../socket"); // We will create this helper
+const razorpay = require("../../config/razorpayConfig");
+const RefundModel = require("../../Model/refundModel");
 const transporter = require("../../config/emailConfig");
 
 async function updateOrderStatus(req, res) {
@@ -347,7 +350,6 @@ async function updateOrderStatus(req, res) {
 }
 
 //customer cancelling the order
-
 async function customerCancellingOrder(req, res) {
     try {
         const orderId = req.params.id;
@@ -368,33 +370,81 @@ async function customerCancellingOrder(req, res) {
             });
         }
 
-        // prevent cancellation after shipping
-        if (["order shipped", "order delivered"].includes(order.orderStatus)) {
+        // prevent cancelling an already cancelled order
+        if (order.orderStatus === "order cancelled") {
             return res.status(400).json({
-                message: "Order cannot be cancelled at this stage"
+                message: "Order is already cancelled"
+            });
+        }
+        const originalStatus = order.orderStatus;
+
+        // prevent cancellation after shipping
+        const hasBeenShipped = order.historyStatuses?.some(s => ["order shipped", "order delivered"].includes(s.toLowerCase()));
+
+        if (hasBeenShipped) {
+            return res.status(400).json({
+                message: "Order cannot be cancelled as it has already been processed for shipping."
             });
         }
 
         const reason = req.body.reason || "Cancelled by customer";
 
-        order.orderStatus = "order cancelled";
-        order.cancelledBy = "customer";
-        order.cancelReason = reason;
-        order.cancelledAt = new Date();
+        // --- Refund Logic ---
+        let refundAmount = order.final_price;
+        let cancellationFee = 0;
+
+        // Deduct 1/3 if cancelled after preparation has started
+        if (originalStatus === "preparing order") {
+            cancellationFee = Math.round(order.final_price / 3);
+            refundAmount = order.final_price - cancellationFee;
+        }
+
+        let refund = null;
+        if (refundAmount > 0 && order.paymentID) { // Check for paymentID before attempting refund
+            try {
+                refund = await razorpay.payments.refund(order.paymentID, {
+                    amount: Math.round(refundAmount * 100), // Amount in paise (must be an integer)
+                    speed: "normal",
+                    notes: {
+                        reason: `Customer cancellation: ${reason}`,
+                        order_id: orderId,
+                        cancellation_fee: cancellationFee
+                    }
+                });
+            } catch (refundError) {
+                console.error("Razorpay refund failed:", refundError);
+                return res.status(500).json({ message: "Refund processing failed. Please contact support.", error: refundError.message });
+            }
+
+            // Create a new record in the Refund collection
+            await RefundModel.create({
+                order: orderId,
+                paymentId: order.paymentID,
+                refundId: refund.id,
+                amount: refundAmount,
+                cancellationFee: cancellationFee,
+                notes: refund.notes
+            });
+        }
+        // --- End Refund Logic ---
 
         await ordersModel.updateOne(
             { _id: orderId },
             {
                 $set: {
-                    orderStatus: "order cancelled",
-                    cancelledBy: "customer",
-                    cancelReason: reason,
-                    cancelledAt: new Date()
+                orderStatus: "refund pending",
+                cancelledBy: "customer",
+                cancelReason: reason,
+                cancelledAt: new Date(),
+                refundId: refund ? refund.id : null,
+                refundAmount: refundAmount,
+                cancellationFee: cancellationFee,
+                    $push: { historyStatuses: "order cancelled" } // Add to history
                 }
             }
         );
 
-
+        const updatedOrder = await ordersModel.findById(orderId);
 
         let productsHtml = "";
 
@@ -460,6 +510,16 @@ async function customerCancellingOrder(req, res) {
                     ${reason}
                 </div>
 
+                <div style="background:#fffbe6; border-left:5px solid #f59e0b; padding:10px; margin:15px 0;">
+                    <p style="margin:0;"><b>Original Amount:</b> ₹${order.final_price.toLocaleString()}</p>
+                    ${cancellationFee > 0 ? `<p style="margin:5px 0; color: #b45309;"><b>Cancellation Fee:</b> - ₹${cancellationFee.toLocaleString()}</p>` : ''}
+                    <p style="margin:5px 0 0 0; font-weight:bold;">
+                        Refunded Amount: ₹${refundAmount.toLocaleString()}
+                    </p>
+                </div>
+
+
+
                 <h3>Products</h3>
                 ${productsHtml}
 
@@ -501,9 +561,17 @@ async function customerCancellingOrder(req, res) {
             html
         });
 
+        // Emit a socket event for real-time update
+        getIo().emit("orderUpdate", updatedOrder);
+
         res.json({
-            message: "Order cancelled and email sent successfully",
-            order
+            message: "Order cancelled successfully. A refund has been initiated.",
+            order: updatedOrder,
+            refundDetails: {
+                paidAmount: order.final_price,
+                cancellationFee: cancellationFee,
+                refundedAmount: refundAmount
+            }
         });
 
     } catch (error) {
@@ -528,7 +596,7 @@ async function cancelOrderByAdmin(req, res) {
         const order = await ordersModel.findById(orderId)
             .populate("customer")
             .populate("products.product")
-            .populate("address");
+            .populate("shippingAddress");
 
         if (!order) {
             return res.status(404).json({
@@ -544,23 +612,53 @@ async function cancelOrderByAdmin(req, res) {
 
         const reason = req.body.reason || "Cancelled by admin";
 
+        // --- Full Refund Logic for Admin Cancellation ---
+        let refundAmount = order.final_price;
+        let refund = null;
 
-        order.orderStatus = "order cancelled";
-        order.cancelledBy = "admin";
-        order.cancelReason = reason;
-        order.cancelledAt = new Date();
+        if (refundAmount > 0 && order.paymentID) {
+            try {
+                refund = await razorpay.payments.refund(order.paymentID, {
+                    amount: Math.round(refundAmount * 100), // Amount in paise (must be an integer)
+                    speed: "normal",
+                    notes: {
+                        reason: `Admin cancellation: ${reason}`,
+                        order_id: orderId
+                    }
+                });
+            } catch (refundError) {
+                console.error("Razorpay refund failed (Admin):", refundError);
+                return res.status(500).json({ message: "Refund processing failed. Please contact support.", error: refundError.message });
+            }
+
+            // Create a new record in the Refund collection for admin cancellation
+            await RefundModel.create({
+                order: orderId,
+                paymentId: order.paymentID,
+                refundId: refund.id,
+                amount: refundAmount,
+                cancellationFee: 0,
+                notes: refund.notes
+            });
+        }
+        // --- End Refund Logic ---
 
         await ordersModel.updateOne(
             { _id: orderId },
             {
-                $set: {
-                    orderStatus: "order cancelled",
-                    cancelledBy: "customer",
-                    cancelReason: reason,
-                    cancelledAt: new Date()
-                }
+                orderStatus: "refund pending",
+                cancelledBy: "admin",
+                cancelReason: reason,
+                cancelledAt: new Date(),
+                refundId: refund ? refund.id : null,
+                refundAmount: refundAmount,
+                cancellationFee: 0, // No fee for admin cancellation
+                $push: { historyStatuses: "order cancelled" }
             }
         );
+
+        // Fetch the fully updated order to return in the response
+        const updatedOrder = await ordersModel.findById(orderId);
 
         let productsHtml = "";
 
@@ -639,6 +737,12 @@ async function cancelOrderByAdmin(req, res) {
                     ${reason}
                 </div>
 
+                <!-- REFUND DETAILS -->
+                <div style="background:#e6f7ff; border-left:5px solid #007bff; padding:10px; margin:15px 0;">
+                    <p style="margin:0; font-weight:bold;">A full refund of ₹${refundAmount.toLocaleString()} has been processed.</p>
+                    ${refund ? `<p style="margin:5px 0 0 0; font-size:12px; color:#555;">Refund ID: ${refund.id}</p>` : ''}
+                </div>
+
                 <!-- PRODUCTS -->
                 <h3>Products</h3>
                 ${productsHtml}
@@ -691,9 +795,17 @@ async function cancelOrderByAdmin(req, res) {
             });
         }
 
+        // Emit a socket event for real-time update
+        getIo().emit("orderUpdate", updatedOrder);
+
         return res.status(200).json({
             message: "Order cancelled by admin and email sent successfully",
-            order
+            order: updatedOrder,
+            refundDetails: {
+                paidAmount: order.final_price,
+                cancellationFee: 0,
+                refundedAmount: refundAmount
+            }
         });
 
     } catch (error) {
@@ -708,4 +820,4 @@ async function cancelOrderByAdmin(req, res) {
 
 
 
-module.exports = { updateOrderStatus, customerCancellingOrder, cancelOrderByAdmin }
+module.exports = { updateOrderStatus, customerCancellingOrder, cancelOrderByAdmin };

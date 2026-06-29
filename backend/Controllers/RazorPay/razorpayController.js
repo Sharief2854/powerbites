@@ -1,11 +1,13 @@
 const crypto = require("crypto");
 const razorpay = require("../../config/razorpayConfig");
 const cartModel = require("../../Model/cartModel");
+const { getIo } = require("../../socket");
 const ordersModel = require("../../Model/orderModel");
 const ProductModel = require("../../Model/ProductModel");
 const couponModel = require("../../Model/couponModel");
 const dealsModel = require("../../Model/dealsModel");
 const addressModel = require("../../Model/addressModel");
+const TransactionModel = require("../../Model/transactionModel");
 
 const createOrder = async (req, res) => {
     try {
@@ -158,6 +160,7 @@ const verifyPayment = async (req, res) => {
 
             orderDetails.push({
                 product: product._id,
+                name: product.name,
                 price: product.price,
                 discount: product.discount || 0,
                 discounted_price: discountedPrice,
@@ -203,6 +206,17 @@ const verifyPayment = async (req, res) => {
         const createdOrder = await ordersModel.create(orderData);
         await cartModel.deleteMany({ customer: req.userId });
 
+        // Create a transaction history record
+        await TransactionModel.create({
+            customer: req.userId,
+            order: createdOrder._id,
+            paymentId: razorpay_payment_id,
+            razorpayOrderId: razorpay_order_id,
+            signature: razorpay_signature,
+            amount: finalPrice,
+            status: 'success'
+        });
+
         return res.json({
             success: true,
             message: "Payment Verified",
@@ -216,4 +230,106 @@ const verifyPayment = async (req, res) => {
     }
 };
 
-module.exports = { createOrder, verifyPayment };
+const handleWebhook = async (req, res) => {
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    const signature = req.headers["x-razorpay-signature"];
+
+    try {
+        // 1. Validate the webhook signature
+        const shasum = crypto.createHmac("sha256", secret);
+        shasum.update(JSON.stringify(req.body));
+        const digest = shasum.digest("hex");
+
+        if (digest !== signature) {
+            return res.status(400).json({ status: "Signature is not valid" });
+        }
+
+        const event = req.body.event;
+        const payload = req.body.payload;
+
+        // 2. Handle the 'refund.processed' event
+        if (event === 'refund.processed') {
+            const refundEntity = payload.refund.entity;
+            const orderIdFromNotes = refundEntity.notes?.order_id;
+
+            if (orderIdFromNotes) {
+                const order = await ordersModel.findById(orderIdFromNotes);
+
+                if (order && order.orderStatus !== 'refunded') {
+                    // 3. Update order status to 'refunded'
+                    order.orderStatus = 'refunded';
+                    if (!order.historyStatuses.includes('refunded')) {
+                        order.historyStatuses.push('refunded');
+                    }
+                    await order.save();
+
+                    // 4. Emit a WebSocket event to notify the frontend
+                    getIo().emit("orderUpdate", order);
+                    console.log(`Order ${orderIdFromNotes} status updated to refunded.`);
+                }
+            }
+        }
+
+        res.json({ status: "ok" });
+
+    } catch (error) {
+        console.error("Error handling Razorpay webhook:", error);
+        res.status(500).json({ status: "error", message: error.message });
+    }
+};
+
+const refundPayment = async (req, res) => {
+    try {
+        const { orderId, amount } = req.body;
+
+        if (!orderId || !amount) {
+            return res.status(400).json({
+                success: false,
+                message: "orderId and amount are required.",
+            });
+        }
+
+        const refundAmount = Number(amount);
+        if (isNaN(refundAmount) || refundAmount <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid refund amount.",
+            });
+        }
+
+        const order = await ordersModel.findById(orderId);
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found." });
+        }
+
+        if (!order.paymentID) {
+            return res.status(400).json({ success: false, message: "Payment ID not found for this order." });
+        }
+
+        if (order.orderStatus === "refunded") {
+            return res.status(400).json({ success: false, message: "This order has already been refunded." });
+        }
+
+        // Initiate refund with Razorpay
+        const refund = await razorpay.payments.refund(order.paymentID, {
+            amount: refundAmount * 100, // Amount in paise
+            speed: "normal", // or "optimum"
+        });
+
+        if (!refund) {
+            return res.status(500).json({ success: false, message: "Refund initiation failed." });
+        }
+
+        // Update order status in your database
+        order.orderStatus = "refunded";
+        await order.save();
+
+        res.json({ success: true, message: "Refund processed successfully.", refund });
+
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+module.exports = { createOrder, verifyPayment, refundPayment, handleWebhook };
