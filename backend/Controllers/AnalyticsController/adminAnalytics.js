@@ -1,7 +1,7 @@
 
 const ordersModel = require("../../Model/orderModel");
+const ProductModel = require("../../Model/ProductModel");
 const userModel = require("../../Model/userModel"); // Points to updated model
-const ProductModel = require("../../Model/productModel"); // Points to updated model
 
 
 function getTimeBounds(year, timeframe) {
@@ -60,10 +60,9 @@ async function getDashboardSummary(req, res) {
             if (item._id) summary[item._id.toLowerCase().trim()] = item.count;
         });
 
-        // Fetch only the 10 most recent orders for the activity feed to improve performance
-        const recentOrders = await ordersModel.find(matchQuery)
+        // Fetch all orders for the given timeframe to allow for full frontend pagination
+        const allOrders = await ordersModel.find(matchQuery)
             .sort({ createdAt: -1 })
-            .limit(10)
             .populate("customer", "name email");
 
         return res.status(200).json({
@@ -77,7 +76,7 @@ async function getDashboardSummary(req, res) {
                 cancelledOrders: summary["order cancelled"] || 0
             },
             orderStatusSummary: summary,
-            orders: recentOrders.map(o => ({
+            orders: allOrders.map(o => ({
                 _id: o._id,
                 customerName: o.customer ? o.customer.name : 'Guest User',
                 customerEmail: o.customer ? o.customer.email : 'N/A',
