@@ -1,6 +1,7 @@
 const emailSender = require("../../Utils/emailSender");
 const userModel = require("../../Model/userModel");
 const otpModel = require("../../Model/otpModel");
+const bcrypt = require("bcrypt");
 const { generateAccessToken, generateRefreshToken } = require("../../Utils/TokenGenerator");
 
 
@@ -17,11 +18,6 @@ const { generateAccessToken, generateRefreshToken } = require("../../Utils/Token
 
         }
 
-        let email = body.email.token;
-        let password = body.password;
-                
-
-        
         if (!body.email || !body.password) {
             return res.status(400).json({
                 message: "email or password is missing"
@@ -37,12 +33,13 @@ const { generateAccessToken, generateRefreshToken } = require("../../Utils/Token
             })
         }
 
-        if (user.password !== body.password) {
+        const isMatch = await bcrypt.compare(body.password, user.password);
+        if (!isMatch) {
             return res.status(400).json({
                 message: "Invalid password"
-            })
-
+            });
         }
+
 
         if (user.isVerified === false) {
 
