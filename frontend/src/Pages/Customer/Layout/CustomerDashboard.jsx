@@ -17,7 +17,7 @@ function CustomerDashboard() {
   return (
     <div>
       <HomeNavbar company={company} />
-      <Outlet company={company}/>
+      <Outlet/>
     </div>
   )
 }

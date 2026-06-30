@@ -170,8 +170,9 @@ useEffect(() => {
           elevation={0}
           sx={{
             width: "100%",
+            height: { xs: "auto", md: '100%' },
             overflow: "hidden",
-            bgcolor: "primary.main",
+            background: activeBanner?.color || "linear-gradient(135deg, #5014d1 0%, #3e3d3f 100%)",
             boxShadow: "0 12px 35px rgba(0,0,0,0.10)",
             mt: 2,
           }}
@@ -201,6 +202,7 @@ useEffect(() => {
                   color: "primary.contrastText",
                   lineHeight: 1.1,
                   mb: 1,
+                  minHeight: { md: 120 },
                 }}
               >
                 {activeBanner?.title}
@@ -212,6 +214,7 @@ useEffect(() => {
                   fontWeight: 700,
                   color: "secondary.main",
                   mb: 3,
+                  minHeight: { md: 100 },
                 }}
               >
                 {activeBanner?.description}

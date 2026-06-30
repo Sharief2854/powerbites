@@ -395,32 +395,6 @@ export default function UpdateInfo() {
     },
 
     {
-      section: "Social Media",
-      fields: [
-        {
-          key: "socialMedia.instagram",
-          label: "Instagram",
-          type: "url",
-        },
-        {
-          key: "socialMedia.facebook",
-          label: "Facebook",
-          type: "url",
-        },
-        {
-          key: "socialMedia.twitter",
-          label: "Twitter",
-          type: "url",
-        },
-        {
-          key: "socialMedia.youtube",
-          label: "YouTube",
-          type: "url",
-        },
-      ],
-    },
-
-    {
       section: "Cerifications",
       fields: [
         {
@@ -472,6 +446,7 @@ const [loading, setLoading] = useState(false);
 const [openDelete, setOpenDelete] = useState(false);
 
   const { id } = useParams();
+  const [socials, setSocials] = useState([]);
   const navigate = useNavigate();
 
   const [customFields, setCustomFields]= useState([]);
@@ -493,7 +468,13 @@ const [openDelete, setOpenDelete] = useState(false);
     try {
       let res = await api.get("/company/get");
       let cD = res.data.data;
-      console.log(cD);
+      const fetchedCustomFields = cD?.customFields
+        ? Object.entries(cD.customFields).map(([key, value]) => ({ key, value }))
+        : [];
+      setCustomFields(fetchedCustomFields);
+
+      const fetchedSocials = cD?.socialMedia ?? [];
+      setSocials(fetchedSocials);
 
       setCompanyData({
         companyName: cD?.companyName,
@@ -503,22 +484,10 @@ const [openDelete, setOpenDelete] = useState(false);
         email: cD?.email,
         phone: cD?.phone,
         licence: cD?.licence,
-        socialMedia: {
-          instagram: cD?.socialMedia?.instagram || "",
-          facebook: cD?.socialMedia?.facebook || "",
-          linkedin: cD?.socialMedia?.linkedin || "",
-          twitter: cD?.socialMedia?.twitter || "",
-          youtube: cD?.socialMedia?.youtube || "",
-        },
         certification: (cD?.certification || []).map((item) => ({
   value: item,
 })),
-        customFields: cD?.customFields
-        ? Object.entries(cD.customFields).map(([key, value]) => ({
-            key,
-            value,
-          }))
-        : []
+        customFields: fetchedCustomFields,
       });
     } catch (error) {
       enqueueSnackbar("Server Crashed We Will Comeback Soon !!", {
@@ -568,51 +537,32 @@ formData.append("companyName", companyData.companyName || "");
       );
     }
 
-    formData.append(
-      "socialMedia",
-      JSON.stringify(companyData.socialMedia)
-    );
+    formData.append("socialMedia", JSON.stringify(socials));
 
     formData.append(
   "certification",
   JSON.stringify(
-    (companyData.certification || []).map(
-      (item) => item.value
-    )
+    (companyData.certification || []).map((item) => item.value)
   )
 );
 
-    const formattedCustomFields = (companyData.customFields || []).reduce(
-      (acc, item) => {
-        if (item.key?.trim()) {
-          acc[item.key] = item.value;
-        }
-        return acc;
-      },
-      {}
-    );
+    const formattedCustomFields = (customFields || []).reduce((acc, item) => {
+      if (item.key?.trim()) {
+        acc[item.key] = item.value;
+      }
+      return acc;
+    }, {});
 
-    formData.append(
-      "customFields",
-      JSON.stringify(formattedCustomFields)
-    );
+    formData.append("customFields", JSON.stringify(formattedCustomFields));
     formData.forEach((value, key) => {
       console.log(key, value);
     })
       let res;
 
       if (id === "add") {
-        res = await api.post("/company/add", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        res = await api.post("/company/add", formData);
       } else {
-        res = await api.put(`/company/update/${id}`, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        res = await api.put(`/company/update/${id}`, formData);
       }
 
       enqueueSnackbar(res.data.message, {
@@ -620,16 +570,18 @@ formData.append("companyName", companyData.companyName || "");
       });
       navigate("/admin/info");
     } catch (error) {
-      console.log(error.message);
+      console.log(error.response.data.message);
       
-      enqueueSnackbar(error.message, {
+      enqueueSnackbar(error.response.data.message, {
         variant: "error",
       });
     }
   };
 
   useEffect(() => {
-    getFields();
+    if(id != "add"){
+      getFields();
+    }
   }, []);
 
   return (
@@ -673,8 +625,69 @@ formData.append("companyName", companyData.companyName || "");
             </Grid>
           </Paper>
         ))}
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            mb: 3,
+            borderRadius: 4,
+          }}
+        >
+          <Typography variant="h6" fontWeight={700} color="#3E1A89" mb={3}>
+            Social Media
+          </Typography>
+          <Stack spacing={2} mt={2}>
+            {socials.map((social, index) => (
+              <Box key={index} display="flex" gap={2} sx={{ mb: 1, alignItems: 'center' }}>
+                <TextField
+                  label="Platform"
+                  value={social.platform}
+                  onChange={(e) => {
+                    const updated = [...socials];
+                    updated[index].platform = e.target.value;
+                    setSocials(updated);
+                  }}
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  label="URL"
+                  value={social.url}
+                  onChange={(e) => {
+                    const updated = [...socials];
+                    updated[index].url = e.target.value;
+                    setSocials(updated);
+                  }}
+                  sx={{ flex: 2, mr: '1px' }}
+                />
+                <IconButton
+                  color="error"
+                  onClick={() => {
+                    setSocials((prev) =>
+                      prev.filter((_, i) => i !== index)
+                    );
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Box>
+            ))}
+          </Stack>
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={() => {
+              setSocials((prev) => [
+                ...prev,
+                { platform: "", url: "" },
+              ]);
+            }}
+            sx={{ mt: 2, textTransform: 'none', fontWeight: 600 }}
+          >
+            Add Social Media
+          </Button>
+        </Paper>
         <Stack spacing={2} mb={2}>
-  {customFields.map((field, index) => (
+  {id != "add"  && customFields.map((field, index) => (
     <Box
       key={index}
       display="flex"
@@ -690,6 +703,7 @@ formData.append("companyName", companyData.companyName || "");
           setCustomFields(updated);
         }}
         fullWidth
+        sx={{mb:1,mr:1}}
       />
 
       <TextField
@@ -723,7 +737,7 @@ formData.append("companyName", companyData.companyName || "");
           mb={3}
           sx={{ width: "100%", justifyContent: "space-between" }}
         >
-          <Button
+          {id != "add"  && <Button
   variant="contained"
   onClick={() => {
     setCustomFields((prev) => [
@@ -738,7 +752,7 @@ formData.append("companyName", companyData.companyName || "");
   }}
 >
   + Add Custom Field
-</Button>
+</Button>}
 
 <Stack 
   direction="row"
