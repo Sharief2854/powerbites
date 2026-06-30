@@ -157,13 +157,16 @@ async function getCart(req, res) {
         let totalProductDiscount = 0;
         let finalTotal = 0;
 
-        const processedCart = cart.map(item => {
+        const validCartItems = cart.filter(item => item.product);
+
+        const processedCart = validCartItems.map(item => {
             const itemJson = item.toJSON();
 
             // Normalize coupon data for frontend
             if (itemJson.isUnified && itemJson.unifiedCoupon) {
                 itemJson.coupon = itemJson.unifiedCoupon;
             }
+            delete itemJson.unifiedCoupon; // Clean up for frontend
 
             // Calculate totals for each item
             if (item.product) {
