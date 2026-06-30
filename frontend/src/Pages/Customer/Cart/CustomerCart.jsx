@@ -577,7 +577,7 @@ export default function CustomerCart() {
   }
 
   const formatPrice = (amountInPaise) => (amountInPaise / 100).toFixed(2);
-  const shipping = formatPrice(subtotal) <= 1000 ? 0 : 999;
+  const shipping = formatPrice(subtotal) <= 1000 ? 0 : 0;
 
   const grandTotal =
     Number(formatPrice(subtotal)) +
