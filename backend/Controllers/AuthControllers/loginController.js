@@ -74,12 +74,19 @@ const { generateAccessToken, generateRefreshToken } = require("../../Utils/Token
         let refreshToken = generateRefreshToken(user);
 
         // cookie
+        // Set refresh token in an HTTP-only cookie for security
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // Only send over HTTPS in production
+            sameSite: 'strict',
+            maxAge: 5 * 60 * 1000 // 5 minutes
+        });
 
 
         res.status(200).json({
             message: "Login successful",
             token: accessToken,
-            refreshToken: refreshToken,
+            // Refresh token is now in an httpOnly cookie
             
         })
 
