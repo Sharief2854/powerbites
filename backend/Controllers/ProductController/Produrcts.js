@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const ProductModel = require("../../Model/ProductModel");
 const sendProductNotification = require("../../Utils/sendProductNotification");
 const ProductCategoryModel = require("../../Model/productCategoryModel")
@@ -172,26 +173,58 @@ async function updateProduct(req, res) {
 
 
 
+// async function deleteProduct(req, res) {
+
+//     try {
+//         let id = req.params.id
+//         let data = await ProductModel.findByIdAndDelete(id)
+//         if (!data) {
+//             return res.status(404).json({
+//                 message: "Product not found"
+//             });
+//         }
+//         res.status(200).json({
+//             message: "Product successful delete",
+//         })
+//     }
+//     catch (error) {
+//         res.status(500).json({
+//             message: "server error", error: error.message
+//         })
+//     }
+
+// }
+
+
+
 async function deleteProduct(req, res) {
+  try {
+    const id = req.params.id;
 
-    try {
-        let id = req.params.id
-        let data = await ProductModel.findByIdAndDelete(id)
-        if (!data) {
-            return res.status(404).json({
-                message: "Product not found"
-            });
-        }
-        res.status(200).json({
-            message: "Product successful delete",
-        })
-    }
-    catch (error) {
-        res.status(500).json({
-            message: "server error", error: error.message
-        })
+    console.log("Received ID:", id);
+    console.log("Is Valid:", mongoose.Types.ObjectId.isValid(id));
+
+    const product = await ProductModel.findById(id);
+    console.log("Product:", product);
+
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found"
+      });
     }
 
+    await ProductModel.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      message: "Product deleted successfully"
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: error.message
+    });
+  }
 }
 
 async function getTotalProducts(req, res) {
