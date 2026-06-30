@@ -59,6 +59,7 @@ import {
   updateCartQuantity,
   allApplyCoupon,
   // removeCouponFromCart,
+  removeCoupon,
 } from "../../../Redux/Slices/CM_CartSlice";
 import PaymentButton from "../Payments/PaymentButton";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
@@ -525,7 +526,6 @@ export default function CustomerCart() {
   const [open, setOpen] = React.useState(false);
   const [updateAddress, setUpdateAddress] = useState(null);
   const [openAddress, setOpenAddress] = useState(false);
-  const [coupon, setCoupon] = useState("");
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -544,8 +544,6 @@ export default function CustomerCart() {
     setOpen(true);
   };
 
-  console.log(addresses);
-
   const handleClose = () => {
     setOpen(false);
   };
@@ -556,34 +554,39 @@ export default function CustomerCart() {
   const handleRemoveCoupon = async () => {
     try {
       let res = await api.delete("/cart/remove-coupon");
-      console.log("here", res.data);
-      dispatch(getItems());
+      dispatch(removeCoupon());
     } catch (error) {
       console.error("Failed to remove coupon:", error);
     }
-    // dispatch(removeCouponFromCart());
-    enqueueSnackbar("Coupon removed!", { variant: "info" });
   };
-  const subtotal =
-    cartTotals?.subtotal * 100 ||
-    cartItems.reduce((total, item) => {
-      const priceInPaise = Math.round(Number(item?.cartTotal) * 100);
-      return total + priceInPaise * item?.quantity;
-    }, 0);
 
-  const couponDiscount = cartTotals?.totalDiscount || 0;
+  const subtotal = cartItems.reduce((total, item) => {
+    const discountedPrice =
+      Number(
+        item.product.price - (item.product.price * item.product.discount) / 100,
+      ) * 100;
+    const itemTotal = discountedPrice * item.quantity;
+    return total + itemTotal;
+  }, 0);
 
-  const shipping = subtotal / 100 >= 1000 ? 0 : 999;
+  const coupon = cartItems[0]?.coupon;
+  let couponDiscount = 0;
+  if (coupon) {
+    const discountValue = (subtotal * coupon.discount) / 100;
+    couponDiscount = Math.min(discountValue, coupon.max_discount);
+  }
 
   const formatPrice = (amountInPaise) => (amountInPaise / 100).toFixed(2);
+  const shipping = formatPrice(subtotal) <= 1000 ? 0 : 0;
 
-  const grandTotal = cartTotals
-    ? cartTotals.finalTotal * 100
-    : subtotal + shipping;
-
-  console.log(cartTotals, couponDiscount, formatPrice(subtotal), shipping, grandTotal);
+  const grandTotal =
+    Number(formatPrice(subtotal)) +
+    Number(formatPrice(shipping)) -
+    couponDiscount;
+  console.log(formatPrice(subtotal) + formatPrice(shipping));
 
   async function getCoupons() {
+    // This function is empty, consider removing or implementing it.
     try {
       // let res = await api.get("coupon/getCoupons");
       // setCouponList(res.data.coupons);
@@ -624,8 +627,6 @@ export default function CustomerCart() {
       dispatch(removeCartItem(cartId));
     }
   }
-  console.log(cartItems);
-
   async function saveForLater(cartId) {
     try {
       const res = await api.post(`/cart/later/${cartId}`);
@@ -708,6 +709,16 @@ export default function CustomerCart() {
   }, [cartStatus, dispatch]);
 
   useEffect(() => {
+    const coupon = cartItems[0]?.coupon;
+    if (coupon && subtotal / 100 < coupon.min_order_value) {
+      handleRemoveCoupon();
+      enqueueSnackbar(
+        `Coupon removed as order total is below ₹${coupon.min_order_value}`,
+        { variant: "warning" },
+      );
+    }
+  }, [cartItems, subtotal]);
+  useEffect(() => {
     if (addresses.length && !updateAddress) {
       const defaultAddress =
         addresses.find((item) => item.isDefault) || addresses[0];
@@ -716,13 +727,12 @@ export default function CustomerCart() {
   }, [addresses]);
 
   useEffect(() => {
-    dispatch(getItems())
-  }, [])
-  
+    dispatch(getItems());
+  }, []);
 
-console.log(cartStatus);
+  console.log(cartStatus);
 
-  if (cartStatus === "loading" ) {
+  if (cartStatus === "loading") {
     return (
       <Box sx={{ p: 3 }}>
         <Grid container>
@@ -732,7 +742,7 @@ console.log(cartStatus);
             <Skeleton variant="rectangular" height={120} />
           </Grid>
           <Grid size={{ xs: 12, sm: 4, md: 4 }}>
-            <Skeleton variant="rectangular" height={200} sx={{ ml: 2 }}/>
+            <Skeleton variant="rectangular" height={200} sx={{ ml: 2 }} />
           </Grid>
         </Grid>
       </Box>
@@ -822,7 +832,6 @@ console.log(cartStatus);
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, sm: 8, md: 8 }}>
           <Stack>
-
             <AddressModal
               addresses={addresses}
               setAddress={setAddress}
@@ -944,13 +953,11 @@ console.log(cartStatus);
               <Card
                 key={item._id}
                 sx={{
-                  display: { xs: "flex", sm: "block" },
+                  display: "flex",
                   alignItems: "center",
-                  justifyContent: "space-between",
                   mb: 2,
                   borderRadius: 4,
                   p: 1.5,
-                  display: "flex",
                   flexDirection: { xs: "column", sm: "row" },
                   alignItems: "center",
                   gap: 2,
@@ -1030,68 +1037,82 @@ console.log(cartStatus);
                     </IconButton>
                   </Box>
                 </Stack>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Stack>
-                    <Chip
-                      size="small"
-                      color={item.product.isAvailable ? "success" : "error"}
-                      label={
-                        item.product.isAvailable ? "Available" : "Out of Stock"
-                      }
-                      sx={{
-                        fontWeight: 600,
-                        width: 80,
-                      }}
-                    />
-                    <Typography variant="h6" fontWeight={700} color="#1f2937">
-                      {item.product.name}
-                    </Typography>
-                  </Stack>
-                  <Typography
-                    sx={{
-                      fontSize: "0.85rem",
-                      color: "#6B7280",
-                      display: { xs: "none", sm: "block" },
-                    }}
-                  >
-                    {item?.product?.description}
-                  </Typography>
-
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    flexWrap="wrap"
-                    useFlexGap
-                    sx={{ mt: 1 }}
-                  >
-                    <Chip
-                      size="small"
-                      label="In Cart"
-                      sx={{
-                        bgcolor: "rgba(62,26,137,0.08)",
-                        color: "#3E1A89",
-                        fontWeight: 600,
-                      }}
-                    />
-
-                    {item?.product?.rating > 0 && (
+                <Stack sx={{flexDirection:'row',flex:1}}>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Stack>
                       <Chip
                         size="small"
-                        icon={
-                          item?.product?.rating && (
-                            <StarIcon sx={{ fontSize: 16 }} />
-                          )
+                        color={item?.product?.isAvailable ? "success" : "error"}
+                        label={
+                          item.product.isAvailable
+                            ? "Available"
+                            : "Out of Stock"
                         }
-                        label={`${item?.product?.rating}`}
-                        color="warning"
-                        variant="outlined"
-                        sx={{ fontWeight: 600 }}
+                        sx={{
+                          fontWeight: 600,
+                          width: 80,
+                        }}
                       />
-                    )}
-                  </Stack>
-                </Box>
+                      <Typography variant="h6" fontWeight={700} color="#1f2937">
+                        {item.product.name}
+                      </Typography>
+                    </Stack>
+                    <Typography
+                      sx={{
+                        fontSize: "0.85rem",
+                        color: "#6B7280",
+                        display: { xs: "none", sm: "block" },
+                      }}
+                    >
+                      {item?.product?.description}
+                    </Typography>
 
-                {/* <Box sx={{ textAlign: "center" }}>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      flexWrap="wrap"
+                      useFlexGap
+                      sx={{ mt: 1 }}
+                    >
+                      <Chip
+                        size="small"
+                        label="In Cart"
+                        sx={{
+                          bgcolor: "rgba(62,26,137,0.08)",
+                          color: "#3E1A89",
+                          fontWeight: 600,
+                        }}
+                      />
+
+                      {item?.product?.rating > 0 && (
+                        <Chip
+                          size="small"
+                          icon={
+                            item?.product?.rating && (
+                              <StarIcon sx={{ fontSize: 16 }} />
+                            )
+                          }
+                          label={`${item?.product?.rating}`}
+                          color="warning"
+                          variant="outlined"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      )}
+                    </Stack>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexGrow: "initial",
+                      flexDirection: { sm: "column", md: "row" },
+                      alignItems: "center",
+                      gap: { xs: 1, sm: 2 },
+                      minWidth: { sm: 100 },
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    {/* <Box sx={{ textAlign: "center" }}>
                   <Typography
                     sx={{
                       fontSize: "0.75rem",
@@ -1122,63 +1143,60 @@ console.log(cartStatus);
                   </Select>
                 </Box> */}
 
-                <Box sx={{ textAlign: "center", minWidth: 90 }}>
-                  <Typography
-                    sx={{
-                      fontSize: "0.75rem",
-                      color: "#6B7280",
-                      fontWeight: 600,
-                    }}
-                  >
-                    Price
-                  </Typography>
+                    <Box sx={{ textAlign: "center" }}>
+                      <Typography
+                        sx={{
+                          fontSize: "0.75rem",
+                          color: "#6B7280",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Price
+                      </Typography>
 
-                  <Typography
-                    sx={{
-                      fontSize: "1.2rem",
-                      fontWeight: 600,
-                      textDecoration: "line-through",
-                      color: "#3E1A89",
-                    }}
-                  >
-                    ₹{item?.product?.price * item?.quantity}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: "1.2rem",
-                      fontWeight: 800,
-                      color: "#3E1A89",
-                    }}
-                  >
-                    ₹
-                    {(item?.product?.price -
-                      (item?.product?.price * item?.product?.discount) / 100) *
-                      item?.quantity}
-                  </Typography>
-                </Box>
+                      <Typography
+                        sx={{
+                          fontSize: "1.2rem",
+                          fontWeight: 600,
+                          textDecoration: "line-through",
+                          color: "#3E1A89",
+                        }}
+                      >
+                        ₹{item?.product?.price * item?.quantity}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontSize: "1.2rem",
+                          fontWeight: 800,
+                          color: "#3E1A89",
+                        }}
+                      >
+                        ₹
+                        {(item?.product?.price -
+                          (item?.product?.price * item?.product?.discount) /
+                            100) *
+                          item?.quantity}
+                      </Typography>
+                    </Box>
 
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: { xs: "row", sm: "column" },
-                    gap: 1,
-                  }}
-                >
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="error"
-                    sx={{
-                      borderRadius: 99,
-                      textTransform: "none",
-                      fontSize: "0.75rem",
-                      px: 2,
-                    }}
-                    onClick={() => deleteModal(item?._id)}
-                  >
-                    Remove
-                  </Button>
-                </Box>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        sx={{
+                          borderRadius: 99,
+                          textTransform: "none",
+                          fontSize: "0.8rem",
+                          px: 2,
+                        }}
+                        onClick={() => deleteModal(item?._id)}
+                      >
+                        Remove
+                      </Button>
+                    </Box>
+                  </Box>
+                </Stack>
               </Card>
             ))}
           </Stack>
@@ -1286,7 +1304,7 @@ console.log(cartStatus);
                     }}
                   >
                     <Grid container spacing={1} alignItems="center">
-                      <Grid size={{ xs: 8, sm: 8 }}>
+                      <Grid size={{ xs: 12, sm: 12, md: 8 }}>
                         <Typography
                           variant="body2"
                           fontWeight={700}
@@ -1305,7 +1323,7 @@ console.log(cartStatus);
                           - ₹{couponDiscount.toFixed(2)}
                         </Typography>
                       </Grid>
-                      <Grid size={{ xs: 4, sm: 4 }} sx={{ textAlign: "right" }}>
+                      <Grid size={{ xs: 4, md: 4 }} sx={{ textAlign: "right" }}>
                         <Button
                           size="small"
                           color="error"
@@ -1338,7 +1356,7 @@ console.log(cartStatus);
                     fontWeight={800}
                     color="primary.main"
                   >
-                    ₹{formatPrice(grandTotal)}
+                    ₹{formatPrice(grandTotal * 100)}
                   </Typography>
                 </Box>
               </Stack>
@@ -1390,46 +1408,51 @@ console.log(cartStatus);
                 </Box>
               </Box>
               <Stack spacing={2}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" color="text.primary">
-                  Saved Address
-                </Typography>
-
-                <Stack
-                  direction="row"
-                  sx={{ justifyContent: "space-between", alignItems: "center" }}
-                >
-                  {updateAddress ? (
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      key={updateAddress._id}
-                    >
-                      {`${updateAddress.street}, ${updateAddress.city}, ${updateAddress.state}, ${updateAddress.country}, ${updateAddress.pincode}`}
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" color="text.primary">
+                      Saved Address
                     </Typography>
-                  ) : (
-                    "No Address Found"
-                  )}
 
-                  {updateAddress ? (
-                    <IconButton onClick={() => handleClickOpen()}>
-                      <EditIcon />
-                    </IconButton>
-                  ) : (
-                    <PrimaryButton onClick={() => setAddressModalOpen(true)}>
-                      Add Address
-                    </PrimaryButton>
-                  )}
-                </Stack>
-              </CardContent>
-            </Card>
-            </Stack>
+                    <Stack
+                      direction="row"
+                      sx={{
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      {updateAddress ? (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          key={updateAddress._id}
+                        >
+                          {`${updateAddress.street}, ${updateAddress.city}, ${updateAddress.state}, ${updateAddress.country}, ${updateAddress.pincode}`}
+                        </Typography>
+                      ) : (
+                        "No Address Found"
+                      )}
+
+                      {updateAddress ? (
+                        <IconButton onClick={() => handleClickOpen()}>
+                          <EditIcon />
+                        </IconButton>
+                      ) : (
+                        <PrimaryButton
+                          onClick={() => setAddressModalOpen(true)}
+                        >
+                          Add Address
+                        </PrimaryButton>
+                      )}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Stack>
 
               <Box sx={{ mt: 1 }}>
                 <PaymentButton
                   addressId={updateAddress?._id}
-                  amount={formatPrice(grandTotal)}
+                  amount={formatPrice(grandTotal * 100)}
                 />
               </Box>
             </CardContent>

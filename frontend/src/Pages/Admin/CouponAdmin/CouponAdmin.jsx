@@ -19,6 +19,7 @@ import React, { useEffect, useState } from 'react'
 import api from "../../../api/axiosConfig";
 import CouponTopBar from "./CouponBar";
 import { useNavigate } from 'react-router-dom';
+import { enqueueSnackbar, SnackbarProvider } from "notistack";
 
 export default function AllCoupon() {
 
@@ -59,6 +60,8 @@ const statusUpdate = async (id, status) => {
     setCoupons(p=>p.map((i)=>i._id===id?{...i,status}:i));
   }
   catch(err){
+    enqueueSnackbar(err?.response?.data?.message,{variant:'info'})
+console.log(err?.response.data.message);
 
   }}
 
@@ -69,6 +72,7 @@ useEffect(() => {
   return (
     <>
     <CouponTopBar />
+    <SnackbarProvider/>
     <Box
       sx={{
         display: 'grid',

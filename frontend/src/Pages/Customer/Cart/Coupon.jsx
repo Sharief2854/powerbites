@@ -9,10 +9,9 @@ import {
   InputAdornment,
   Stack,
   Divider,
-  Grid,
+  Grid,  Alert,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { enqueueSnackbar, SnackbarProvider } from "notistack";
 import { useEffect, useRef, useState } from "react";
 import api from "../../../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +20,7 @@ import { allApplyCoupon, getItems } from "../../../Redux/Slices/CM_CartSlice";
 
 export default function Coupon() {
   const [couponData, setCouponList] = useState([]);
+  const [error, setError] = useState("");
 
   const [couponCode, setCouponCode] = useState("");
   const navigate = useNavigate();
@@ -55,18 +55,14 @@ const couponList = couponData?.filter((c) => {
   }
 
   async function applyCouponCode() {
+    setError("");
     try {
       let res = await api.post("/cart/apply-coupon", { couponCode: couponCode });
       navigate("/customer/cart");
-      console.log(res.data);
-      
-      dispatch(allApplyCoupon(res.data));
-
+      dispatch(allApplyCoupon(res.data.totals));
     } catch (error) {
-      console.log(error?.message);
-      enqueueSnackbar(`${response?.message}`, {
-        variant: "error",
-      });
+      console.log(error);
+      setError(error?.response?.data?.message || "An unexpected error occurred.");
     }
   }
   useEffect(() => {
@@ -91,15 +87,19 @@ const couponList = couponData?.filter((c) => {
       <Box
         sx={{ display: "flex", justifyContent: "center", mb: 3, width: "100%" }}
       >
-        <SnackbarProvider/>
-        <TextField
+        <Stack spacing={2} sx={{ alignItems: 'center', width: '100%' }}>
+        {error && (
+          <Alert severity="error" onClose={() => setError("")} sx={{ width: '100%', maxWidth: 340 }}>
+            {error}
+          </Alert>
+        )}
+          <TextField
   placeholder="Enter Coupon Code"
   value={couponCode}
   ref={couponInputRef}
-  onChange={(e) => setCouponCode(e.target.value)}
+  onChange={(e) => {setCouponCode(e.target.value); setError("")}}
   sx={{
     width: 340,
-    mt: 2,
 
     "& .MuiOutlinedInput-root": {
       borderRadius: "16px",
@@ -182,6 +182,7 @@ const couponList = couponData?.filter((c) => {
     },
   }}
 />
+        </Stack>
       </Box>
       {couponList?.length < 0 ? (
         <Box
@@ -317,7 +318,7 @@ const couponList = couponData?.filter((c) => {
 >
   <Grid container spacing={1}
   sx={{justifyContent:'space-between', alignItems: 'center'}}>
-    <Grid item xs={7} sm={8}>
+    <Grid size={{ xs: 7, sm: 8}}>
       <Typography
         sx={{
           fontSize: 13,
@@ -333,6 +334,7 @@ const couponList = couponData?.filter((c) => {
         sx={{
           fontWeight: 900,
           fontSize: 28,
+          width:'100%',
           letterSpacing: 1,
           textTransform: "uppercase",
         }}
@@ -361,7 +363,7 @@ const couponList = couponData?.filter((c) => {
       </Typography>
     </Grid>
 
-    <Grid item xs={5} sm={4}
+    <Grid size={{xs: 5, sm: 4}}
       sx={{
         bgcolor: "#fff",
         color: "#3E1A89",
@@ -375,6 +377,7 @@ const couponList = couponData?.filter((c) => {
         sx={{
           fontSize: 30,
           fontWeight: 900,
+          textAlign: "center",
           lineHeight: 1,
         }}
       >
