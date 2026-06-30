@@ -598,7 +598,7 @@ export default function AdminDashboard() {
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {[
           { label: 'Gross Net Revenue', val: `₹${kpis.totalRevenue.toLocaleString('en-IN')}`, icon: <TrendingUpIcon />, color: '#10b981' },
-          { label: 'Registered Clients', val: kpis.totalCustomers, icon: <PeopleIcon />, color: '#3b82f6' },
+          { label: 'Total Unique Clients', val: kpis.totalCustomers, icon: <PeopleIcon />, color: '#3b82f6' },
           { label: 'System Invoices', val: kpis.totalOrders, icon: <ShoppingCartIcon />, color: '#64748b' },
           { label: 'Volume Sold Units', val: kpis.totalProductsSold, icon: <InventoryIcon />, color: '#8b5cf6' }
         ].map((c, i) => (
@@ -606,7 +606,7 @@ export default function AdminDashboard() {
             <Card sx={{ borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: 'none' }}>
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5, alignItems: 'center' }}>
-                  <Typography variant="caption" color="textSecondary" fontWeight="700">{c.label}</Typography>
+                  <Typography variant="caption" color="textSecondary" fontWeight="700" sx={{ textTransform: 'uppercase' }}>{c.label}</Typography>
                   <Box sx={{ bgcolor: `${c.color}15`, color: c.color, p: 0.8, borderRadius: '6px', display: 'flex' }}>{c.icon}</Box>
                 </Box>
                 <Typography variant="h5" fontWeight="800">{c.val}</Typography>
@@ -625,7 +625,7 @@ export default function AdminDashboard() {
       </Grid>
 
       {/* Corporate Action Planning Matrix Section */}
-      <Card sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: 'none', bgcolor: '#feffec', mb: 5 }}>
+      {/* <Card sx={{ borderRadius: '16px', border: '1px solid #fde047', boxShadow: 'none', bgcolor: '#fefce8', mb: 5 }}>
         <CardContent sx={{ p: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
             <LightbulbIcon sx={{ color: '#ca8a04' }} />
@@ -633,34 +633,34 @@ export default function AdminDashboard() {
           </Box>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
-              <Alert severity="success" icon={false} sx={{ border: '1px solid #bbf7d0', bgcolor: '#f0fdf4' }}>
+              <Alert severity="success" icon={false} sx={{ border: '1px solid #bbf7d0', bgcolor: '#f0fdf4', height: '100%' }}>
                 <AlertTitle sx={{ fontWeight: 800 }}>Top Products Strategy</AlertTitle>
                 Maximize catalog inventory pipelines immediately. Scale digital advertising campaigns targeting these assets to secure conversion velocity.
               </Alert>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <Alert severity="warning" icon={false} sx={{ border: '1px solid #fef08a', bgcolor: '#fefce8' }}>
+              <Alert severity="warning" icon={false} sx={{ border: '1px solid #fde047', bgcolor: '#fffbeb', height: '100%' }}>
                 <AlertTitle sx={{ fontWeight: 800 }}>Least Products Strategy</AlertTitle>
                 Identify stock bottlenecks. Deploy flash discount promotions, bundle underperforming items with top sellers, or clear warehouse space by liquidating remaining units.
               </Alert>
             </Grid>
           </Grid>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Core Full Data Table Filter Controls */}
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
         <Typography variant="subtitle1" fontWeight="800">Operational Invoices Data Feed ({filteredAndSortedOrders.length} records)</Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <TextField placeholder="Search Invoice ID / Customer..." size="small" value={globalSearch} onChange={(e) => { setGlobalSearch(e.target.value); setPage(0); }} sx={{ width: 260, bgcolor: 'white' }} />
           <FormControl size="small" sx={{ minWidth: 160, bgcolor: 'white' }}>
             <Select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}>
               <MenuItem value="All">All Order Statuses</MenuItem>
-              <MenuItem value="placed">Placed</MenuItem>
-              <MenuItem value="preparing">Preparing</MenuItem>
-              <MenuItem value="shipped">Shipped</MenuItem>
-              <MenuItem value="delivered">Delivered</MenuItem>
-              <MenuItem value="cancelled">Cancelled</MenuItem>
+              <MenuItem value="order placed">Placed</MenuItem>
+              <MenuItem value="preparing order">Preparing</MenuItem>
+              <MenuItem value="order shipped">Shipped</MenuItem>
+              <MenuItem value="order delivered">Delivered</MenuItem>
+              <MenuItem value="order cancelled">Cancelled</MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -715,34 +715,44 @@ function IsolatedLineChart({ year }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchTrends() {
-      setLoading(true);
-      try {
-        const res = await api.get(`/adminAnalytics/businessTrends?year=${year}&timeframe=${filter}`);
-        setData(res.data.trends);
-      } catch (err) { console.error(err); }
-      setLoading(false);
-    }
-    fetchTrends();
-  }, [filter, year]);
+  // useEffect(() => {
+  //   async function fetchTrends() {
+  //     setLoading(true);
+  //     try {
+  //       const res = await api.get(`/adminAnalytics/businessTrends?year=${year}&timeframe=${filter}`);
+  //       setData(res.data.trends);
+  //     } catch (err) { console.error(err); }
+  //     setLoading(false);
+  //   }
+  //   fetchTrends();
+  // }, [filter, year]);
 
   return (
-    <Card sx={{ borderRadius: '20px', border: '1px solid #e2e8f0', boxShadow: 'none' }}>
-      <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="subtitle2" fontWeight="800">Financial Growth Trajectory</Typography>
-          <Select size="small" value={filter} onChange={(e) => setFilter(e.target.value)} sx={{ height: 30, borderRadius: '6px', fontSize: '0.75rem' }}>
-            <MenuItem value="week">Weekly Window</MenuItem>
-            <MenuItem value="month">Monthly Window</MenuItem>
-            <MenuItem value="year">Annual Summary</MenuItem>
-          </Select>
-        </Box>
-        <Box sx={{ height: 220, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          {loading ? <CircularProgress size={20} /> : <LineChart dataset={data} xAxis={[{ scaleType: 'point', dataKey: 'label' || 'periodLabel' }]} series={[{ dataKey: 'revenue', label: 'Revenue (₹)', color: '#3b82f6' }, { dataKey: 'profit', label: 'Profit (₹)', color: '#10b981' }]} width={460} height={220} />}
-        </Box>
-      </CardContent>
-    </Card>
+    <></>
+    // <Card sx={{ borderRadius: '20px', border: '1px solid #e2e8f0', boxShadow: 'none' }}>
+    //   <CardContent>
+    //     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+    //       <Typography variant="subtitle2" fontWeight="800">Financial Growth Trajectory</Typography>
+    //       <Select size="small" value={filter} onChange={(e) => setFilter(e.target.value)} sx={{ height: 30, borderRadius: '6px', fontSize: '0.75rem' }}>
+    //         <MenuItem value="week">Weekly Window</MenuItem>
+    //         <MenuItem value="month">Monthly Window</MenuItem>
+    //         <MenuItem value="year">Annual Summary</MenuItem>
+    //       </Select>
+    //     </Box>
+    //     <Box sx={{ height: 220, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    //       {loading ? <CircularProgress size={20} /> : 
+    //       <LineChart 
+    //         dataset={data} 
+    //         xAxis={[{ 
+    //           scaleType: 'point', 
+    //           dataKey: 'periodLabel' // FIX: Correct dataKey from 'label' to 'periodLabel'
+    //         }]} 
+    //         series={[{ dataKey: 'revenue', label: 'Revenue (₹)', color: '#3b82f6' }, { dataKey: 'profit', label: 'Profit (₹)', color: '#10b981' }]} 
+    //         width={460} height={220} 
+    //       />}
+    //     </Box>
+    //   </CardContent>
+    // </Card>
   );
 }
 
@@ -755,8 +765,16 @@ function IsolatedFulfillmentRatio({ delivered, cancelled }) {
     <Card sx={{ borderRadius: '20px', border: '1px solid #e2e8f0', boxShadow: 'none', height: '100%' }}>
       <CardContent>
         <Typography variant="subtitle2" fontWeight="800" sx={{ mb: 3 }}>System Fulfillment Effectiveness</Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 180 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 160 }}>
           <PieChart series={[{ data, innerRadius: 50, outerRadius: 75, paddingAngle: 2 }]} width={260} height={160} />
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mt: 2, borderTop: '1px solid #f1f5f9', pt: 2 }}>
+          {data.map(item => (
+            <Box key={item.id} sx={{ textAlign: 'center' }}>
+              <Typography variant="caption" color="textSecondary" fontWeight={600}>{item.label}</Typography>
+              <Typography variant="subtitle2" fontWeight={800} sx={{ color: item.color }}>{item.value}</Typography>
+            </Box>
+          ))}
         </Box>
       </CardContent>
     </Card>
@@ -805,7 +823,13 @@ function IsolatedProductLeaderboard({ type, year }) {
           ) : data.length > 0 ? (
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={7}>
-                <BarChart layout="horizontal" dataset={data} yAxis={[{ scaleType: 'band', dataKey: 'label' }]} series={[{ dataKey: 'value', color: type === 'top' ? '#3b82f6' : '#f43f5e' }]} width={280} height={200} margin={{ left: 90, right: 10, top: 10, bottom: 20 }} />
+                <BarChart
+                  layout="horizontal"
+                  dataset={data}
+                  yAxis={[{ scaleType: 'band', dataKey: 'label' }]}
+                  xAxis={[{ label: 'Share %' }]}
+                  series={[{ dataKey: 'value', color: type === 'top' ? '#3b82f6' : '#f43f5e', valueFormatter: (value) => `${(value || 0).toLocaleString()}%` }]}
+                  width={280} height={200} margin={{ left: 90, right: 10, top: 10, bottom: 30 }} />
               </Grid>
               <Grid item xs={5}>
                 {data.map((item, i) => (
