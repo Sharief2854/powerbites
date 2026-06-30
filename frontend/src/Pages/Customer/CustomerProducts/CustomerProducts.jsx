@@ -20,10 +20,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  addToCart,
-  getItems,
-} from "../../../Redux/Slices/CM_CartSlice";
+import { addToCart, getItems } from "../../../Redux/Slices/CM_CartSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { PrimaryButton } from "../../../Components/Common/Buttons";
@@ -85,7 +82,6 @@ export default function CustomerProducts() {
 
   const cartItems = useSelector((state) => state.cart.items);
 
-  console.log(cartItems);
 
   const handleChange = (event) => {
     const {
@@ -100,27 +96,37 @@ export default function CustomerProducts() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const addItem = useCallback(async (productId) => {
-    try {
-      dispatch(addToCart({
-        customer: decodeId,
-        product: productId,
-        quantity: 1,
-      }));
-      dispatch(getItems());
-      setCartSnackbar(true);
-    } catch (error) {
-      enqueueSnackbar("Failed to add item to cart.", { variant: "error" });
-  }},
-  [decodeId, dispatch]);
+  const addItem = useCallback(
+    async (productId) => {
+      const product = products.find((p) => p._id === productId);
+      if (!product) return;
+
+      if (product.stock <= 0) {
+        enqueueSnackbar("This product is out of stock", {
+          variant: "warning",
+        });
+        return;
+      }
+
+      try {
+        dispatch(
+          addToCart({ customer: decodeId, product: productId, quantity: 1 }),
+        );
+        dispatch(getItems());
+        setCartSnackbar(true);
+      } catch (error) {
+        enqueueSnackbar("Failed to add item to cart", { variant: "error" });
+      }
+    },
+    [decodeId, dispatch, products],
+  );
 
   async function getProducts(params) {
     try {
       let res = await api.get(`/products/all`);
       setProducts(res.data.data);
       console.log(res.data.data);
-    }
-    catch (error) {
+    } catch (error) {
       console.log(error);
     }
   }
@@ -135,9 +141,9 @@ export default function CustomerProducts() {
       console.log(error);
     }
   };
-            const cartMap = new Set(
-              cartItems?.map((i) => String(i?.product?._id || i?.product)),
-            );
+  const cartMap = new Set(
+    cartItems?.map((i) => String(i?.product?._id || i?.product)),
+  );
   let displayProducts = useMemo(() => {
     let filtered = [...products];
     if (search.trim()) {
@@ -219,7 +225,6 @@ export default function CustomerProducts() {
     dispatch(getItems());
     getCategory();
   }, []);
-  console.log(category);
   return (
     <Box>
       <Grid
@@ -250,11 +255,14 @@ export default function CustomerProducts() {
               >
                 <MenuItem value="">All Categories</MenuItem>
 
-                {category.map((cat) => (cat.isAvailable && (
-                  <MenuItem key={cat._id} value={cat._id}>
-                    {cat.name}
-                  </MenuItem>
-                )))}
+                {category.map(
+                  (cat) =>
+                    cat.isAvailable && (
+                      <MenuItem key={cat._id} value={cat._id}>
+                        {cat.name}
+                      </MenuItem>
+                    ),
+                )}
               </Select>
             </FormControl>
             <FormControl sx={{ minWidth: 160, borderRadius: "16px" }}>
@@ -308,8 +316,10 @@ export default function CustomerProducts() {
           <Box
             display="flex"
             gap={2}
-            justifyContent={{ xs: "center", md: "flex-end" }}
-            alignItems="center"
+            sx={{
+              alignItems: "center",
+              justifyContent: { xs: "center", md: "flex-end" },
+            }}
           >
             <Select
               sx={{ minWidth: 160, borderRadius: "16px" }}
@@ -362,7 +372,7 @@ export default function CustomerProducts() {
             display: "flex",
             alignItems: "center",
             gap: 2,
-            backgroundColor:'#35b247'
+            backgroundColor: "#35b247",
           }}
         >
           <Typography fontWeight={600}>Added to cart ✓</Typography>

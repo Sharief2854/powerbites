@@ -51,7 +51,7 @@ export default function ProductCard({ product }) {
         setIsBannerCreated(true);
       }
     } catch (error) {
-      enqueueSnackbar(error.message, { variant: "error" });
+      enqueueSnackbar(error?.response?.data, { variant: "error" });
     }
   };
 
@@ -70,11 +70,6 @@ export default function ProductCard({ product }) {
     <Grid size={{ xs: 12, sm: 4 }}>
       <Card sx={{ maxWidth: "100%", maxHeight: 390 }}>
         <SnackbarProvider />
-        <CardActionArea
-          onClick={() =>
-            navigate(`/admin/productlist/${product?._id}`, { state: product })
-          }
-        >
           <CardMedia
             component="img"
             height="140"
@@ -84,9 +79,14 @@ export default function ProductCard({ product }) {
                 : ""
             }
             alt="No Image Found"
-            sx={{ objectFit: "cover" }}
+            sx={{ objectFit: "cover", cursor: "pointer" }}
+            onClick={() =>
+              navigate(`/admin/productlist/${product?._id}`, { state: product })
+            }
           />
-          <CardContent>
+          <CardContent sx={{cursor: "pointer"}} onClick={() =>
+              navigate(`/admin/productlist/${product?._id}`, { state: product })
+            }>
             <Stack
   direction="row"
   justifyContent="space-between"
@@ -191,7 +191,6 @@ export default function ProductCard({ product }) {
               </Typography>
             </Stack>
           </CardContent>
-        </CardActionArea>
         <CardActions>
           <PrimaryButton
             onClick={() => toggleUpdate(product?._id)}
