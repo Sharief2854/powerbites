@@ -36,11 +36,16 @@ const AnalyticsRouter = require('./Routes/Analytics/analytics')
 const adminToamin = require ("./Routes/AdminToadmin/adminToadminCurd")
 let dealsRouter = require('./Routes/Deals/dealsRoute');
 const companyRouter = require("./Routes/CompanyDetails/CompanyDetails");
+const createInitialAdmin = require('./Utils/initialSetup');
 
 
 
 
-ConnectDB()
+// Connect to the database and then run the initial setup
+ConnectDB().then(() => {
+    // This will run after the database connection is successful.
+    createInitialAdmin();
+});
 
 const http = require('http');
 const { Server } = require("socket.io");
