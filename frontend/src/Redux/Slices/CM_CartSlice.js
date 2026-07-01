@@ -71,14 +71,15 @@ const cartSlice = createSlice({
       state.cartValue = 0;
     },
       allApplyCoupon: (state, action) => {
+        console.log(action.payload);
+        
       state.totals = action.payload;
-      console.log(action.payload);
-      
     },
     removeCoupon: (state) => {
       state.totals = null;
       state.items = state.items.map(item => {
         const { coupon, ...rest } = item;
+        // The coupon is on the item, so we remove it.
         return rest;
       });
     }
@@ -92,7 +93,7 @@ const cartSlice = createSlice({
         .addCase(getItems.fulfilled, (state, action) => {
           state.status = "succeeded";
           state.items = action.payload;
-          state.totals = null;
+          state.totals = null; // Reset totals when fetching fresh cart
           state.cartValue = action.payload.reduce(
             (sum, item) => sum + item.quantity,
             0,
