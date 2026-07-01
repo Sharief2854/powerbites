@@ -648,7 +648,7 @@ function OrderList() {
         dispatch(getCustomerOrder(fallbackOrdersArray));
       } catch (err) {
         console.error("Error fetching order history:", err);
-        triggerSnackbar("Failed to sync historical orders list.", "error");
+        //triggerSnackbar("Failed to sync historical orders list.", "error");
       } finally {
         setLoading(false);
       }

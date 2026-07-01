@@ -15,8 +15,7 @@ export default function AdminHome() {
   const [kpis, setKpis] = useState({ totalRevenue: 0, totalCustomers: 0, totalOrders: 0, totalProductsSold: 0, deliveredOrders: 0, cancelledOrders: 0 });
   const [ordersList, setOrdersList] = useState([]);
 
-  useEffect(() => {
-    async function loadSummary() {
+  async function loadSummary() {
       try {
         const res = await api.get(`/adminAnalytics/dashboard-summary?year=${year}&timeframe=month`);
         setKpis(res.data.kpis);
@@ -27,6 +26,9 @@ export default function AdminHome() {
         setSummaryLoading(false);
       }
     }
+
+  useEffect(() => {
+    
     loadSummary();
   }, [year]);
 
