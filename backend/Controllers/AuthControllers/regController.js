@@ -83,7 +83,8 @@ async function verifyOtp(req, res) {
             });
         }
 
-         let token = regToken({ email:deletedOtp.email });
+         // Pass only the email string to regToken, not an object.
+         let token = regToken(deletedOtp.email);
 
          if(!token){
             return res.status(400).json({
@@ -115,9 +116,9 @@ async function regController(req, res) {
         let decoded = decodeToken(token, res);
         if (res.headersSent) return;
 
+        // The email from the body is not needed here, as the verified email is in the token.
 
-
-        if (!body.name || !body.email || !body.password || !body.phone) {
+        if (!body.name  || !body.password || !body.phone) {
             return res.status(400).json({
                 message: "All fields are required"
             })

@@ -53,6 +53,7 @@ export default function DashboardLayout() {
   const handleLogout = () => {
     handleClose();
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     navigate("/");
     console.log("Logged out");
   };
@@ -142,7 +143,7 @@ export default function DashboardLayout() {
 
           {/* User Profile Section */}
           <Box>
-            <Tooltip title="Account settings">
+            <Tooltip title="Account Profile">
               <IconButton
                 onClick={handleProfileClick}
                 sx={{
@@ -197,7 +198,6 @@ export default function DashboardLayout() {
               }}}
             >
               <MenuItem onClick={handleClose}>My Profile</MenuItem>
-              <MenuItem onClick={handleClose}>Settings</MenuItem>
               <MenuItem onClick={handleLogout}>Logout</MenuItem>
             </Menu>
           </Box>
