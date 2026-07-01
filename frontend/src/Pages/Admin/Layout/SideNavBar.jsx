@@ -27,7 +27,6 @@ export default function Sidebar({ sidebarOpen, mobileOpen, onMobileClose, onLogo
     { text: 'Info', icon: <BusinessIcon /> },
     { text: 'Coupons', icon: <ConfirmationNumberIcon /> },
     { text: 'Banners', icon: <AdUnitsIcon /> },
-    { text: 'Settings', icon: <SettingsIcon /> },
   ];
 
   const navigate = useNavigate();
