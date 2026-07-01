@@ -60,7 +60,6 @@ export default function PaymentButton({ amount, addressId, coupon_id = "" }) {
       razorpay.open();
     } catch (error) {
       console.log(error?.response?.data.message);
-
       enqueueSnackbar("Unable to initiate payment", {
         variant: "error",
       });

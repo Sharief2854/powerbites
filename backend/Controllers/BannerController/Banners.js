@@ -41,11 +41,11 @@ async function  setBanner(req, res) {
             }
         });
 
-        // if (!body.title || !body.description) {
-        //     return res.status(400).json({ 
-        //         message: "Missing required fields: 'name', 'title', 'description', and 'user' are required." 
-        //     });
-        // }
+        if (!body.title || !body.description) {
+            return res.status(400).json({ 
+                message: "Missing required fields: 'name', 'title', 'description', and 'user' are required." 
+            });
+        }
 
         let imagePaths;
 

@@ -107,6 +107,7 @@ export default function ItemCard({
                 component="img"
                 src={`${img}`}
                 alt={item.name}
+                loading="lazy"
                 sx={{
                   width: "100%",
                   height: "100%",
