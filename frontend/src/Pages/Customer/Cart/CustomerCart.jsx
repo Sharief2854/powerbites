@@ -247,7 +247,7 @@ export default function CustomerCart() {
   useEffect(() => {
     const coupon = cartItems[0]?.coupon;
     if (coupon && subtotal / 100 < coupon.min_order_value) {
-      handleRemoveCoupon();
+      dispatch(removeCoupon());
       enqueueSnackbar(
         `Coupon removed as order total is below ₹${coupon.min_order_value}`,
         { variant: "warning" },

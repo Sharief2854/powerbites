@@ -141,13 +141,12 @@ const couponList = couponData?.filter((c) => {
       letterSpacing: 0,
     },
   }}
-  slotProps={{
-    input: {
-      endAdornment: (
+  InputProps={{
+    endAdornment: (
         <InputAdornment position="end">
           <Button
             variant="contained"
-            disabled={!couponList?.length}
+            disabled={!couponCode.trim()}
             onClick={applyCouponCode}
             sx={{
               bgcolor: "#3E1A89",
@@ -178,10 +177,8 @@ const couponList = couponData?.filter((c) => {
             Apply
           </Button>
         </InputAdornment>
-      ),
-    },
-  }}
-/>
+    )
+  }}/>
         </Stack>
       </Box>
       {couponList?.length < 0 ? (
