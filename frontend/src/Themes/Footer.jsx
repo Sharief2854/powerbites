@@ -15,6 +15,7 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import TwitterIcon from "@mui/icons-material/Twitter";
+import LanguageIcon from "@mui/icons-material/Language";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -34,14 +35,13 @@ export default function AboutAndFooter({company}) {
     try {
       decodeRole = jwtDecode(token);
     } catch (error) {
-      console.error("Invalid token in Footer:", error);
+      console.error("Invalid token in Footer", error);
     }
   }
 
   const getCategories = async () => {
       try {
         const response = await api.get("/category/allCategories");
-  
         setCategories(p=>response?.data?.categories?.filter((cat)=>cat.isAvailable===true) || []);
       } catch (error) {
         console.log(error.message);
@@ -107,7 +107,7 @@ export default function AboutAndFooter({company}) {
 
               <Button
                 variant="contained"
-                onClick={() => navigate("/company/products")}
+                onClick={() => decodeRole?.role === "customer" ? navigate("/customer/products"): navigate("/login")}
                 sx={{
                   backgroundColor: "primary.main",
                   color: "primary.contrastText",
@@ -154,8 +154,7 @@ export default function AboutAndFooter({company}) {
                   lineHeight: 1.8,
                   fontSize: "0.95rem",
                 }}
-              >
-                
+              >                
                 {company?.companyDescription}
               </Typography>
             </Grid>
@@ -175,7 +174,7 @@ export default function AboutAndFooter({company}) {
                   About
                 </Link>
                 <Link
-                  href="/customer/products"
+                  href={ decodeRole?.role === "customer" ? "/customer/products": "/login"}
                   underline="none"
                   color="secondary.main"
                 >
@@ -195,7 +194,7 @@ export default function AboutAndFooter({company}) {
               </Typography>
               <Stack spacing={1}>
                 {categories?.map((category) =>(<Link
-                  href="/customer/products"
+                  href={ decodeRole?.role === "customer" ? "/customer/about": "/login"}
                   underline="none"
                   color="secondary.main"
                   key={category._id}
@@ -244,23 +243,15 @@ export default function AboutAndFooter({company}) {
               </Stack>
 
               <Stack direction="row" spacing={1.5} sx={{ mt: 2 }}>
-                {(company?.socialMedia || []).map((social, index) => {
-                  const platform = social.platform.toLowerCase();
-                  let Icon;
-
-                  if (platform.includes("facebook")) {
-                    Icon = FacebookIcon;
-                  } else if (platform.includes("instagram")) {
-                    Icon = InstagramIcon;
-                  } else if (platform.includes("youtube")) {
-                    Icon = YouTubeIcon;
-                  } else if (platform.includes("twitter")) {
-                    Icon = TwitterIcon;
-                  } else if (platform.includes("linkedin")) {
-                    Icon = LinkedInIcon;
-                  } else {
-                    return null; // Or a default icon
-                  }
+                {(company?.socialMedia || []).map((social, index) => {                  
+                  const icons = {
+                    FacebookIcon,
+                    InstagramIcon,
+                    YouTubeIcon,
+                    TwitterIcon,
+                    LinkedInIcon,
+                  };
+                  const Icon = icons[`${social.platform}Icon`] || LanguageIcon;
 
                   return (
                     <IconButton
@@ -281,21 +272,6 @@ export default function AboutAndFooter({company}) {
                     </IconButton>
                   );
                 })}
-                {/* <IconButton
-                  component="a"
-                  href={company?.socialMedia?.youtube} // Example
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    color: "primary.main",
-                    backgroundColor: "secondary.main",'& :hover': {
-                      color: 'secondary.main',
-                      backgroundColor: 'primary.main',
-                    },
-                  }}
-                >
-                  <YouTubeIcon />
-                </IconButton>*/}
               </Stack>
             </Grid>
           </Grid>

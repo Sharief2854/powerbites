@@ -184,9 +184,7 @@ function ResponsiveAppBar({company}) {
               ))}
             </Menu>
           </Box>
-          <Chip
           
-          />
           {/* <RestaurantMenuIcon
             sx={{
               display: { xs: "flex", md: "none" },

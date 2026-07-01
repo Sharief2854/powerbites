@@ -234,15 +234,6 @@ function ResponsiveAppBar({company}) {
             </Menu>
           </Box>
 
-          <RestaurantMenuIcon
-            sx={{
-              display: { xs: "flex", md: "none" },
-              mr: 1,
-              color: "primary.contrastText",
-              fontSize: 25,
-            }}
-          />
-
           <Typography
             onClick={handleLogoRefresh}
             variant="h5"
@@ -260,7 +251,7 @@ function ResponsiveAppBar({company}) {
               fontSize: { xs: "0.95rem", sm: "1.1rem" },
             }}
           >
-            POWER BITES
+            {company?.companyName}
           </Typography>
 
           <Box

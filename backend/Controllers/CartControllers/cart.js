@@ -32,9 +32,6 @@ async function setCart(req, res) {
             });
         }
 
-       body.cartTotal = (product.price - (product.price * product.discount) / 100) * body.quantity; // Initialize cartTotal to the product of price and quantity for new items
- 
-
         let cartItem = (await cartModel.create(body));
 
         if (!cartItem) {
@@ -42,6 +39,9 @@ async function setCart(req, res) {
                 message: "Something went wrong"
             });
         }
+
+        cartItem.cartTotal = (product.price - (product.price * product.discount) / 100) * cartItem.quantity;
+        await cartItem.save();
 
         res.status(200).json({
             message: "Added to cart successfully",
