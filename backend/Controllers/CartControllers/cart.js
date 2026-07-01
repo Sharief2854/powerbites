@@ -32,9 +32,6 @@ async function setCart(req, res) {
             });
         }
 
-       body.cartTotal = product.price * body.quantity; // Initialize cartTotal to the product of price and quantity for new items
- 
-
         let cartItem = (await cartModel.create(body));
 
         if (!cartItem) {
@@ -42,6 +39,10 @@ async function setCart(req, res) {
                 message: "Something went wrong"
             });
         }
+
+        cartItem.cartTotal = (product.price - (product.price * product.discount) / 100) * cartItem.quantity;
+        await cartItem.populate("product");
+        await cartItem.save();
 
         res.status(200).json({
             message: "Added to cart successfully",
@@ -143,19 +144,70 @@ async function getCart(req, res) {
             });
         }
 
+        if (!cart) { // .find() returns [], so check for null/undefined just in case
+            return res.status(200).json({
+                message: "Cart is empty",
+                cart: [],
+                totals: { subtotal: 0, totalDiscount: 0, finalTotal: 0 }
+            });
+        }
+
         // Normalize the coupon data so the frontend doesn't have to worry about it.
         // We'll ensure the `coupon` field always has the right data.
-        const processedCart = cart.map(item => {
+        let subtotal = 0;
+        let totalProductDiscount = 0;
+        let finalTotal = 0;
+
+        const validCartItems = cart.filter(item => item.product);
+
+        const processedCart = validCartItems.map(item => {
             const itemJson = item.toJSON();
+
+            // Normalize coupon data for frontend
             if (itemJson.isUnified && itemJson.unifiedCoupon) {
                 itemJson.coupon = itemJson.unifiedCoupon;
             }
+            delete itemJson.unifiedCoupon; // Clean up for frontend
+
+            // Calculate totals for each item
+            if (item.product) {
+                const basePrice = Number(item.product.price) || 0;
+                const productDiscountPercent = Number(item.product.discount) || 0;
+                const productDiscountAmount = (basePrice * productDiscountPercent / 100) * item.quantity;
+                const priceAfterProductDiscount = (basePrice * item.quantity) - productDiscountAmount;
+
+                totalProductDiscount += productDiscountAmount;
+                subtotal += priceAfterProductDiscount;
+            }
+
             return itemJson;
-        });
+        })
+
+        // Calculate coupon discount if a coupon is applied
+        let totalCouponDiscount = 0;
+        const activeCoupon = processedCart.length > 0 ? processedCart[0].coupon : null;
+
+        if (activeCoupon) {
+            const couponDiscountPercent = Number(activeCoupon.discount) || 0;
+            let couponDiscount = (subtotal * couponDiscountPercent) / 100;
+
+            if (activeCoupon.max_discount && couponDiscount > activeCoupon.max_discount) {
+                couponDiscount = activeCoupon.max_discount;
+            }
+            totalCouponDiscount = couponDiscount;
+        }
+
+        const totalDiscount = totalProductDiscount + totalCouponDiscount;
+        finalTotal = subtotal - totalCouponDiscount;
 
         res.status(200).json({
             message: "Items fetched successfully",
-            cart: processedCart
+            cart: processedCart,
+            totals: {
+                subtotal: parseFloat(subtotal.toFixed(2)),
+                totalDiscount: parseFloat(totalDiscount.toFixed(2)),
+                finalTotal: parseFloat(finalTotal.toFixed(2))
+            }
         });
     }
     catch (err) {
@@ -205,6 +257,7 @@ async function applyCoupon(req, res) {
         if (cartItems.length > 1) {
             // calculate subtotal (considering product-level discounts and quantity)
             let subtotal = 0;
+            let totalProductDiscount = 0;
             const entries = [];
             for (const item of cartItems) {
                 const product = item.product;
@@ -213,6 +266,8 @@ async function applyCoupon(req, res) {
                 const priceAfterProductDiscount = productDiscountPercent > 0
                     ? basePrice - (basePrice * productDiscountPercent) / 100
                     : basePrice;
+                
+                totalProductDiscount += (basePrice - priceAfterProductDiscount) * item.quantity;
                 const lineTotal = priceAfterProductDiscount * (item.quantity || 1);
                 subtotal += lineTotal;
                 entries.push({ item, priceAfterProductDiscount, lineTotal });
@@ -233,7 +288,7 @@ async function applyCoupon(req, res) {
 
             // apply proportional coupon discount to each cart item and mark unified
             const updatedCartItems = [];
-            let orderPrice = 0;
+            let finalTotal = 0;
             for (const entry of entries) {
                 const share = subtotal > 0 ? (entry.lineTotal / subtotal) : 0;
                 const couponDiscountAmount = Number((totalCouponDiscount * share).toFixed(2));
@@ -254,14 +309,20 @@ async function applyCoupon(req, res) {
                     finalLineTotal
                 });
 
-                orderPrice += finalLineTotal;
+                finalTotal += finalLineTotal;
             }
+
+            const totalDiscount = totalProductDiscount + totalCouponDiscount;
 
             return res.status(200).json({
                 message: "Unified coupon applied to cart successfully",
                 coupon,
                 products: updatedCartItems,
-                orderPrice
+                totals: {
+                    subtotal: parseFloat(subtotal.toFixed(2)),
+                    totalDiscount: parseFloat(totalDiscount.toFixed(2)),
+                    finalTotal: parseFloat(finalTotal.toFixed(2))
+                }
             });
         }
 
@@ -271,12 +332,37 @@ async function applyCoupon(req, res) {
             { $set: { coupon: couponId, isUnified: false, unifiedCoupon: null } }
         );
 
-        const updatedCartItems = await cartModel.find({ customer: req.userId }).populate("product");
+        // Recalculate totals for the response
+        const updatedCart = await cartModel.find({ customer: req.userId }).populate("product coupon");
+        let subtotal = 0;
+        let totalProductDiscount = 0;
+        for (const item of updatedCart) {
+            if (item.product) {
+                const basePrice = Number(item.product.price) || 0;
+                const productDiscountPercent = Number(item.product.discount) || 0;
+                const priceAfterProductDiscount = (basePrice * (100 - productDiscountPercent) / 100);
+                subtotal += priceAfterProductDiscount * item.quantity;
+                totalProductDiscount += (basePrice - priceAfterProductDiscount) * item.quantity;
+            }
+        }
+
+        let totalCouponDiscount = (subtotal * coupon.discount) / 100;
+        if (coupon.max_discount && totalCouponDiscount > coupon.max_discount) {
+            totalCouponDiscount = coupon.max_discount;
+        }
+
+        const totalDiscount = totalProductDiscount + totalCouponDiscount;
+        const finalTotal = subtotal - totalCouponDiscount;
 
         res.status(200).json({
             message: "Coupon applied to cart successfully",
             coupon,
-            cartItems: updatedCartItems
+            cart: updatedCart,
+            totals: {
+                subtotal: parseFloat(subtotal.toFixed(2)),
+                totalDiscount: parseFloat(totalDiscount.toFixed(2)),
+                finalTotal: parseFloat(finalTotal.toFixed(2))
+            }
         });
     }
     catch (err) {

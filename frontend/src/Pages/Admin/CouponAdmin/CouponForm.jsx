@@ -61,32 +61,8 @@ export default function CouponForm({ getCoupons }) {
   const [editingCoupon, setEditingCoupon] = useState(null);
 
   const { id } = useParams();
-  const incomingCouponData = location.state?.coupon;
-  console.log(incomingCouponData);
 
   const navigate = useNavigate();
-
-  // useEffect(() => {
-
-  //   const targetCoupon = incomingCouponData || editingCoupon;
-
-  //   if (targetCoupon) {
-  //     setEditingCoupon(targetCoupon);
-  //     setCouponForm({
-  //       title: targetCoupon.title || "",
-  //       description: targetCoupon.description || "",
-  //       code: targetCoupon.code || "",
-  //       discount: targetCoupon.discount || "",
-  //       max_discount: targetCoupon.max_discount || "",
-  //       min_order_value: targetCoupon.min_order_value || "",
-  //       starts_At: targetCoupon.starts_At ? targetCoupon.starts_At.slice(0, 16) : "",
-  //       ends_At: targetCoupon.ends_At ? targetCoupon.ends_At.slice(0, 16) : "",
-  //     });
-  //   } else {
-  //     setCouponForm(initialCoupon);
-  //     setEditingCoupon(null);
-  //   }
-  // }, [incomingCouponData]);
 
   const handleSubmit = async () => {
     try {
@@ -172,9 +148,7 @@ export default function CouponForm({ getCoupons }) {
       <Button
         onClick={() => window.history.back()}
         sx={{
-          position: "absolute",
-          top: 24,
-          left: 24,
+          position: "relative",
           minWidth: "40px",
           height: "40px",
           borderRadius: "12px",
@@ -246,7 +220,6 @@ export default function CouponForm({ getCoupons }) {
                 style: { textTransform: "uppercase" },
                 pattern: "\\S+",
               }}
-              helperText="Only uppercase letters/numbers, no spaces allowed"
             />
           </Box>
 

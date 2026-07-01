@@ -107,6 +107,7 @@ export default function ItemCard({
                 component="img"
                 src={`${img}`}
                 alt={item.name}
+                loading="lazy"
                 sx={{
                   width: "100%",
                   height: "100%",
@@ -184,8 +185,6 @@ export default function ItemCard({
           <Stack
             direction="row"
             spacing={1}
-            justifyContent="center"
-            flexWrap="wrap"
             useFlexGap
           >
             <Chip
@@ -288,7 +287,7 @@ export default function ItemCard({
                 Final Price
               </Typography>
 
-              <Box display="flex" alignItems="center" gap={1}>
+              <Box display="flex" gap={1}>
                 {item.discount > 0 && (
                   <Typography
                     sx={{
@@ -345,6 +344,7 @@ export default function ItemCard({
       >
         <PrimaryButton
           fullWidth
+          disabled={item.stock <= 0 && !cartBtn}
           onClick={(e) => {
             e.stopPropagation();
             cartBtn ? navigate("/customer/cart") : addItem(item._id);
@@ -355,7 +355,7 @@ export default function ItemCard({
             background: "linear-gradient(135deg,#3E1A89,#5A2DC7)",
           }}
         >
-          {cartBtn ? "Go To Cart" : "Add To Cart"}
+          {cartBtn ? "Go To Cart" : item.stock > 0 ? "Add To Cart" : "Out of Stock"}
         </PrimaryButton>
 
         <Button

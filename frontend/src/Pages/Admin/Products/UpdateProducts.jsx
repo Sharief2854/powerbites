@@ -93,8 +93,6 @@ const Android12Switch = styled(Switch)(({ theme }) => ({
 export default function UpdateProducts() {
   let allProducts = useSelector((state) => state?.product?.products);
   let { id } = useParams();
-  let product = allProducts;
-  console.log(allProducts);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
 
@@ -113,10 +111,8 @@ export default function UpdateProducts() {
     discount: 0,
     isAvailable: false,
     sendUpdates: false,
-    category: "",
+    category: "", 
   });
-
-  // const [categories, setCategories] = useState([]);
 
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -227,11 +223,6 @@ export default function UpdateProducts() {
     try {
       setLoading(true);
       const response = await api.get("/category/allCategories");
-
-      setProductData((prev) => ({
-        ...prev,
-        category: prev.category ?? "",
-      }));
       setCategories(p=>response?.data?.categories?.filter((i)=>{
         return i.isAvailable?i:null;
       }) || []);
@@ -327,8 +318,6 @@ export default function UpdateProducts() {
 
       const product = response.data.data;
 
-      console.log(product);
-
       setProductData({
         name: product.name,
         description: product.description,
@@ -337,7 +326,7 @@ export default function UpdateProducts() {
         discount: product.discount,
         isAvailable: product.isAvailable,
         sendUpdates: false,
-        category: product?.category || "",
+        category: product?.category?._id || "",
       });
 
       setExistingPhotos(product.image || []);
@@ -351,14 +340,6 @@ export default function UpdateProducts() {
   }, []);
 
   useEffect(() => {
-    if (product) {
-      setProductData(product);
-      setExistingPhotos(product?.image || []);
-    }
-  }, [product]);
-  console.log(product, existingPhotos);
-
-  useEffect(() => {
     mountedRef.current = true;
 
     getCategories();
@@ -367,8 +348,6 @@ export default function UpdateProducts() {
       mountedRef.current = false;
     };
   }, []);
-
-  console.log(productData.category);
 
   return (
     <Box>

@@ -7,7 +7,6 @@ import {
   posteditaddress,
   updateeditaddress,
 } from "../../../Redux/Slices/CM_ProfileSlice";
-
 import {
   Box,
   Card,
@@ -30,7 +29,7 @@ import {
   CircularProgress,
   InputLabel,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, lazy, Suspense } from "react";
 import api from "../../../api/axiosConfig";
 import { jwtDecode } from "jwt-decode";
 import { useDispatch, useSelector } from "react-redux";
@@ -57,13 +56,15 @@ import {
   getItems,
   removeCartItem,
   updateCartQuantity,
-  // removeCouponFromCart,
+  allApplyCoupon,
+  removeCoupon,
 } from "../../../Redux/Slices/CM_CartSlice";
 import PaymentButton from "../Payments/PaymentButton";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import CustomerCardAuth from "../Profile/CustomerCardAuth";
+const AddressModal = lazy(() => import("../Cart/DeliveryAddress"));
 
 const cartCardAnimation = {
   "@keyframes cartCard": {
@@ -73,20 +74,6 @@ const cartCardAnimation = {
   },
 };
 
-const style1 = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 500,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  borderRadius: 9,
-  boxShadow: 24,
-  pt: 2,
-  px: 4,
-  pb: 3,
-};
 const style = {
   position: "absolute",
   top: "50%",
@@ -101,417 +88,11 @@ const style = {
   px: 4,
   pb: 3,
 };
-const countriesData = {
-  India: [
-    "Andhra Pradesh",
-    "Arunachal Pradesh",
-    "Assam",
-    "Bihar",
-    "Chhattisgarh",
-    "Delhi",
-    "Goa",
-    "Gujarat",
-    "Haryana",
-    "Himachal Pradesh",
-    "Jharkhand",
-    "Karnataka",
-    "Kerala",
-    "Madhya Pradesh",
-    "Maharashtra",
-    "Manipur",
-    "Meghalaya",
-    "Mizoram",
-    "Nagaland",
-    "Odisha",
-    "Punjab",
-    "Rajasthan",
-    "Sikkim",
-    "Tamil Nadu",
-    "Telangana",
-    "Tripura",
-    "Uttar Pradesh",
-    "Uttarakhand",
-    "West Bengal",
-  ],
-};
-
-function AddressModal({
-  open,
-  onClose,
-  setAddress,
-  addresses,
-  setUpdateAddress,
-}) {
-  const [message, setMessage] = useState(null);
-  const editProfile = useSelector((state) => state.editprofile.editprofile);
-
-  const editAddress = useSelector((state) => state.editprofile.editaddress);
-
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [savingAddress, setSavingAddress] = useState(false);
-  const [otherLabel, setOtherLabel] = useState("");
-
-  const [profileForm, setProfileForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    password: "",
-  });
-
-  const [addressForm, setAddressForm] = useState({
-    label: "",
-    street: "",
-    city: "",
-    state: "",
-    country: "",
-    pincode: "",
-    _id: "",
-    isDefault: false,
-  });
-
-  const editaddressId = useParams().id || "";
-
-  const handleProfileChange = (e) => {
-    const { name, value } = e.target;
-    setProfileForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleAddressChange = (e) => {
-    const { name, value } = e.target;
-
-    setAddressForm((prev) => ({ ...prev, [name]: value }));
-
-    if (name === "country") {
-      setAddressForm((prev) => ({ ...prev, state: "" }));
-    }
-  };
-
-  const dispatch = useDispatch();
-  const handleDefaultChange = (e) => {
-    setAddressForm((prev) => ({ ...prev, isDefault: e.target.checked }));
-    console.log("addressfrom :", addressForm);
-  };
-
-  const handleSaveAddress = async (e) => {
-    e.preventDefault();
-    setSavingAddress(true);
-    setMessage(null);
-    try {
-      const token = localStorage.getItem("token");
-      const decoded = jwtDecode(token);
-      const userId = decoded.id;
-      const finalLabel =
-        addressForm.label === "OTHER" ? otherLabel : addressForm.label;
-      const payload = { ...addressForm, label: finalLabel, userId };
-      if (!payload._id) delete payload._id;
-      if (["HOME"].includes(finalLabel)) {
-        const existingLabel = addresses.find(
-          (addr) => addr.label === finalLabel,
-        );
-        if (existingLabel) {
-          enqueueSnackbar(
-            `An address with the Address type "${finalLabel}" already exists.`,
-            {
-              variant: "warning",
-            },
-          );
-          setSavingAddress(false);
-          return;
-        }
-      }
-      let response;
-
-      response = await api.post(
-        `/updateCustomerProfile/addAddress/${userId}`,
-        payload,
-      );
-      console.log(response.data);
-
-      setUpdateAddress(response.data.address);
-      if (setAddress) {
-        setAddress((prevAddresses) => [
-          ...prevAddresses,
-          response.data.address,
-        ]);
-      }
-      onClose();
-      enqueueSnackbar("Address added successfully!", {
-        variant: "success",
-      });
-
-      setAddressForm({
-        label: "",
-        street: "",
-        city: "",
-        state: "",
-        country: "",
-        pincode: "",
-        _id: "",
-        isDefault: false,
-      });
-      setOtherLabel("");
-
-      setMessage({
-        text: "Address added!",
-        type: "success",
-      });
-    } catch (err) {
-      console.error("Address save error:", err.response?.data || err.message);
-      enqueueSnackbar(`${err.response?.data || err.message}`, {
-        variant: "error",
-      });
-      setMessage({ text: "Failed to save address", type: "error" });
-    } finally {
-      setSavingAddress(false);
-    }
-  };
-
-  const availableStates = countriesData[addressForm.country] || [];
-
-  return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogContent>
-        <Box
-          sx={{
-            p: { xs: 2, sm: 4 },
-            bgcolor: "#fdfefe",
-            minHeight: "100vh",
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <CustomerCardAuth>
-            <Paper
-              elevation={0}
-              sx={{
-                maxWidth: "100%",
-                mx: "auto",
-                p: { xs: 2.5, sm: 5 },
-                borderRadius: 4,
-                border: "1px solid #eaecf0",
-                boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.03)",
-              }}
-            >
-              <Stack
-                direction="row"
-                spacing={2}
-                alignItems="center"
-                sx={{ mb: 1 }}
-              >
-                <Box
-                  sx={{
-                    p: 1,
-                    bgcolor: "primary.light",
-                    borderRadius: 2,
-                    display: "flex",
-                    color: "primary.main",
-                  }}
-                >
-                  <LocationOnOutlinedIcon fontSize="medium" />
-                </Box>
-                <Box>
-                  <Typography
-                    variant="h5"
-                    fontWeight={700}
-                    sx={{ color: "#101828" }}
-                  >
-                    {editaddressId ? "Edit Address" : "Add New Address"}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Configure your accurate location configuration details
-                    below.
-                  </Typography>
-                </Box>
-              </Stack>
-
-              {message && (
-                <Alert
-                  severity={message.type}
-                  variant="standard"
-                  sx={{ mt: 3, mb: 1, borderRadius: 2 }}
-                >
-                  {message.text}
-                </Alert>
-              )}
-
-              <Box component="form" onSubmit={handleSaveAddress} sx={{ mt: 4 }}>
-                <Grid2 container spacing={2.5}>
-                  <Grid2
-                    size={{
-                      xs: 12,
-                      sm: addressForm.label === "OTHER" ? 6 : 12,
-                    }}
-                  >
-                    <FormControl fullWidth variant="outlined">
-                      <InputLabel id="address-type-label">
-                        Address Type
-                      </InputLabel>
-                      <Select
-                        labelId="address-type-label"
-                        name="label"
-                        value={addressForm.label}
-                        onChange={handleAddressChange}
-                        label="Address Type"
-                        required
-                      >
-                        <MenuItem value="" disabled>
-                          Select Type
-                        </MenuItem>
-                        <MenuItem value="HOME">🏠 Home</MenuItem>
-                        <MenuItem value="OFFICE">🏢 Office</MenuItem>
-                        <MenuItem value="OTHER">📍 Other</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid2>
-
-                  {addressForm.label === "OTHER" && (
-                    <Grid2 size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        name="customLabel"
-                        label="Specify Address Type"
-                        value={otherLabel}
-                        onChange={(e) => setOtherLabel(e.target.value)}
-                        variant="outlined"
-                        fullWidth
-                        required
-                      />
-                    </Grid2>
-                  )}
-
-                  <Grid2 size={{ xs: 12 }}>
-                    <TextField
-                      fullWidth
-                      label="Street Address / Locality / Apartment"
-                      name="street"
-                      value={addressForm.street}
-                      onChange={handleAddressChange}
-                      required
-                    />
-                  </Grid2>
-
-                  <Grid2 size={{ xs: 12, sm: 6 }}>
-                    <FormControl fullWidth variant="outlined">
-                      <InputLabel id="country-label">Country</InputLabel>
-                      <Select
-                        labelId="country-label"
-                        name="country"
-                        value={addressForm.country}
-                        onChange={handleAddressChange}
-                        label="Country"
-                        required
-                      >
-                        <MenuItem value="" disabled>
-                          Select Country
-                        </MenuItem>
-                        {Object.keys(countriesData).map((country) => (
-                          <MenuItem key={country} value={country}>
-                            {country}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid2>
-
-                  <Grid2 size={{ xs: 12, sm: 6 }}>
-                    <FormControl
-                      fullWidth
-                      disabled={
-                        !addressForm.country || availableStates.length === 0
-                      }
-                    >
-                      <InputLabel id="state-label">State / Province</InputLabel>
-                      <Select
-                        labelId="state-label"
-                        name="state"
-                        value={addressForm.state}
-                        onChange={handleAddressChange}
-                        label="State / Province"
-                        required
-                      >
-                        <MenuItem value="" disabled>
-                          Select State
-                        </MenuItem>
-                        {availableStates.map((state) => (
-                          <MenuItem key={state} value={state}>
-                            {state}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid2>
-
-                  <Grid2 size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                      fullWidth
-                      label="City"
-                      name="city"
-                      value={addressForm.city}
-                      onChange={handleAddressChange}
-                      required
-                    />
-                  </Grid2>
-
-                  <Grid2 size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                      fullWidth
-                      label="Pincode / ZIP Code"
-                      name="pincode"
-                      value={addressForm.pincode}
-                      onChange={handleAddressChange}
-                      required
-                    />
-                  </Grid2>
-                </Grid2>
-
-                <Stack
-                  direction={{ xs: "column-reverse", sm: "row" }}
-                  spacing={2}
-                  justifyContent="flex-end"
-                  sx={{ mt: 5 }}
-                >
-                  <Button
-                    variant="text"
-                    startIcon={<ArrowBackIcon />}
-                    onClick={onClose}
-                    sx={{ color: "text.secondary", px: 3, py: 1.2 }}
-                    fullWidth={{ xs: true, sm: false }}
-                  >
-                    Back to Profile
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disableElevation
-                    startIcon={
-                      savingAddress ? (
-                        <CircularProgress size={18} color="inherit" />
-                      ) : (
-                        <SaveIcon />
-                      )
-                    }
-                    disabled={savingAddress}
-                    sx={{ px: 4, py: 1.2, fontWeight: 600, borderRadius: 2 }}
-                    fullWidth={{ xs: true, sm: false }}
-                  >
-                    {savingAddress
-                      ? "Saving Details..."
-                      : editaddressId
-                        ? "Update Address"
-                        : "Save Location"}
-                  </Button>
-                </Stack>
-              </Box>
-            </Paper>
-          </CustomerCardAuth>
-        </Box>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 export default function CustomerCart() {
   const cartItems = useSelector((state) => state.cart.items);
   const cartStatus = useSelector((state) => state.cart.status);
+  const cartTotals = useSelector((state) => state.cart.totals);
   const quantity = useSelector((state) => state.cart.cartValue);
 
   let token = localStorage.getItem("token");
@@ -523,7 +104,6 @@ export default function CustomerCart() {
   const [open, setOpen] = React.useState(false);
   const [updateAddress, setUpdateAddress] = useState(null);
   const [openAddress, setOpenAddress] = useState(false);
-  const [coupon, setCoupon] = useState("");
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -542,79 +122,41 @@ export default function CustomerCart() {
     setOpen(true);
   };
 
-  console.log(addresses);
-
   const handleClose = () => {
     setOpen(false);
   };
 
-  // const discountedPrice =
-  //   product?.price - (product?.price * product?.discount) / 100;
-
   const handleRemoveCoupon = async () => {
     try {
-      // await api.post("/cart/remove-coupon");
-      dispatch(getItems());
+      let res = await api.delete("/cart/remove-coupon");
+      dispatch(removeCoupon());
     } catch (error) {
       console.error("Failed to remove coupon:", error);
     }
-    // dispatch(removeCouponFromCart());
-    enqueueSnackbar("Coupon removed!", { variant: "info" });
   };
+
   const subtotal = cartItems.reduce((total, item) => {
-    const priceInPaise = Math.round(Number(item?.product?.price) * 100);
-    return total + priceInPaise * item?.quantity;
+    const discountedPrice =
+      Number(
+        item.product.price - (item.product.price * item.product.discount) / 100,
+      ) * 100;
+    const itemTotal = discountedPrice * item.quantity;
+    return total + itemTotal;
   }, 0);
-  console.log(cartItems);
 
-  const couponDiscount =
-    cartItems[0]?.coupon &&
-    Math.floor(subtotal / 100) >= cartItems[0]?.coupon.min_order_value
-      ? Math.min(
-          (subtotal * cartItems[0]?.coupon.discount) / 100,
-          cartItems[0]?.coupon.max_discount,
-        )
-      : 0;
-
-  const shipping = subtotal >= 1000 ? 0 : 999;
-
+  const coupon = cartItems[0]?.coupon;
   const formatPrice = (amountInPaise) => (amountInPaise / 100).toFixed(2);
+  let couponDiscountAmount = 0;
 
-  const grandTotal = subtotal + shipping - couponDiscount * 100;
-  console.log(couponDiscount, formatPrice(subtotal), shipping, grandTotal);
-
-  async function getCoupons() {
-    try {
-      // let res = await api.get("coupon/getCoupons");
-      // setCouponList(res.data.coupons);
-      // console.log(res.data.coupons);
-    } catch (error) {
-      console.log(error.message);
-    }
+  if (coupon) {
+    const calculatedDiscount = (subtotal / 100) * (coupon.discount / 100);
+    couponDiscountAmount = Math.min(calculatedDiscount, coupon.max_discount);
   }
 
-  //   // Subtotal
-  //   const subtotal = round2(
-  //     itemsWithTotal.reduce((sum, item) => sum + item.lineTotal, 0)
-  //   );
+  const shipping = formatPrice(subtotal) <= 1000 ? 0 : 0;
 
-  //   // Shipping (example rule)
-  //   const shippingCost = subtotal > 500 ? 0 : round2(shipping);
-
-  //   // Discount
-  //   const discountAmount = round2(discount);
-
-  //   // Final total
-  //   const total = round2(subtotal + shippingCost - discountAmount);
-
-  //   return {
-  //     items: itemsWithTotal,
-  //     subtotal: subtotal.toFixed(2),
-  //     shipping: shippingCost.toFixed(2),
-  //     discount: discountAmount.toFixed(2),
-  //     total: total.toFixed(2),
-  //   };
-  // }
+  const grandTotal =
+    Number(formatPrice(subtotal)) + Number(shipping) - couponDiscountAmount;
 
   //update quantity
   function handleChange(cartId, quantity) {
@@ -624,8 +166,6 @@ export default function CustomerCart() {
       dispatch(removeCartItem(cartId));
     }
   }
-  console.log(cartItems);
-
   async function saveForLater(cartId) {
     try {
       const res = await api.post(`/cart/later/${cartId}`);
@@ -665,8 +205,6 @@ export default function CustomerCart() {
       setAddress(addressList);
       const defaultAddress =
         addressList.find((item) => item.isDefault) || addressList[0];
-
-      console.log(defaultAddress, addressList);
       setUpdateAddress(defaultAddress);
     } catch (error) {
       console.error("Failed to get address:", error);
@@ -699,14 +237,23 @@ export default function CustomerCart() {
       ? updateAddress
       : addresses || [];
 
-  console.log(cartItems);
-
   useEffect(() => {
     if (cartStatus === "idle") dispatch(getItems());
-    getCoupons();
-    getAddress();
   }, [cartStatus, dispatch]);
+  useEffect(() => {
+    getAddress();
+  }, []);
 
+  useEffect(() => {
+    const coupon = cartItems[0]?.coupon;
+    if (coupon && subtotal / 100 < coupon.min_order_value) {
+      handleRemoveCoupon();
+      enqueueSnackbar(
+        `Coupon removed as order total is below ₹${coupon.min_order_value}`,
+        { variant: "warning" },
+      );
+    }
+  }, [cartItems, subtotal]);
   useEffect(() => {
     if (addresses.length && !updateAddress) {
       const defaultAddress =
@@ -714,16 +261,7 @@ export default function CustomerCart() {
       setUpdateAddress(defaultAddress);
     }
   }, [addresses]);
-
-  useEffect(() => {
-    dispatch(getItems())
-  
-  }, [])
-  
-
-console.log(cartStatus);
-
-  if (cartStatus === "loading" ) {
+  if (cartStatus === "loading") {
     return (
       <Box sx={{ p: 3 }}>
         <Grid container>
@@ -733,7 +271,7 @@ console.log(cartStatus);
             <Skeleton variant="rectangular" height={120} />
           </Grid>
           <Grid size={{ xs: 12, sm: 4, md: 4 }}>
-            <Skeleton variant="rectangular" height={200} sx={{ ml: 2 }}/>
+            <Skeleton variant="rectangular" height={200} sx={{ ml: 2 }} />
           </Grid>
         </Grid>
       </Box>
@@ -823,14 +361,26 @@ console.log(cartStatus);
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, sm: 8, md: 8 }}>
           <Stack>
-
-            <AddressModal
-              addresses={addresses}
-              setAddress={setAddress}
-              setUpdateAddress={setUpdateAddress}
-              open={addressModalOpen}
-              onClose={() => setAddressModalOpen(false)}
-            />
+            {cartStatus === "loading" ? (
+              <Skeleton variant="rectangular" />
+            ) : (
+              <Suspense
+                fallback={
+                  <>
+                    <Skeleton variant="rectangular" />
+                    <Skeleton variant="text" />
+                  </>
+                }
+              >
+                <AddressModal
+                  addresses={addresses}
+                  setAddress={setAddress}
+                  setUpdateAddress={setUpdateAddress}
+                  open={addressModalOpen}
+                  onClose={() => setAddressModalOpen(false)}
+                />
+              </Suspense>
+            )}
             <Dialog
               open={open}
               onClose={handleClose}
@@ -945,13 +495,11 @@ console.log(cartStatus);
               <Card
                 key={item._id}
                 sx={{
-                  display: { xs: "flex", sm: "block" },
+                  display: "flex",
                   alignItems: "center",
-                  justifyContent: "space-between",
                   mb: 2,
                   borderRadius: 4,
                   p: 1.5,
-                  display: "flex",
                   flexDirection: { xs: "column", sm: "row" },
                   alignItems: "center",
                   gap: 2,
@@ -975,6 +523,8 @@ console.log(cartStatus);
                             .replace(/^\/+/, "")}`
                         : "/no-image.png"
                     }
+                    alt="No-img"
+                    loading="lazy"
                     sx={{
                       width: 90,
                       height: 90,
@@ -1031,155 +581,135 @@ console.log(cartStatus);
                     </IconButton>
                   </Box>
                 </Stack>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Stack>
-                    <Chip
-                      size="small"
-                      color={item.product.isAvailable ? "success" : "error"}
-                      label={
-                        item.product.isAvailable ? "Available" : "Out of Stock"
-                      }
-                      sx={{
-                        fontWeight: 600,
-                        width: 80,
-                      }}
-                    />
-                    <Typography variant="h6" fontWeight={700} color="#1f2937">
-                      {item.product.name}
-                    </Typography>
-                  </Stack>
-                  <Typography
-                    sx={{
-                      fontSize: "0.85rem",
-                      color: "#6B7280",
-                      display: { xs: "none", sm: "block" },
-                    }}
-                  >
-                    {item?.product?.description}
-                  </Typography>
-
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    flexWrap="wrap"
-                    useFlexGap
-                    sx={{ mt: 1 }}
-                  >
-                    <Chip
-                      size="small"
-                      label="In Cart"
-                      sx={{
-                        bgcolor: "rgba(62,26,137,0.08)",
-                        color: "#3E1A89",
-                        fontWeight: 600,
-                      }}
-                    />
-
-                    {item?.product?.rating > 0 && (
+                <Stack sx={{ flexDirection: "row", flex: 1 }}>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Stack>
                       <Chip
                         size="small"
-                        icon={
-                          item?.product?.rating && (
-                            <StarIcon sx={{ fontSize: 16 }} />
-                          )
+                        color={item?.product?.isAvailable ? "success" : "error"}
+                        label={
+                          item.product.isAvailable
+                            ? "Available"
+                            : "Out of Stock"
                         }
-                        label={`${item?.product?.rating}`}
-                        color="warning"
-                        variant="outlined"
-                        sx={{ fontWeight: 600 }}
+                        sx={{
+                          fontWeight: 600,
+                          width: 80,
+                        }}
                       />
-                    )}
-                  </Stack>
-                </Box>
+                      <Typography variant="h6" fontWeight={700} color="#1f2937">
+                        {item.product.name}
+                      </Typography>
+                    </Stack>
+                    <Typography
+                      sx={{
+                        fontSize: "0.85rem",
+                        color: "#6B7280",
+                        display: { xs: "none", sm: "block" },
+                      }}
+                    >
+                      {item?.product?.description}
+                    </Typography>
 
-                {/* <Box sx={{ textAlign: "center" }}>
-                  <Typography
-                    sx={{
-                      fontSize: "0.75rem",
-                      color: "#6B7280",
-                      fontWeight: 600,
-                      mb: 0.5,
-                    }}
-                  >
-                    Qty
-                  </Typography>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      flexWrap="wrap"
+                      useFlexGap
+                      sx={{ mt: 1 }}
+                    >
+                      <Chip
+                        size="small"
+                        label="In Cart"
+                        sx={{
+                          bgcolor: "rgba(62,26,137,0.08)",
+                          color: "#3E1A89",
+                          fontWeight: 600,
+                        }}
+                      />
 
-                  <Select
-                    value={item?.quantity}
-                    onChange={(e) => handleChange(item?._id, e.target.value)}
-                    size="small"
-                    sx={{
-                      borderRadius: 3,
-                      minWidth: 70,
-                      fontSize: "0.85rem",
-                      bgcolor: "#fff",
-                    }}
-                  >
-                    {[...Array(10)].map((_, i) => (
-                      <MenuItem key={i + 1} value={i + 1}>
-                        {i + 1}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </Box> */}
+                      {item?.product?.rating > 0 && (
+                        <Chip
+                          size="small"
+                          icon={
+                            item?.product?.rating && (
+                              <StarIcon sx={{ fontSize: 16 }} />
+                            )
+                          }
+                          label={`${item?.product?.rating}`}
+                          color="warning"
+                          variant="outlined"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      )}
+                    </Stack>
+                  </Box>
 
-                <Box sx={{ textAlign: "center", minWidth: 90 }}>
-                  <Typography
+                  <Box
                     sx={{
-                      fontSize: "0.75rem",
-                      color: "#6B7280",
-                      fontWeight: 600,
+                      display: "flex",
+                      flexGrow: "initial",
+                      flexDirection: { sm: "column", md: "row" },
+                      alignItems: "center",
+                      gap: { xs: 1, sm: 2 },
+                      minWidth: { sm: 100 },
+                      justifyContent: "space-between",
                     }}
                   >
-                    Price
-                  </Typography>
+                    <Box sx={{ textAlign: "center" }}>
+                      <Typography
+                        sx={{
+                          fontSize: "0.75rem",
+                          color: "#6B7280",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Price
+                      </Typography>
 
-                  <Typography
-                    sx={{
-                      fontSize: "1.2rem",
-                      fontWeight: 600,
-                      textDecoration: "line-through",
-                      color: "#3E1A89",
-                    }}
-                  >
-                    ₹{item?.product?.price * item?.quantity}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: "1.2rem",
-                      fontWeight: 800,
-                      color: "#3E1A89",
-                    }}
-                  >
-                    ₹
-                    {(item?.product?.price -
-                      (item?.product?.price * item?.product?.discount) / 100) *
-                      item?.quantity}
-                  </Typography>
-                </Box>
+                      <Typography
+                        sx={{
+                          fontSize: "1.2rem",
+                          fontWeight: 600,
+                          textDecoration: "line-through",
+                          color: "#3E1A89",
+                        }}
+                      >
+                        ₹{item?.product?.price * item?.quantity}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontSize: "1.2rem",
+                          fontWeight: 800,
+                          color: "#3E1A89",
+                        }}
+                      >
+                        ₹
+                        {(item?.product?.price -
+                          (item?.product?.price * item?.product?.discount) /
+                            100) *
+                          item?.quantity}
+                      </Typography>
+                    </Box>
 
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: { xs: "row", sm: "column" },
-                    gap: 1,
-                  }}
-                >
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="error"
-                    sx={{
-                      borderRadius: 99,
-                      textTransform: "none",
-                      fontSize: "0.75rem",
-                      px: 2,
-                    }}
-                    onClick={() => deleteModal(item?._id)}
-                  >
-                    Remove
-                  </Button>
-                </Box>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        sx={{
+                          borderRadius: 99,
+                          textTransform: "none",
+                          fontSize: "0.8rem",
+                          px: 2,
+                        }}
+                        onClick={() => deleteModal(item?._id)}
+                      >
+                        Remove
+                      </Button>
+                    </Box>
+                  </Box>
+                </Stack>
               </Card>
             ))}
           </Stack>
@@ -1277,48 +807,47 @@ console.log(cartStatus);
                   />
                 </Box>
 
-                {cartItems[0].coupon && (
+                {cartItems[0]?.coupon && (
                   <Box
                     sx={{
                       p: 1.5,
                       borderRadius: 2,
                       bgcolor: "#f1f8e9",
                       border: "1px solid #c5e1a5",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
                     }}
                   >
-                    <Box>
-                      <Typography
-                        variant="body2"
-                        fontWeight={700}
-                        color="success.main"
-                      >
-                        Coupon Applied: {cartItems[0].coupon.code}
-                      </Typography>
-
-                      <Typography variant="caption" color="text.secondary">
-                        {cartItems[0].coupon.discount}% OFF
-                      </Typography>
-
-                      <Typography
-                        variant="body2"
-                        color="success.main"
-                        fontWeight={600}
-                      >
-                        - ₹{couponDiscount}
-                      </Typography>
-                    </Box>
-
-                    <Button
-                      size="small"
-                      color="error"
-                      variant="outlined"
-                      onClick={handleRemoveCoupon}
-                    >
-                      Remove
-                    </Button>
+                    <Grid container spacing={1} alignItems="center">
+                      <Grid size={{ xs: 12, sm: 12, md: 8 }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight={700}
+                          color="success.dark"
+                        >
+                          Coupon Applied: {cartItems[0].coupon.code}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {cartItems[0].coupon.discount}% OFF
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="success.dark"
+                          fontWeight={600}
+                        >
+                          - ₹{couponDiscountAmount.toFixed(2)}
+                        </Typography>
+                      </Grid>
+                      <Grid size={{ xs: 4, md: 4 }} sx={{ textAlign: "right" }}>
+                        <Button
+                          size="small"
+                          color="error"
+                          variant="outlined"
+                          onClick={handleRemoveCoupon}
+                          sx={{ textTransform: "none" }}
+                        >
+                          Remove
+                        </Button>
+                      </Grid>
+                    </Grid>
                   </Box>
                 )}
                 <Box
@@ -1340,7 +869,7 @@ console.log(cartStatus);
                     fontWeight={800}
                     color="primary.main"
                   >
-                    ₹{formatPrice(grandTotal)}
+                    ₹{formatPrice(grandTotal * 100)}
                   </Typography>
                 </Box>
               </Stack>
@@ -1355,11 +884,10 @@ console.log(cartStatus);
                     py: 0.5,
                     background: "linear-gradient(145deg, #2c22e3, #3726cf)",
                     boxShadow: `
-      inset 0 2px 4px rgba(255,255,255,0.4),
-      inset 0 -4px 8px rgba(0,0,0,0.2),
-      0 6px 15px rgba(255,87,34,0.35)
-    `,
-
+                      inset 0 2px 4px rgba(255,255,255,0.4),
+                      inset 0 -4px 8px rgba(0,0,0,0.2),
+                      0 6px 15px rgba(50, 37, 33, 0.35)
+                    `,
                     "&::before": {
                       content: '""',
                       position: "absolute",
@@ -1392,46 +920,51 @@ console.log(cartStatus);
                 </Box>
               </Box>
               <Stack spacing={2}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" color="text.primary">
-                  Saved Address
-                </Typography>
-
-                <Stack
-                  direction="row"
-                  sx={{ justifyContent: "space-between", alignItems: "center" }}
-                >
-                  {updateAddress ? (
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      key={updateAddress._id}
-                    >
-                      {`${updateAddress.street}, ${updateAddress.city}, ${updateAddress.state}, ${updateAddress.country}, ${updateAddress.pincode}`}
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" color="text.primary">
+                      Saved Address
                     </Typography>
-                  ) : (
-                    "No Address Found"
-                  )}
 
-                  {updateAddress ? (
-                    <IconButton onClick={() => handleClickOpen()}>
-                      <EditIcon />
-                    </IconButton>
-                  ) : (
-                    <PrimaryButton onClick={() => setAddressModalOpen(true)}>
-                      Add Address
-                    </PrimaryButton>
-                  )}
-                </Stack>
-              </CardContent>
-            </Card>
-            </Stack>
+                    <Stack
+                      direction="row"
+                      sx={{
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      {updateAddress ? (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          key={updateAddress._id}
+                        >
+                          {`${updateAddress.street}, ${updateAddress.city}, ${updateAddress.state}, ${updateAddress.country}, ${updateAddress.pincode}`}
+                        </Typography>
+                      ) : (
+                        "No Address Found"
+                      )}
+
+                      {updateAddress ? (
+                        <IconButton onClick={() => handleClickOpen()}>
+                          <EditIcon />
+                        </IconButton>
+                      ) : (
+                        <PrimaryButton
+                          onClick={() => setAddressModalOpen(true)}
+                        >
+                          Add Address
+                        </PrimaryButton>
+                      )}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Stack>
 
               <Box sx={{ mt: 1 }}>
                 <PaymentButton
                   addressId={updateAddress?._id}
-                  amount={formatPrice(grandTotal)}
+                  amount={formatPrice(grandTotal * 100)}
                 />
               </Box>
             </CardContent>

@@ -15,18 +15,33 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import TwitterIcon from "@mui/icons-material/Twitter";
+import LanguageIcon from "@mui/icons-material/Language";
+import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import api from "../api/axiosConfig";
 import { Category } from "@mui/icons-material";
+import { jwtDecode } from "jwt-decode";
 
 export default function AboutAndFooter({company}) {
 
   const [categories, setCategories] = useState([])
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const token = localStorage.getItem("token");
+  let decodeRole = {};
+
+  if (token) {
+    try {
+      decodeRole = jwtDecode(token);
+    } catch (error) {
+      console.error("Invalid token in Footer", error);
+    }
+  }
+
   const getCategories = async () => {
       try {
         const response = await api.get("/category/allCategories");
-  
         setCategories(p=>response?.data?.categories?.filter((cat)=>cat.isAvailable===true) || []);
       } catch (error) {
         console.log(error.message);
@@ -54,7 +69,7 @@ export default function AboutAndFooter({company}) {
           >
             <Grid xs={12} md={6}>
               <Typography
-                onClick={() => navigate("/company/about")}
+                onClick={() => decodeRole?.role === "customer" ? navigate("/customer/about"): navigate("/about")}
                 sx={{
                   color: "primary.main",
                   fontWeight: 700,
@@ -87,15 +102,12 @@ export default function AboutAndFooter({company}) {
                   mb: 3,
                   fontSize: "1rem",
                 }}
-              >
-                From laddoos and granola bars to festive sweet packs, our goal
-                is to deliver healthy, tasty, and beautifully packed homemade
-                food for your family and special occasions.
+              >{company?.customFields?.companyTag}
               </Typography>
 
               <Button
                 variant="contained"
-                onClick={() => navigate("/company/products")}
+                onClick={() => decodeRole?.role === "customer" ? navigate("/customer/products"): navigate("/login")}
                 sx={{
                   backgroundColor: "primary.main",
                   color: "primary.contrastText",
@@ -142,8 +154,7 @@ export default function AboutAndFooter({company}) {
                   lineHeight: 1.8,
                   fontSize: "0.95rem",
                 }}
-              >
-                
+              >                
                 {company?.companyDescription}
               </Typography>
             </Grid>
@@ -156,14 +167,14 @@ export default function AboutAndFooter({company}) {
               </Typography>
               <Stack spacing={1}>                
                 <Link
-                  href="/customer/about"
+                  href={ decodeRole?.role === "customer" ? "/customer/about": "/about"}
                   underline="none"
                   color="secondary.main"
                 >
                   About
                 </Link>
                 <Link
-                  href="/customer/products"
+                  href={ decodeRole?.role === "customer" ? "/customer/products": "/login"}
                   underline="none"
                   color="secondary.main"
                 >
@@ -183,7 +194,7 @@ export default function AboutAndFooter({company}) {
               </Typography>
               <Stack spacing={1}>
                 {categories?.map((category) =>(<Link
-                  href="/customer/products"
+                  href={ decodeRole?.role === "customer" ? "/customer/about": "/login"}
                   underline="none"
                   color="secondary.main"
                   key={category._id}
@@ -232,93 +243,35 @@ export default function AboutAndFooter({company}) {
               </Stack>
 
               <Stack direction="row" spacing={1.5} sx={{ mt: 2 }}>
-                {/* {company?.socialMedia?.map((social) => {
-                  const Icon = scoial.includes("facebook")
-                    ? FaIcons.FaFacebook
-                    : social.includes("instagram")
-                    ? FaIcons.FaInstagram
-                    : social.includes("youtube")
-                    ? FaIcons.FaYoutube
-                    : social.includes("twitter")
-                    ? FaIcons.FaTwitter
-                    : social.includes("linkedin")
-                    ? FaIcons.FaLinkedinIn : FaIcons.FaGlobe
-                  return(
-  <IconButton
-    component="a"
-    href={`${social}`}
-    target="_blank"
-    rel="noopener noreferrer"
-    sx={{ color: "primary.main", backgroundColor: "secondary.main" }}
-  >
-    <Icon />
-  </IconButton>
-                  )
-                  })
-                } */}
-                <IconButton
-                  component="a"
-                  href={`${company?.socialMedia?.facebook}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    color: "primary.main",
-                    backgroundColor: "secondary.main",'& :hover': {
-                      color: 'secondary.main',
-                      backgroundColor: 'primary.main',
-                    },
-                  }}
-                >
-                  <FacebookIcon />
-                </IconButton>
+                {(company?.socialMedia || []).map((social, index) => {                  
+                  const icons = {
+                    FacebookIcon,
+                    InstagramIcon,
+                    YouTubeIcon,
+                    TwitterIcon,
+                    LinkedInIcon,
+                  };
+                  const Icon = icons[`${social.platform}Icon`] || LanguageIcon;
 
-                <IconButton
-                  component="a"
-                  href={company?.socialMedia?.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    color: "primary.main",
-                    backgroundColor: "secondary.main",'& :hover': {
-                      color: 'secondary.main',
-                      backgroundColor: 'primary.main',
-                    },
-                  }}
-                >
-                  <InstagramIcon />
-                </IconButton>
-
-                <IconButton
-                  component="a"
-                  href={company?.socialMedia?.youtube}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    color: "primary.main",
-                    backgroundColor: "secondary.main",'& :hover': {
-                      color: 'secondary.main',
-                      backgroundColor: 'primary.main',
-                    },
-                  }}
-                >
-                  <YouTubeIcon />
-                </IconButton>
-                <IconButton
-                  component="a"
-                  href={company?.socialMedia?.twitter}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    color: "primary.main",
-                    backgroundColor: "secondary.main",
-                    '& :hover': {
-                      color: 'secondary.main',
-                      backgroundColor: 'primary.main',
-                    },
-                  }}
-                >
-                  <TwitterIcon sx={{borderRadius:999}} />
-                </IconButton>
+                  return (
+                    <IconButton
+                      key={index}
+                      component="a"
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{
+                        color: "primary.main",
+                        backgroundColor: "secondary.main",
+                        "&:hover": {
+                          backgroundColor: "primary.contrastText",
+                        },
+                      }}
+                    >
+                      <Icon />
+                    </IconButton>
+                  );
+                })}
               </Stack>
             </Grid>
           </Grid>

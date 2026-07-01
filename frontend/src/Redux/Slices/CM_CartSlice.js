@@ -55,6 +55,7 @@ const cartSlice = createSlice({
   initialState: {
     items: [],
     cartValue: 0,
+    totals: null,
     status: "idle",
     error: null,
   },
@@ -66,8 +67,22 @@ const cartSlice = createSlice({
     },
     clearCart: (state) => {
       state.items = [];
+      state.totals = null;
       state.cartValue = 0;
     },
+      allApplyCoupon: (state, action) => {
+        console.log(action.payload);
+        
+      state.totals = action.payload;
+    },
+    removeCoupon: (state) => {
+      state.totals = null;
+      state.items = state.items.map(item => {
+        const { coupon, ...rest } = item;
+        // The coupon is on the item, so we remove it.
+        return rest;
+      });
+    }
   },
     extraReducers: (builder) => {
       builder
@@ -78,6 +93,7 @@ const cartSlice = createSlice({
         .addCase(getItems.fulfilled, (state, action) => {
           state.status = "succeeded";
           state.items = action.payload;
+          state.totals = null; // Reset totals when fetching fresh cart
           state.cartValue = action.payload.reduce(
             (sum, item) => sum + item.quantity,
             0,
@@ -134,5 +150,5 @@ const cartSlice = createSlice({
   },
 });
 
-export const { clearCart, addValue } = cartSlice.actions;
+export const { clearCart, addValue,allApplyCoupon ,removeCoupon} = cartSlice.actions;
 export default cartSlice.reducer;

@@ -4,6 +4,7 @@ const transporter = require("../../config/emailConfig");
 const emailSender = require("../../Utils/emailSender");
 const { regToken } = require("../../Utils/TokenGenerator");
 const decodeToken = require("../../Utils/decodeToken");
+const bcrypt = require("bcrypt");
 
 
 async function verifyEmail(req, res) {
@@ -82,7 +83,8 @@ async function verifyOtp(req, res) {
             });
         }
 
-         let token = regToken({ email:deletedOtp.email });
+         // Pass only the email string to regToken, not an object.
+         let token = regToken(deletedOtp.email);
 
          if(!token){
             return res.status(400).json({
@@ -114,24 +116,30 @@ async function regController(req, res) {
         let decoded = decodeToken(token, res);
         if (res.headersSent) return;
 
+        // The email from the body is not needed here, as the verified email is in the token.
 
-
-        if (!body.name || !body.email || !body.password || !body.phone) {
+        if (!body.name  || !body.password || !body.phone) {
             return res.status(400).json({
                 message: "All fields are required"
             })
         }
 
-      
-           let userToProcess = await userModel.create(body);
+        // Hash the password before saving
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(body.password, salt);
 
-            if (!userToProcess) {
-                return res.status(400).json({
-                    message: "Something went wrong"
-                });
-            }
-        
-       
+        let userToProcess = await userModel.create({
+            name: body.name,
+            email: decoded.email, // Use the verified email from the token
+            password: hashedPassword,
+            phone: body.phone
+        });
+
+        if (!userToProcess) {
+            return res.status(400).json({
+                message: "Something went wrong during user creation"
+            });
+        }
 
         res.status(200).json({
             message: "User registered successfully, please verify your email",

@@ -64,6 +64,11 @@ export default function AdminProductPage() {
     <div>
       <Box sx={{ width: "100%",position:'relative' }}>
         <SnackbarProvider />
+        <PrimaryButton onClick={()=>navigate(`/admin/products`)}
+        sx={{ml:'screen'}}
+        >
+          Back
+        </PrimaryButton>
         <Typography
           align="center"
           variant="h4"
@@ -76,11 +81,6 @@ export default function AdminProductPage() {
         >
           Product Details
         </Typography>
-        <PrimaryButton onClick={()=>navigate(`/admin/products/updateProduct/${id}`)}
-        sx={{position:'absolute',top:0,right:0,m:1}}
-        >
-          Update
-        </PrimaryButton>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 7 }}>
             <ImageList
@@ -212,8 +212,8 @@ export default function AdminProductPage() {
                 <Stack direction="row" spacing={1}>
                   <Chip
                   sx={{'& :hover':{cursor:'default'}}}
-                    label={product?.isAvailable ? "Available" : "Unavailable"}
-                    color={product?.isAvailable ? "success" : "error"}
+                    label={product?.stock > 0? "Available" : "Unavailable"}
+                    color={product?.stock > 0? "success" : "error"}
                   />
 
                   <Chip
@@ -265,6 +265,12 @@ export default function AdminProductPage() {
             </Paper>
           </Grid>
         </Grid>
+        
+        <PrimaryButton onClick={()=>navigate(`/admin/products/updateProduct/${id}`)}
+        sx={{ml:'full'}}
+        >
+          Update
+        </PrimaryButton>
       </Box>
     </div>
   );

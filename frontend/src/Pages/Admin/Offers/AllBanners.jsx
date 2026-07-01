@@ -14,7 +14,7 @@ export default function OfferPreviewBanner({
   onRemoveNewImage = () => {},
 }) {
   const selectedBg =
-    backgroundOptions?.find((item) => item?.name === offer?.background) || backgroundOptions[0];
+    backgroundOptions?.find((item) => item?.bg === offer?.background) || backgroundOptions[0];
 
 
   return (
@@ -66,14 +66,14 @@ export default function OfferPreviewBanner({
                 fontWeight: 700,
               }}
             />
-            <Chip
+            {/* <Chip
               label={offer?.background || selectedBg.name}
               sx={{
                 bgcolor: selectedBg.chipBg,
                 color: selectedBg.chipColor,
                 fontWeight: 700,
               }}
-            />
+            /> */}
           </Stack>
 
           <Typography
@@ -117,7 +117,7 @@ export default function OfferPreviewBanner({
                 lineHeight: 1.1,
               }}
             >
-              Use Code: {offer?.coupon?.code || "SAVE20"}
+              Use Code: {offer?.code || "SAVE20"}
             </Typography>
           </Box>
 

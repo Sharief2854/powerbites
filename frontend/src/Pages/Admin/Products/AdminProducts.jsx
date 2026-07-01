@@ -27,7 +27,6 @@ import {
   Checkbox,
   Modal,
 } from "@mui/material";
-import axios from "axios";
 import { enqueueSnackbar, SnackbarContent, SnackbarProvider } from "notistack";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { styled } from "@mui/material/styles";
@@ -41,7 +40,6 @@ import Input from "@mui/material/Input";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Radio from "@mui/material/Radio";
 import ProductCard from "./productCard";
-import { v4 as uuidv4 } from "uuid";
 import { Chip } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import api from "../../../api/axiosConfig";
