@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
 const cors = require('cors')
 const ConnectDB = require('./config/connectDB');
 const RegRouter = require("./Routes/Auth/Registration")
@@ -14,6 +15,7 @@ const bannerRouter = require('./Routes/Banner/bannerRoutes');
 const offerRouter = require('./Routes/Offer/offerRouter');
 const multer = require('multer');
 const conditionalJsonParser = require('./MiddleWare/jsonParserMiddleware');
+const { apiLimiter, authLimiter } = require('./MiddleWare/rateLimiter');
 
 const couponRouter = require('./Routes/Coupon/couponRouter');
 
@@ -47,6 +49,9 @@ const { Server } = require("socket.io");
 const app = express()
 app.use(cors())
 
+// Use cookie-parser middleware to parse cookies from incoming requests
+app.use(cookieParser());
+
 // Use the conditional JSON parser middleware.
 // IMPORTANT: The webhook route needs the raw body for signature verification.
 // We apply the raw parser specifically for this route.
@@ -75,11 +80,14 @@ io.on('connection', (socket) => {
 
 
 
-app.use("/auth",RegRouter,LoginRouter)
-app.use("/resetPass",ResetRouter)
+app.use("/auth", authLimiter, RegRouter, LoginRouter)
+app.use("/resetPass", authLimiter, ResetRouter)
+
+// Apply the general API rate limiter to all other routes
+app.use(apiLimiter);
 
 // Admin routes CRUD opertions with authentication middleware
-app.use("/crudAdmin",isAdmin,adminRouter)
+app.use("/crudAdmin", isAdmin, adminRouter)
 app.use("/cart",isCustomer,CartRouter)
 app.use("/products",ProductRouter)
 app.use("/banner", bannerRouter)
