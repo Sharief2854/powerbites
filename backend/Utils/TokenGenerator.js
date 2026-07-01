@@ -31,7 +31,7 @@ function regToken(email){
     let token = jwt.sign(
         {email},
         process.env.JWTKEY,
-        {expiresIn:"10m"}
+        {expiresIn:"15m"}
     )
     return token
 }
@@ -41,7 +41,3 @@ module.exports = {
     generateRefreshToken,
     regToken
 }
-
-
-
-
