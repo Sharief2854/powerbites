@@ -2,62 +2,35 @@ const express = require("express");
 const ProductModel = require("../../Model/ProductModel");
 const sendProductNotification = require("../../Utils/sendProductNotification");
 const ProductCategoryModel = require("../../Model/productCategoryModel")
-const cache = require("../../Config/cache")
-
-
 async function allProduct(req, res) {
     try {
-        const page = Number(req.query.page) || 1;
-        const limit = Number(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
+        const data = await ProductModel.find().populate({ path: "category" }).sort({ createdAt: -1 });
 
-        const cacheKey = `products-${page}-${limit}`;
-        // console.log(cacheKey?"yes":"no")
-        const cachedData = cache.get(cacheKey);
-
-        if (cachedData) {
-            return res.status(200).json({
-                success: true,
-                source: "cache",
-                ...cachedData
+        const Productdata = await ProductModel.find().sort({ updatedAt: -1 });
+        if (!data) {
+            return res.status(400).json({
+                message: "No products found"
             });
         }
+        res.status(200).json({
+            message: "Banners fetched successfully",
+            data
+        })
 
-        const totalProducts = await ProductModel.countDocuments();
+    }
+    catch (err) {
+        res.status(500).json({
+            message: err.message
+        })
 
-        // First test WITHOUT populate
-        const products = await ProductModel.find({})
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
-            .lean();
-
-        const response = {
-            page,
-            limit,
-            totalProducts,
-            totalPages: Math.ceil(totalProducts / limit),
-            data: products
-        };
-
-        cache.set(cacheKey, response);
-
-        return res.status(200).json({
-            success: true,
-            source: "db",
-            ...response
-        });
-
-    } catch (err) {
-        console.error("ERROR:", err);
-
-        return res.status(500).json({
-            success: false,
-            message: err.message,
-            stack: err.stack
-        });
     }
 }
+
+
+
+
+
+
 async function addProduct(req, res) {
     try {
         const { name, description, price, stock, discount } = req.body;
@@ -70,14 +43,15 @@ async function addProduct(req, res) {
         }
         // Convert file paths to URLs
         const imagePaths = req.files.map(file =>
-            `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
+             `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
         );
 
-        // console.log("Category from request:", req.body.category);
+       // console.log("Category from request:", req.body.category);
 
         const category = await ProductCategoryModel.findOne({
             _id: req.body.category.trim()
         });
+
 
 
         if (!category) {
@@ -85,35 +59,32 @@ async function addProduct(req, res) {
                 message: "Category not found"
             });
         }
-        const discountAmount = (Number(price) * Number(discount)) / 100;
-
-        const finalPrice = Number(price) - discountAmount;
-        // Create product
-        const product = await ProductModel.create({
+        
+        // Create a single product instance
+        const newProduct = await ProductModel.create({
             name,
             description,
             price: Number(price),
             stock: Number(stock),
             discount: Number(discount),
-            finalPrice,
             category: category._id,
             image: imagePaths
         });
-        // const products = await ProductModel.create(product);
 
-        if (req.body.sendUpdates == "on") {
-            sendProductNotification(products)
+        // If the "send updates" checkbox is checked, trigger the notification email
+        if (req.body.sendUpdates === "on") {
+            sendProductNotification(newProduct);
         }
-         cache.flushAll();
-        const Product = await ProductModel.findById(products._id)
+
+        // Populate the category details for the response
+        const populatedProduct = await ProductModel.findById(newProduct._id)
             .populate("category", "name");
 
         return res.status(200).json({
             message: "Product added successfully",
-            data: Product
+            data: populatedProduct
         });
 
-       
     } catch (err) {
         console.log(err);
 
@@ -131,33 +102,33 @@ async function addProduct(req, res) {
 async function updateProduct(req, res) {
     try {
         const id = req.params.id;
-        const ProductData = { ...req.body };
-        ProductData.existingPhotos = JSON.parse(
+            const ProductData = { ...req.body };
+    ProductData.existingPhotos = JSON.parse(
             req.body.existingPhotos || "[]"
         );
 
         let imagePaths = [];
 
         if (req.files?.length > 0) {
-            imagePaths = req.files.map(
-                (file) =>
-                    `${req.protocol}://${req.get("host")}/${file.path.replace(
-                        /\\/g,
-                        "/"
-                    )}`
-            );
+        imagePaths = req.files.map(
+            (file) =>
+            `${req.protocol}://${req.get("host")}/${file.path.replace(
+                /\\/g,
+                "/"
+            )}`
+        );
         }
 
         ProductData.image = [
-            ...ProductData.existingPhotos,
-            ...imagePaths,
+        ...ProductData.existingPhotos,
+        ...imagePaths,
         ];
-
+     
 
         if (req.files?.length > 0) {
             imagePaths = req.files.map(
-             `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
-
+                file =>`${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`
+                    
             );
         }
 
@@ -179,23 +150,22 @@ async function updateProduct(req, res) {
             ProductData,
             { new: true }
         );
-          cache.flushAll();
+
         return res.status(200).json({
             success: true,
             message: "Product updated successfully",
             data: product
         });
-        
-    }
 
+    }
 
     catch (err) {
         console.log(err.message);
-
+        
         return res.status(500).json({
             success: false,
             message: err.message
-        });
+        }); 
     }
 }
 
@@ -206,7 +176,7 @@ async function deleteProduct(req, res) {
 
     try {
         let id = req.params.id
-        let data = await ProductModel.findByIdAndDelete(id);
+        let data = await ProductModel.findByIdAndDelete(id)
         if (!data) {
             return res.status(404).json({
                 message: "Product not found"
@@ -215,7 +185,6 @@ async function deleteProduct(req, res) {
         res.status(200).json({
             message: "Product successful delete",
         })
-        cache.flushAll();
     }
     catch (error) {
         res.status(500).json({
@@ -267,27 +236,4 @@ async function getProductsByCategory(req, res) {
     }
 }
 
-async function getProductById(req, res) {
-    try {
-        const product = await ProductModel.findById(req.params.id)
-            .populate("category");
-
-        if (!product) {
-            return res.status(404).json({
-                message: "Product not found"
-            });
-        }
-
-        res.status(200).json({
-            message: "Product fetched successfully",
-            data: product
-        });
-
-    } catch (err) {
-        res.status(500).json({
-            message: err.message
-        });
-    }
-}
-
-module.exports = { addProduct, updateProduct, deleteProduct, allProduct, getTotalProducts, getProductsByCategory, getProductById }
+module.exports = { addProduct, updateProduct, deleteProduct, allProduct, getTotalProducts, getProductsByCategory };

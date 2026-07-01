@@ -144,13 +144,13 @@ export default function CustomerCart() {
     return total + itemTotal;
   }, 0);
 
-  const coupon = cartTotals?.coupon;
+  const coupon = cartItems[0]?.coupon;
   const formatPrice = (amountInPaise) => (amountInPaise / 100).toFixed(2);
   let couponDiscountAmount = 0;
 
   if (coupon) {
     const calculatedDiscount = (subtotal / 100) * (coupon.discount / 100);
-    couponDiscountAmount = Math.min(calculatedDiscount, coupon.max_discount || Infinity);
+    couponDiscountAmount = Math.min(calculatedDiscount, coupon.max_discount);
   }
 
   const shipping = formatPrice(subtotal) <= 1000 ? 0 : 0;
@@ -242,12 +242,12 @@ export default function CustomerCart() {
   }, [cartStatus, dispatch]);
   useEffect(() => {
     getAddress();
-  }, [updateAddress]);
+  }, []);
 
   useEffect(() => {
     const coupon = cartItems[0]?.coupon;
     if (coupon && subtotal / 100 < coupon.min_order_value) {
-      dispatch(removeCoupon());
+      handleRemoveCoupon();
       enqueueSnackbar(
         `Coupon removed as order total is below ₹${coupon.min_order_value}`,
         { variant: "warning" },
@@ -327,7 +327,6 @@ export default function CustomerCart() {
       >
         My Cart
       </Typography>
-      <SnackbarProvider/>
       <Dialog
         open={openDeleteDialog}
         onClose={() => setOpenDeleteDialog(false)}
@@ -808,7 +807,7 @@ export default function CustomerCart() {
                   />
                 </Box>
 
-                {coupon && (
+                {cartItems[0]?.coupon && (
                   <Box
                     sx={{
                       p: 1.5,
@@ -824,10 +823,10 @@ export default function CustomerCart() {
                           fontWeight={700}
                           color="success.dark"
                         >
-                          Coupon Applied: {coupon.code}
+                          Coupon Applied: {cartItems[0].coupon.code}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {coupon.discount}% OFF
+                          {cartItems[0].coupon.discount}% OFF
                         </Typography>
                         <Typography
                           variant="body2"
