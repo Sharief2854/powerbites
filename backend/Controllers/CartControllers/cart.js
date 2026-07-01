@@ -32,7 +32,7 @@ async function setCart(req, res) {
             });
         }
 
-       body.cartTotal = product.price * body.quantity; // Initialize cartTotal to the product of price and quantity for new items
+       body.cartTotal = (product.price - (product.price * product.discount) / 100) * body.quantity; // Initialize cartTotal to the product of price and quantity for new items
  
 
         let cartItem = (await cartModel.create(body));

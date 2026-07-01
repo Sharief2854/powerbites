@@ -449,6 +449,7 @@ export default function Banners() {
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState("");
   const [banners,setBanners] = useState([]);
+console.log(banners);
 
 
   const handleCouponSelect = (coupon) => {
@@ -464,7 +465,7 @@ export default function Banners() {
 
   setSelectedCoupon(coupon._id);
   setTitle(coupon.title ?? "");
-  setDescription(coupon.description ?? coupon.title ?? "");
+  setDescription(coupon.description  ?? "");
   setCode(coupon.code ?? "");
   };
 
@@ -561,6 +562,7 @@ export default function Banners() {
     setDescription("");
     setCode("");
     setStatus("inActive");
+    setSelectedCoupon(null)
     setImages([]);
     setSelectedBg(backgroundOptions[0]);
   };
@@ -573,6 +575,8 @@ export default function Banners() {
     setTitle("");
     setDescription("");
     setCode("");
+    setImages([]);
+    setSelectedCoupon(null)
     setStatus("inActive");
     setSelectedBg(backgroundOptions[0]);
   };
@@ -615,7 +619,7 @@ export default function Banners() {
       formData.append("description", description);
       formData.append("code", code);
       formData.append("status", status);
-      formData.append("background", selectedBg.name);
+      formData.append("color", selectedBg.bg);
       formData.append("coupon", selectedCoupon);
       images.forEach((file) => {
         formData.append("file", file);
@@ -661,8 +665,8 @@ export default function Banners() {
     setEditId(banner._id);
     setTitle(banner.title || "");
     setDescription(banner.description || "");
-    setCode(banner.code || "");
-    setStatus((banner.status || "inActive").toLowerCase());
+    setCode(banner?.coupon?.code || "");
+    setStatus((banner.status || "inActive"));
     setSelectedBg(
       backgroundOptions.find((bg) => bg.name === banner.background) ||
         backgroundOptions[0],
@@ -715,7 +719,7 @@ export default function Banners() {
       formData.append("description", description);
       formData.append("code", code);
       formData.append("status", status);
-      formData.append("background", selectedBg.name);
+      formData.append("color", selectedBg.bg);
       formData.append("existingImages", JSON.stringify(existingImages));
 
       newImages.forEach((file) => {
@@ -932,9 +936,9 @@ export default function Banners() {
                 offer={{
                   title: banner?.title,
                   description: banner?.description,
-                  code: banner?.code,
+                  code: banner?.coupon?.code ?? banner?.code,
                   status: banner?.status,
-                  background: banner?.background,
+                  background: banner?.color,
                   images: Array.isArray(banner?.image) ? banner?.image : [],
                 }}
                 actions={

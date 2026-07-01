@@ -86,6 +86,10 @@ export default function ProductPage() {
     product?.price - (product?.price * product?.discount) / 100;
 
   const addItem = async () => {
+    if (product.stock <= 0) {
+      return;
+    }
+
     try {
       if (isInCart) {
         dispatch(
@@ -128,6 +132,10 @@ export default function ProductPage() {
   };
 
   async function checkOutPage() {
+    if (product.stock <= 0) {
+      return;
+    }
+
     if (!isInCart) {
       await addItem();
       navigate("/customer/cart");
@@ -309,8 +317,26 @@ export default function ProductPage() {
             </Typography>
 
             <Stack direction="row" spacing={2}>
-              {/* <Rating value={4.5} precision={0.5} readOnly /> */}
-              <Typography>(N/A Reviews)</Typography>
+              {/* <Rating value={4.5} precision={0.5} readOnly /> */}{product.rating > 0 ? (
+    <>
+      <Rating
+        value={product.rating}
+        precision={0.5}
+        readOnly
+        size="small"
+      />
+      <Typography variant="body2">
+        ({product.rating})
+      </Typography>
+    </>
+  ) : (
+    <Chip
+      label="New"
+      color="primary"
+      size="small"
+      variant="filled"
+    />
+  )}
             </Stack>
 
             <Stack spacing={2}>
@@ -340,7 +366,7 @@ export default function ProductPage() {
 
             <Stack direction="row" spacing={2} sx={{ alignItems: "end" }}>
               <Typography variant="h3" fontWeight={700} color="primary.main">
-                ₹{discountedPrice}
+                ₹{discountedPrice.toFixed(2)}
               </Typography>
 
               {product?.discount > 0 && (
@@ -351,7 +377,7 @@ export default function ProductPage() {
                       color: "text.secondary",
                     }}
                   >
-                    ₹{product.price}
+                    ₹{product.price.toFixed(2)}
                   </Typography>
 
                   <Chip
@@ -368,6 +394,7 @@ export default function ProductPage() {
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               {!isInCart ? (
                 <PrimaryButton
+                  disabled={product.stock <= 0}
                   fullWidth
                   variant="contained"
                   sx={{
@@ -385,7 +412,7 @@ export default function ProductPage() {
                   }}
                   onClick={addItem}
                 >
-                  Add to Cart
+                  {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
                 </PrimaryButton>
               ) : (
                 <Box
@@ -416,7 +443,12 @@ export default function ProductPage() {
                 </Box>
               )}
 
-              <PrimaryButton size="large" fullWidth onClick={checkOutPage}>
+              <PrimaryButton
+                size="large"
+                fullWidth
+                onClick={checkOutPage}
+                disabled={product.stock <= 0}
+              >
                 Buy Now
               </PrimaryButton>
             </Stack>

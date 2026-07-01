@@ -5,6 +5,7 @@ const emailSender = require("../../Utils/emailSender");
 const resetModel = require("../../Model/ResetModel");
 const { regController } = require("./regController");
 const { regToken } = require("../../Utils/TokenGenerator");
+const bcrypt = require("bcrypt");
 const decodeToken = require("../../Utils/decodeToken");
 
 async function forgotPassword(req,res) {
@@ -149,7 +150,11 @@ async function resetPassword(req,res){
             })
         }
 
-        user.password = body.password;
+        // Hash the new password before saving
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(body.password, salt);
+        user.password = hashedPassword;
+
         await user.save(); 
 
         let clearReset =await resetModel.deleteOne({user:user._id})

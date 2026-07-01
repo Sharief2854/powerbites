@@ -17,7 +17,9 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCompanyInfo } from "../../../Redux/Slices/AdminSlice/CompanyInfoSlice";
 import EditIcon from "@mui/icons-material/Edit";
+import AddIcon from "@mui/icons-material/Add";
 import IconButton from "@mui/material/IconButton";
+import { Grid3x3 } from "@mui/icons-material";
 
 export default function CompanyInfo() {
   const company = useSelector((state) => state.companyInfo.info);
@@ -227,31 +229,63 @@ export default function CompanyInfo() {
                         Socials
                       </Typography>
                       <Stack
-                      gap={1}
+                        gap={1}
                         direction="row"
                         sx={{ mt: 1, flexWrap: "wrap" }}
-                        // spacing={2}
                       >
-                        {Object.keys(company?.socialMedia || {}).map(
-                          (item, index) => (
-                            <PrimaryButton
-                              fullWidth
-                              key={index}
-                              variant="outlined"
-                              sx={{ borderColor: "#3E1A89",mr:1,mb:1 }}
-                              onClick={() =>
-                                window.open(company?.socialMedia[item])
-                              }
-                            >
-                              {item}
-                            </PrimaryButton>
-                          ),
-                        )}
+                        {(company?.socialMedia || []).map((social, index) => (
+                          <PrimaryButton
+                            fullWidth
+                            key={index}
+                            variant="outlined"
+                            sx={{ borderColor: "#3E1A89", mr: 1, mb: 1 }}
+                            onClick={() => window.open(social.url, "_blank")}
+                          >
+                            {social.platform}
+                          </PrimaryButton>
+                        ))}
                       </Stack>
                     </Paper>
                   </Stack>
                 </Grid>
               </Grid>
+              <Paper elevation={0} sx={{ borderRadius: 4, p: 2, mt: 2 }}>
+                <Typography variant="h6" color="primary">
+                  More Info
+                </Typography>
+                <Grid container spacing={3} fullWidth>
+                  {Object.keys(company?.customFields || {}).map(
+                    (item, index) => {
+                      const letterInitial = company?.customFields[item];
+                      return (
+                        <Grid size={{ xs: 12, md: 6 }} key={index}>
+                          <Box
+                            sx={{
+                              p: 3,
+                              borderRadius: 4,
+                              border: "1px solid rgba(62,26,137,0.1)",
+                              mb: 3,
+                            }}
+                          >
+                            <Typography
+                              variant="h6"
+                              fontWeight={700}
+                              color="#3E1A89"
+                              mb={2}
+                            >
+                              {item?.charAt(0)?.toUpperCase() + item?.slice(1)}
+                            </Typography>
+
+                            <Typography fontWeight={600}>
+                              {letterInitial}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      );
+                    },
+                  )}
+                </Grid>
+              </Paper>
             </DialogContent>
           </Box>
         ) : (
@@ -259,10 +293,8 @@ export default function CompanyInfo() {
             <Typography variant="h5" color="initial">
               Add Company Details
             </Typography>
-            <PrimaryButton
-              onClick={() => navigate(`/admin/infoupdate/add`)}
-            >
-              +{/* <AddIcon /> */}
+            <PrimaryButton onClick={() => navigate(`/admin/infoupdate/add`)}>
+              <AddIcon />
             </PrimaryButton>
           </Stack>
         )}

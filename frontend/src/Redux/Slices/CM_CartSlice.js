@@ -71,9 +71,18 @@ const cartSlice = createSlice({
       state.cartValue = 0;
     },
       allApplyCoupon: (state, action) => {
-      state.items = action.payload.products;
-      state.totals = action.payload.totals;
+        console.log(action.payload);
+        
+      state.totals = action.payload;
     },
+    removeCoupon: (state) => {
+      state.totals = null;
+      state.items = state.items.map(item => {
+        const { coupon, ...rest } = item;
+        // The coupon is on the item, so we remove it.
+        return rest;
+      });
+    }
   },
     extraReducers: (builder) => {
       builder
@@ -141,5 +150,5 @@ const cartSlice = createSlice({
   },
 });
 
-export const { clearCart, addValue,allApplyCoupon } = cartSlice.actions;
+export const { clearCart, addValue,allApplyCoupon ,removeCoupon} = cartSlice.actions;
 export default cartSlice.reducer;
