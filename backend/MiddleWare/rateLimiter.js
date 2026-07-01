@@ -15,6 +15,14 @@ const authLimiter = rateLimit({
 	max: 10, // Limit each IP to 10 auth attempts per window to prevent brute-force
 	standardHeaders: true,
 	legacyHeaders: false,
+	keyGenerator: (req, res) => {
+		// Use IP address and email as the key for rate limiting auth routes.
+		// This prevents users on a shared IP (like Wi-Fi) from locking each other out.
+		if (req.body.email) {
+			return `${req.ip}-${req.body.email}`;
+		}
+		return req.ip; // Fallback to IP if email is not present
+	},
 	message: { message: 'Too many authentication attempts from this IP, please try again after 15 minutes' },
 });
 
