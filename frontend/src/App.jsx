@@ -45,8 +45,8 @@ import UpdateInfo from "./Pages/Admin/MyCompany/UpdateInfo";
 import Coupons from "./Pages/Admin/CouponAdmin/CouponAdmin";
 import CouponForm from "./Pages/Admin/CouponAdmin/CouponForm";
 import AllCoupon from "./Pages/Admin/CouponAdmin/CouponAdmin";
-import AdminDashboard from "./Pages/Admin/Home/adminCharts";
 import Charts from "./Pages/Admin/Home/Charts";
+import AdminHome from "./Pages/Admin/Home/AdminHome";
 
 
 function App() {
@@ -71,7 +71,7 @@ function App() {
 
         <Route path ="/admin" element={<ProtectedRoutes role="admin"><DashboardLayout/></ProtectedRoutes>}>
         <Route index element={<Overview/>}/>
-        <Route path ="/admin/overview" element={<AdminDashboard/>}/>
+        <Route path ="/admin/overview" element={<AdminHome/>}/>
         <Route path ="/admin/customers" element={<UserDetails/>}/>
         <Route path="/admin/orders" element ={<OrderRecordsDashboard/>}/>
         <Route path="/admin/orders/:id" element ={<OrderRecordsDashboardById/>}/>
@@ -83,7 +83,7 @@ function App() {
         <Route path="/admin/coupons" element={<AllCoupon/>}/>
         <Route path="/admin/handlecoupon/:id" element={<CouponForm/>}/>
         <Route path="/admin/banners" element={<Offers/>}/>
-        <Route path="/admin/Analytics" element={<AdminDashboard/>}/>
+        {/* <Route path="/admin/Analytics" element={<AdminDashboard/>}/> */}
         {/* <Route path="/admin/settings" element={<Charts/>}/> */}
         </Route>
 
