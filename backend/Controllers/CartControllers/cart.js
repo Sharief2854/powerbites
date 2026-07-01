@@ -41,6 +41,7 @@ async function setCart(req, res) {
         }
 
         cartItem.cartTotal = (product.price - (product.price * product.discount) / 100) * cartItem.quantity;
+        await cartItem.populate("product");
         await cartItem.save();
 
         res.status(200).json({
