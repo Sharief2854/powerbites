@@ -60,6 +60,8 @@ const couponList = couponData?.filter((c) => {
       let res = await api.post("/cart/apply-coupon", { couponCode: couponCode });
       navigate("/customer/cart");
       dispatch(allApplyCoupon(res.data.totals));
+      await dispatch(getItems());
+      setCouponCode("");
     } catch (error) {
       console.log(error);
       setError(error?.response?.data?.message || "An unexpected error occurred.");
