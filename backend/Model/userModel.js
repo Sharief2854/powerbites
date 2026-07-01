@@ -12,12 +12,12 @@ const userSchema= new mongoose.Schema({
         type:String,
         required:true,
         unique:true,
-        // RegExp:/^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        RegExp:/^[^\s@]+@[^\s@]+\.[^\s@]+$/
     },
     password:{
         type:String,
         required:true,
-        // RegExp:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+        RegExp:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
         
     },
     phone:{
