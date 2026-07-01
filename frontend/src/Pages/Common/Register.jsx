@@ -7,6 +7,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import MainAuthCard from "./MainAuthCard";
 import AuthCard from "./AuthCard";
+import { jwtDecode } from "jwt-decode";
 import api from "../../api/axiosConfig";
 
 function Register() {
@@ -23,13 +24,15 @@ function Register() {
   });
 
   useEffect(() => {
-    const activeEmail = localStorage.getItem("powerbites_verified_email");
     const securityToken = localStorage.getItem("powerbites_auth_handshake_token");
-    
-    if (!activeEmail || !securityToken) {
+    console.log("securityToken :",securityToken)
+    if (!securityToken) {
       setSnackbar({ open: true, message: "Session tracing timeline invalid. Re-routing to entry.", severity: "error" });
       setTimeout(() => navigate("/verify-email"), 2000);
     } else {
+      // Decode the token to get the email
+      const decodedToken = jwtDecode(securityToken);
+      const activeEmail = decodedToken.email;
       setVerifiedEmail(activeEmail);
     }
   }, [navigate]);
@@ -78,16 +81,15 @@ function Register() {
         password: formData.password,
       };
 
-      await api.post("/auth/register", registrationPayload, {
+      let res = await api.post("/auth/register", registrationPayload, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("powerbites_auth_handshake_token")}`,
         },
       });
-
+      console.log("register :",res)
       showToast("Account created successfully!", "success");
       
       // Complete cleanup of temporary storage keys
-      localStorage.removeItem("powerbites_verified_email");
       localStorage.removeItem("powerbites_auth_handshake_token");
 
       setFormData({ name: "", password: "", confirmPassword: "", phone: "" });
