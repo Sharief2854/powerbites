@@ -1,4 +1,4 @@
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 
 // General rate limiter for most API routes
 const apiLimiter = rateLimit({
@@ -16,12 +16,13 @@ const authLimiter = rateLimit({
 	standardHeaders: true,
 	legacyHeaders: false,
 	keyGenerator: (req, res) => {
+		const ip = ipKeyGenerator(req, res); // Use the helper to get a normalized IP
 		// Use IP address and email as the key for rate limiting auth routes.
 		// This prevents users on a shared IP (like Wi-Fi) from locking each other out.
 		if (req.body.email) {
-			return `${req.ip}-${req.body.email}`;
+			return `${ip}-${req.body.email}`;
 		}
-		return req.ip; // Fallback to IP if email is not present
+		return ip; // Fallback to just the normalized IP if email is not present
 	},
 	message: { message: 'Too many authentication attempts from this IP, please try again after 15 minutes' },
 });

@@ -18,8 +18,10 @@ import {
   Select,
   Switch,
   Typography,
+  Skeleton,
 } from "@mui/material";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import Pagination from "@mui/material/Pagination";
+import React, { lazy, useCallback, useEffect, useMemo, useState,Suspense } from "react";
 import { addToCart, getItems } from "../../../Redux/Slices/CM_CartSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -31,7 +33,7 @@ import InputLabel from "@mui/material/InputLabel";
 import { enqueueSnackbar } from "notistack";
 import SearchIcon from "@mui/icons-material/Search";
 import { InputAdornment } from "@mui/material";
-import ItemCard from "./ItemCard";
+const ItemCard = lazy(() => import("../CustomerProducts/ItemCard"))
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -63,6 +65,8 @@ export default function CustomerProducts() {
   const [inStockOnly, setInStockOnly] = useState("all");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [cartSnackbar, setCartSnackbar] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
 
   const clearFilters = () => {
     setSearch("");
@@ -71,6 +75,7 @@ export default function CustomerProducts() {
     setMaxPrice("");
     setSortBy("");
     setInStockOnly("all");
+    setPage(1);
   };
 
   const theme = useTheme();
@@ -110,7 +115,7 @@ export default function CustomerProducts() {
 
       try {
         dispatch(
-          addToCart({ customer: decodeId, product: productId, quantity: 1 }),
+          addToCart({ customer: decodeId, product: productId, quantity: 1 })
         );
         dispatch(getItems());
         setCartSnackbar(true);
@@ -121,21 +126,24 @@ export default function CustomerProducts() {
     [decodeId, dispatch, products],
   );
 
-  async function getProducts(params) {
+  const getProducts = useCallback(async (currentPage) => {
     try {
-      let res = await api.get(`/products/all`);
-      setProducts(res.data.data);
-      console.log(res.data.data);
+      setLoading(true);
+      const res = await api.get(`/products/all?page=${currentPage}&limit=10`);
+      setProducts(res.data.data || []);
+      setTotalPages(res.data.totalPages || 0);
     } catch (error) {
       console.log(error);
+      setProducts([]);
+      setTotalPages(0);
+    } finally {
+      setLoading(false);
     }
-  }
+  }, []);
   const getCategory = async () => {
     try {
       setLoading(true);
-
       const response = await api.get("/category/allCategories");
-
       setCategory(response.data.categories || []);
     } catch (error) {
       console.log(error);
@@ -148,7 +156,7 @@ export default function CustomerProducts() {
     let filtered = [...products];
     if (search.trim()) {
       filtered = filtered.filter((product) =>
-        product?.name?.toLowerCase().includes(search.toLowerCase()),
+        product?.name?.toLowerCase().includes(search.toLowerCase())
       );
     }
 
@@ -220,11 +228,16 @@ export default function CustomerProducts() {
     sortBy,
   ]);
 
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
   useEffect(() => {
-    getProducts();
+    getProducts(page);
     dispatch(getItems());
     getCategory();
-  }, []);
+  }, [page, getProducts, dispatch]);
+
   return (
     <Box>
       <Grid
@@ -254,7 +267,6 @@ export default function CustomerProducts() {
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
                 <MenuItem value="">All Categories</MenuItem>
-
                 {category.map(
                   (cat) =>
                     cat.isAvailable && (
@@ -392,18 +404,27 @@ export default function CustomerProducts() {
       </Snackbar>
 
       <Grid container spacing={2}>
-        {products.length <= 0 ? (
-          <Box
-            sx={{
-              width: "100%",
-              textAlign: "center",
-              py: 8,
-              color: "text.secondary",
-            }}
-          >
-            <Typography variant="h6">No products available</Typography>
-          </Box>
-        ) : displayProducts.length <= 0 ? (
+        {loading ? (
+          Array.from(new Array(8)).map((_, index) => (
+            <Grid
+              size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+              key={index}
+            >
+              <Skeleton variant="rectangular" sx={{
+                width: '100%',
+                maxWidth: 340,
+                height: 350,
+                borderRadius: 5
+              }} />
+              <Skeleton variant="text" sx={{
+                width: '100%',
+                maxWidth: 340,
+                height: 50,
+                borderRadius: 5
+              }} />
+            </Grid>
+          ))
+        ) : displayProducts.length === 0 ? (
           <Box
             sx={{
               width: "100%",
@@ -440,6 +461,7 @@ export default function CustomerProducts() {
                   justifyContent: "center",
                 }}
               >
+                <Suspense fallback={<Skeleton variant="rectangular" height={400} />}>
                 <ItemCard
                   addItem={addItem}
                   setCurrentImage={setCurrentImage}
@@ -448,11 +470,22 @@ export default function CustomerProducts() {
                   cartBtn={cartBtn}
                   imagePath={imagePath}
                 />
+                </Suspense>
               </Grid>
             );
           })
         )}
       </Grid>
+      {totalPages > 1 && (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4, pb: 4 }}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+          />
+        </Box>
+      )}
     </Box>
   );
 }

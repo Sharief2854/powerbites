@@ -64,28 +64,6 @@ export default function CouponForm({ getCoupons }) {
 
   const navigate = useNavigate();
 
-  // useEffect(() => {
-
-  //   const targetCoupon = incomingCouponData || editingCoupon;
-
-  //   if (targetCoupon) {
-  //     setEditingCoupon(targetCoupon);
-  //     setCouponForm({
-  //       title: targetCoupon.title || "",
-  //       description: targetCoupon.description || "",
-  //       code: targetCoupon.code || "",
-  //       discount: targetCoupon.discount || "",
-  //       max_discount: targetCoupon.max_discount || "",
-  //       min_order_value: targetCoupon.min_order_value || "",
-  //       starts_At: targetCoupon.starts_At ? targetCoupon.starts_At.slice(0, 16) : "",
-  //       ends_At: targetCoupon.ends_At ? targetCoupon.ends_At.slice(0, 16) : "",
-  //     });
-  //   } else {
-  //     setCouponForm(initialCoupon);
-  //     setEditingCoupon(null);
-  //   }
-  // }, [incomingCouponData]);
-
   const handleSubmit = async () => {
     try {
       if (editingCoupon) {
