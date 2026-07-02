@@ -902,7 +902,7 @@ export default function OrderRecordsDashboardById() {
                 ₹{activeOrder.finalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </Typography>
               <Typography sx={{ mt: 1, color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>
-                Final billed amo+unt for this order
+                Final billed amount for this order
               </Typography>
             </Paper>
           </Stack>
