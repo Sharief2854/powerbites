@@ -29,16 +29,13 @@ const companySchema = new mongoose.Schema(
       required: true,
     },
 
-    socialMedia: [ {
-    platform: {
-      type: String,
-      required: true,
+    socialMedia: {
+      instagram: String,
+      facebook: String,
+      linkedin: String,
+      twitter: String,
+      youtube: String,
     },
-    url: {
-      type: String,
-      required: true,
-    },
-  }],
 
     certification: [String],
 

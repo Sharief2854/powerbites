@@ -251,7 +251,7 @@ console.log("grandTotal", grandTotal);
 
   useEffect(() => {
     if (coupon && subtotal / 100 < coupon.min_order_value) {
-      dispatch(removeCoupon());
+      handleRemoveCoupon();
       enqueueSnackbar(
         `Coupon removed as order total is below ₹${coupon.min_order_value}`,
         { variant: "warning" },
@@ -331,7 +331,6 @@ console.log("grandTotal", grandTotal);
       >
         My Cart
       </Typography>
-      <SnackbarProvider/>
       <Dialog
         open={openDeleteDialog}
         onClose={() => setOpenDeleteDialog(false)}
@@ -808,7 +807,7 @@ console.log("grandTotal", grandTotal);
                   />
                 </Box>
 
-                {coupon && (
+                {cartItems[0]?.coupon && (
                   <Box
                     sx={{
                       p: 1.5,
@@ -824,10 +823,10 @@ console.log("grandTotal", grandTotal);
                           fontWeight={700}
                           color="success.dark"
                         >
-                          Coupon Applied: {coupon.code}
+                          Coupon Applied: {cartItems[0].coupon.code}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {coupon.discount}% OFF
+                          {cartItems[0].coupon.discount}% OFF
                         </Typography>
                         <Typography
                           variant="body2"
