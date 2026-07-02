@@ -8,10 +8,13 @@ import {
   CardContent,
   CardMedia,
   Chip,
+  Paper,
   Stack,
   Button,
   OutlinedInput,
   InputAdornment,
+  Pagination,
+  Skeleton,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { getProducts } from "../Redux/Slices/productSlice";
@@ -25,27 +28,40 @@ export default function HomemadeFoodGrid() {
 
   const cart =useSelector((state)=>state.cart.cartValue)
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageCount, setPageCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const fetchProducts = async () => {
-    try {
-      const response = await api.get("/products/all");
-      console.log(response.data.data);
-      dispatch(getProducts(response.data.data));
-    } catch (error) {
-      console.err("Fetch error:", error);
-    }
-  };
+  const productsPerPage = 10;
 
   useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get(
+          `/products/all?page=${page}&limit=${productsPerPage}`
+        );
+        dispatch(getProducts(response.data.data));
+        setPageCount(response.data.totalPages);
+      } catch (error) {
+        console.log("Fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchProducts();
-  }, []);
+  }, [page, dispatch]);
 
-  const filterProducts = products.filter((item) =>
-    item.name?.toLowerCase().startsWith(search.toLowerCase())
+  const filteredProducts = products.filter((product) =>
+    product.name?.toLowerCase().startsWith(search.toLowerCase())
   );
 
    const handleViewProduct = () => {
     navigate("/login");
+  };
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
   };
 
   return (
@@ -85,7 +101,9 @@ export default function HomemadeFoodGrid() {
             fullWidth
             placeholder="Search products"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+            }}
             startAdornment={
               <InputAdornment position="start">🔍</InputAdornment>
             }
@@ -97,8 +115,14 @@ export default function HomemadeFoodGrid() {
         </Box>
 
         <Grid container spacing={{ xs: 2, sm: 3 }} alignItems="stretch">
-  {filterProducts.length > 0 ? (
-    filterProducts.map((product) => (
+  {loading ? (
+    Array.from(new Array(productsPerPage)).map((_, index) => (
+      <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
+        <Skeleton variant="rectangular" height={450} sx={{ borderRadius: "18px" }} />
+      </Grid>
+    ))
+  ) : filteredProducts.length > 0 ? (
+    filteredProducts.map((product) => (
   <Grid size={{ xs: 12, sm: 6, md: 4,  }} key={product._id}>
   <Card
     sx={{
@@ -242,6 +266,37 @@ export default function HomemadeFoodGrid() {
     </Grid>
   )}
 </Grid>
+        {pageCount > 1 && (
+          <Paper
+            elevation={3}
+            sx={{
+              p: 2,
+              mt: 5,
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 2,
+              borderRadius: 4,
+              background: "linear-gradient(145deg, #f5f7fa, #ffffff)",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.05)",
+            }}
+          >
+            <Typography variant="body2" color="text.secondary" fontWeight={600}>
+              Page {page} of {pageCount}
+            </Typography>
+            <Pagination
+              count={pageCount}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+              shape="rounded"
+              size={window.innerWidth < 600 ? "medium" : "large"}
+              showFirstButton
+              showLastButton
+            />
+          </Paper>
+        )}
       </Container>
     </Box>
   );

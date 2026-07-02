@@ -59,7 +59,7 @@ const couponList = couponData?.filter((c) => {
     try {
       let res = await api.post("/cart/apply-coupon", { couponCode: couponCode });
       navigate("/customer/cart");
-      dispatch(allApplyCoupon(res.data.totals));
+      dispatch(allApplyCoupon(res.data));
       await dispatch(getItems());
       setCouponCode("");
     } catch (error) {
@@ -320,61 +320,71 @@ const couponList = couponData?.filter((c) => {
 >
   <Grid container spacing={1}
   sx={{justifyContent:'space-between', alignItems: 'center'}}>
-    <Grid size={{ xs: 7, sm: 8}}>
-      <Typography
-        sx={{
-          fontSize: 13,
-          fontWeight: 700,
-          letterSpacing: 2,
-          opacity: 0.8,
-        }}
-      >
-        COUPON CODE
-      </Typography>
+    <Grid
+  size={{ xs: 7, sm: 8 }}
+  sx={{
+    minWidth: 0
+  }}
+>
+  <Typography
+    sx={{
+      fontSize: 13,
+      fontWeight: 700,
+      letterSpacing: 2,
+      opacity: 0.8,
+    }}
+  >
+    COUPON CODE
+  </Typography>
 
-      <Typography
-        sx={{
-          fontWeight: 900,
-          fontSize: 28,
-          width:'100%',
-          letterSpacing: 1,
-          textTransform: "uppercase",
-        }}
-      >
-        {coupon.code}
-      </Typography>
+  <Typography
+    sx={{
+      fontWeight: 900,
+      fontSize: 28,
+      width: "100%",
+      letterSpacing: 1,
+      textTransform: "uppercase",
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis", 
+    }}
+  >
+    {coupon.code}
+  </Typography>
 
-      <Typography
-        sx={{
-          fontWeight: 700,
-          mt: 0.5,
-          fontSize: 18,
-        }}
-      >
-        {coupon.title}
-      </Typography>
+  <Typography
+    sx={{
+      fontWeight: 700,
+      mt: 0.5,
+      fontSize: 18,
+    }}
+  >
+    {coupon.title}
+  </Typography>
 
-      <Typography
-        sx={{
-          opacity: 0.85,
-          fontSize: 13,
-          mt: 0.5,
-        }}
-      >
-        {coupon.description}
-      </Typography>
-    </Grid>
+  <Typography
+    sx={{
+      opacity: 0.85,
+      fontSize: 13,
+      mt: 0.5,
+    }}
+  >
+    {coupon.description}
+  </Typography>
+</Grid>
 
-    <Grid size={{xs: 5, sm: 4}}
-      sx={{
-        bgcolor: "#fff",
-        color: "#3E1A89",
-        px: 2,
-        py: 1,
-        borderRadius: "16px",
-        textAlign: 'center'
-      }}
-    >
+<Grid
+  size={{ xs: 5, sm: 4 }}
+  sx={{
+    bgcolor: "#fff",
+    color: "#3E1A89",
+    px: 2,
+    py: 1,
+    borderRadius: "16px",
+    textAlign: "center",
+    flexShrink: 0,
+  }}
+>
       <Typography
         sx={{
           fontSize: 30,
