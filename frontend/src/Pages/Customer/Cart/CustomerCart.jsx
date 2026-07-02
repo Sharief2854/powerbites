@@ -34,7 +34,7 @@ import api from "../../../api/axiosConfig";
 import { jwtDecode } from "jwt-decode";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { enqueueSnackbar, SnackbarProvider } from "notistack";
+import { enqueueSnackbar, SnackbarProvider, useSnackbar } from "notistack";
 import { EditNotificationsSharp } from "@mui/icons-material";
 import {
   PrimaryButton,
@@ -113,6 +113,8 @@ export default function CustomerCart() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [removeId, setRemoveId] = useState("");
 
+  const {enqueueSnackbar} = useSnackbar();
+
   const handleAddress = () => {
     setIsModalOpen(true);
   };
@@ -157,7 +159,10 @@ export default function CustomerCart() {
 
   const grandTotal =
     Number(formatPrice(subtotal)) + Number(shipping) - couponDiscountAmount;
-
+console.log(coupon);
+console.log("cartTotals", cartTotals);
+console.log("coupon", cartTotals?.coupon);
+console.log("grandTotal", grandTotal);
   //update quantity
   function handleChange(cartId, quantity) {
     if (quantity > 0) {
@@ -189,7 +194,7 @@ export default function CustomerCart() {
     dispatch(removeCartItem(removeId)).then((action) => {
       if (action.meta.requestStatus === "fulfilled") {
         enqueueSnackbar("Item removed", {
-          variant: "success",
+          variant: "success"
         });
       }
     });
@@ -245,7 +250,6 @@ export default function CustomerCart() {
   }, []);
 
   useEffect(() => {
-    const coupon = cartItems[0]?.coupon;
     if (coupon && subtotal / 100 < coupon.min_order_value) {
       handleRemoveCoupon();
       enqueueSnackbar(
@@ -675,7 +679,7 @@ export default function CustomerCart() {
                           color: "#3E1A89",
                         }}
                       >
-                        ₹{item?.product?.price * item?.quantity}
+                        ₹{(item?.product?.price * item?.quantity).toFixed(2)}
                       </Typography>
                       <Typography
                         sx={{
@@ -685,10 +689,10 @@ export default function CustomerCart() {
                         }}
                       >
                         ₹
-                        {(item?.product?.price -
+                        {((item?.product?.price -
                           (item?.product?.price * item?.product?.discount) /
                             100) *
-                          item?.quantity}
+                          item?.quantity).toFixed(2)}
                       </Typography>
                     </Box>
 
@@ -790,11 +794,7 @@ export default function CustomerCart() {
                         />
                       ) : null
                     }
-                    label={
-                      formatPrice(subtotal) < 1000
-                        ? "FREE"
-                        : `₹${formatPrice(shipping)}`
-                    }
+                    label={"FREE"}
                     size="small"
                     sx={{
                       backgroundColor: "#e8f5e9",
@@ -953,7 +953,7 @@ export default function CustomerCart() {
                         <PrimaryButton
                           onClick={() => setAddressModalOpen(true)}
                         >
-                          Add Address
+                          <AddIcon/>
                         </PrimaryButton>
                       )}
                     </Stack>
