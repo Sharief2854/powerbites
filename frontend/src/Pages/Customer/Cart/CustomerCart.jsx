@@ -265,6 +265,11 @@ console.log("grandTotal", grandTotal);
       setUpdateAddress(defaultAddress);
     }
   }, [addresses]);
+
+  useEffect(() => {
+    dispatch(getItems())
+  }, []);
+
   if (cartStatus === "loading") {
     return (
       <Box sx={{ p: 3 }}>

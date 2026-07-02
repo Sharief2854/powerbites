@@ -73,7 +73,7 @@ async function getDashboardSummary(req, res) {
                 totalProductsSold: kpis.totalProductsSold,
                 totalCustomers: kpis.customers.length,
                 deliveredOrders: summary["order delivered"] || 0,
-                cancelledOrders: summary["order cancelled"] || 0
+                cancelledOrders: summary["order cancelled"] || summary["refund pending"] || summary["refunded"] || 0
             },
             orderStatusSummary: summary,
             orders: allOrders.map(o => ({
