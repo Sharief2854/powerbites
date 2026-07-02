@@ -261,6 +261,11 @@ export default function CustomerCart() {
       setUpdateAddress(defaultAddress);
     }
   }, [addresses]);
+
+  useEffect(() => {
+    dispatch(getItems())
+  }, []);
+
   if (cartStatus === "loading") {
     return (
       <Box sx={{ p: 3 }}>

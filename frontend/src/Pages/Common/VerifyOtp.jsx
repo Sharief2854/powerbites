@@ -73,9 +73,9 @@ function VerifyOtp() {
         }}
       >
         <Stack alignItems="center" spacing={2} sx={{ mb: 4 }}>
-          <Box sx={{ p: 2, bgcolor: "rgba(74, 27, 241, 0.08)", color: "#4A1BF1", borderRadius: "50%", display: "flex",justifyContent:'center',gap:2 }}>
+          <Box sx={{ p: 2, display: "flex",justifyContent:'center',gap:2 }}>
             <MarkEmailReadOutlinedIcon sx={{ fontSize: 32 }} />
-            <Typography variant="h5" fontWeight={800} sx={{ color: "#101828"  }}>
+            <Typography variant="h5" fontWeight={800} sx={{ color: "#5678bc"  }}>
             Verify Your Email
           </Typography>
           </Box>

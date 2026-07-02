@@ -81,11 +81,11 @@ function Login() {
     console.log("error ",err); 
     if(err.response?.data?.isVerified === false){
       setSnackbar({ open: true, message: err.response?.data?.message || "Please verify your account before logging in.", severity: "error" });
-      setTimeout(() => navigate(`/verifyOtp/${err.response?.data?.user}`), 1500);
+      setTimeout(() => navigate(`/verify-otp/${err.response?.data?.user}`), 1500);
     }
     else if(err.response?.data?.isUser === true){
       setSnackbar({ open: true, message: err.response?.data?.message || "Account not found. Please register.", severity: "error" });
-      setTimeout(() => navigate("/register"), 1500);
+      setTimeout(() => navigate("/verify-email"), 1500);
     }
     else{
       setSnackbar({ open: true, message: err.response?.data?.message || "Login failed. Please check your credentials and try again.", severity: "error" });
